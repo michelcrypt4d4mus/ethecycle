@@ -85,6 +85,7 @@ Txn.current_cycle_color = START_CYCLE_COLOR
 def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: Txn, depth: int = 0):
     """
     Start from the from_txn.to_address wallet, build a tree.
+
         wallet_txns: keys are wallet address, values is a list of txns from that wallet address
         starting_txn: root of tree whose to_address is checked for cycles (we could check for other cycles but for now we don't)
         txn: the current transaction being recursed upon
@@ -95,6 +96,7 @@ def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: T
         return
 
     # Find all txns out of txn.to_address that happen in the future above the MIN_VALUE
+    # Use block_number as an imperfect proxy for time
     txns_from_wallet_in_future = [
         t for t in wallets_txns[txn.from_address]
         if t.block_number >= txn.block_number and t != txn and t.value > MIN_VALUE

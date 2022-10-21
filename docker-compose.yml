@@ -8,10 +8,13 @@ services:
   shell:
     build:
       context: .
+    env_file:
+      - .env
     links:   # Should be unnecessary https://docs.docker.com/compose/networking/#multi-host-networking
       - tinkerpop
     depends_on:
       - tinkerpop
     volumes:
-      - .:/trondata
-    working_dir: /trondata
+      - .:/ethecycle
+      - ${TXION_DATA_DIR}:/trondata
+    working_dir: /ethecycle

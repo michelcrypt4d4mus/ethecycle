@@ -32,5 +32,6 @@ def load_txions(token_address: Optional[str] = None) -> List[Txn]:
         ]
 
 
-def write_graph(graph: GraphTraversalSource) -> None:
-    graph.io(someOutputFile).write().iterate()
+def write_graph(graph: GraphTraversalSource, output_file: str) -> None:
+    """Write graph?"""
+    graph.io(output_file).write().iterate()

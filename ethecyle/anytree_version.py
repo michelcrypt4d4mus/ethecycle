@@ -1,3 +1,7 @@
+"""
+Deprecated.
+"""
+
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass, replace
 from itertools import groupby

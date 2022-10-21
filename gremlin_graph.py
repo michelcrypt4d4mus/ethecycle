@@ -1,40 +1,80 @@
+"""
+Build the graph. Helpful: https://tinkerpop.apache.org/docs/current/recipes/#long-traversals
+"""
+from itertools import chain
+from typing import List
+
 from gremlin_python.driver.driver_remote_connection import \
     DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import __, unfold
+from gremlin_python.process.graph_traversal import __, id_, select, unfold
 from gremlin_python.process.traversal import Column
+from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecyle.logging import print_wallet_header
+from ethecyle.transaction import Txn
 from ethecyle.transaction_loader import UDST_ADDRESS, get_wallets_txions
 
+ADDRESS = 'address'
+WALLET = 'wallet'
+TXN = 'transaction'
+
 wallets_txns = get_wallets_txions(UDST_ADDRESS)
-wallet_addresses = set(list(wallets_txns.keys()))
+wallet_addresses = list(set(list(wallets_txns.keys())))
+all_txns = list(chain(*wallets_txns.values()))
+
 graph = traversal().withRemote(DriverRemoteConnection('ws://tinkerpop:8182/gremlin', 'g'))
 
 
-# Add wallets as vertices
-graph.inject([{'address': address} for address in wallet_addresses]).unfold().as_('wallet'). \
-    addV('wallet').as_('v'). \
-        sideEffect(
-            __.select('wallet').unfold().as_('kv').select('v'). \
+def add_wallets_as_vertices(wallet_addresses: List[str]) -> None:
+    """Add wallets as vertices."""
+    graph.inject([{ADDRESS: address} for address in wallet_addresses]).unfold().as_(WALLET). \
+        addV(WALLET).as_('v').sideEffect(
+            __.select(WALLET).unfold().as_('kv').select('v'). \
                 property(__.select('kv').by(Column.keys), __.select('kv').by(Column.values))
-    ).iterate()
+        ).iterate()
 
 
 def count_vertices(g) -> int:
-    return g.V().hasLabel('wallet').count().next()
+    return g.V().hasLabel(WALLET).count().next()
 
 
+# Doesn't work yet... https://stackoverflow.com/questions/71406191/bulk-upsert-in-gremlin-python-fails-with-typeerror-graphtraversal-object-is
+def build_graph(graph: GraphTraversalSource, txns: List[Txn], wallet_addresses: List[str]) -> None:
+    """Add both vertices (wallets) and edges (txions) in one traversal."""
+    wallets = [{'address': address} for address in wallet_addresses]
+    graph.withSideEffect("txns", [t.__dict__ for t in txns]). \
+        inject(wallets).sideEffect(
+            unfold(). \
+                addV(WALLET). \
+                    property(id_, select('address')). \
+                    group("m"). \
+                    by(id_). \
+                    by(unfold()) \
+        ).select("txns").unfold().as_("t"). \
+            addE(TXN). \
+                from_(select("m").select(select("t").select("from_address"))). \
+                to(select("m").select(select("t").select("to_address"))). \
+                property(id_, select("transaction_id")). \
+                property("value", select("value")) \
+            .iterate()
+
+
+build_graph(graph, all_txns, wallet_addresses)
+
+
+# drop all vertices:
+graph.V().drop().iterate()
 
 # Adding vertices one at a time is very slow
 #for wallet_address in wallet_addresses:
-#    graph.addV('wallet').property('name','Julia Child').property('gender','F')
+#    graph.addV(WALLET).property('name','Julia Child').property('gender','F')
 
 
-# graph.inject(wallet_addresses).unfold().as_('wallet'). \
-#     addV('wallet').as_('v'). \
+# graph.inject(wallet_addresses).unfold().as_(WALLET). \
+#     addV(WALLET).as_('v'). \
 #         sideEffect(
-#             __.select('wallet').unfold().as_('kv').select('v'). \
+#             __.select(WALLET).unfold().as_('kv').select('v'). \
 #                 property(__.select('kv').by(Column.keys), __.select('kv').by(Column.values))
 #     ).iterate()
 
@@ -56,3 +96,11 @@ def count_vertices(g) -> int:
 #                 property(__.select('kv').by(Column.keys), __.select('kv').by(Column.values))).iterate()
 
 
+
+# def add_txions_as_edges(txions: List[Txn]) -> None:
+#     """Add transactions as edges between from_address and to_address."""
+#     graph.inject([tx.__dict__ for tx in txions]).unfold().as_(TXN). \
+#         addE(TXN).as_('e').sideEffect(
+#             __.select(TXN).unfold().as_('kv').select('e'). \
+#                 property(__.select('kv').by(Column.keys), __.select('kv').by(Column.values))
+#         ).iterate()

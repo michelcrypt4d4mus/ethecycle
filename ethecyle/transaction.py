@@ -24,6 +24,7 @@ class Txn():
         self.value = float(self.csv_value) / 10 ** 18
         self.value_str = "{:,.1f}".format(self.value)
         self.block_number = int(self.block_number)
+        self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
 
     def __rich__(self) -> Text:
         txt = Text('<').append(self.transaction_hash[:8], style='magenta')

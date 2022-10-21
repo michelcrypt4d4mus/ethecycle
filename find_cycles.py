@@ -114,7 +114,9 @@ def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: T
 
     # Add children nodes
     for future_txn in txns_from_wallet_in_future:
-        child_txn = replace(future_txn)   # Make a copy because the same txn can appear multiple times in the tree
+        # Make a copy because the same txn can appear multiple times in the tree
+        # In a directed graph you wouldn't do this, but anytree is not a graph library, it's a tree library :(
+        child_txn = replace(future_txn)
         child_txn.parent = txn
         build_txn_tree(wallets_txns, starting_txn, child_txn, depth + 1)
 

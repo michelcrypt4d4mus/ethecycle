@@ -6,7 +6,6 @@ from dataclasses import dataclass, replace
 from itertools import groupby
 from typing import Dict, List, Optional
 
-import networkx as nx
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.panel import Panel
@@ -26,9 +25,12 @@ from rich.tree import Tree
 #  '15770279']
 
 LOG_LEVEL = 'WARN'
-
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
-WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'.lower()
+
+WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'.lower()
+PILLAGERS_ADDRESS = '0x17f2fdd7e1dae1368d1fc80116310f54f40f30a9'.lower()
+TETHER_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'.lower()
+
 START_CYCLE_COLOR = 52
 MILLION = 1000000
 BILLION = MILLION * 1000
@@ -49,7 +51,7 @@ class Txn():
     token_address: str
     from_address: str
     to_address: str
-    csv_value: float
+    csv_value: str
     transaction_hash: str
     log_index: str
     block_number: int
@@ -125,11 +127,7 @@ def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: T
 
 def get_wallets_txions(token_address: str) -> Dict[str, List[Txn]]:
     """Get all txns for a given token"""
-    load_txions
-    with open('data/output_15770001_15780000.csv', newline='') as csvfile:
-        txns = [Txn(*row) for row in csv.reader(csvfile, delimiter=',') if row[0] == token_address]
-
-    txns = sorted(txns, key=wallet_sorter)
+    txns = sorted(load_txions(token_address), key=wallet_sorter)
 
     return {
         from_address: sorted(list(txns), key=time_sorter)
@@ -137,20 +135,15 @@ def get_wallets_txions(token_address: str) -> Dict[str, List[Txn]]:
     }
 
 
-def get_token_txion_graph(token_address: str) -> nx.MultiDiGraph:
-    wallets_txions = get_wallets_txions(token_address)
-    graph = nx.MultiDiGraph(wallets_txions.keys())
-
-
 def load_txions(token_address: Optional[str] = None) -> List[Txn]:
-    with open('data/output_15770001_15780000.csv', newline='') as csvfile:
+    with open('/trondata/data/output_15770001_15780000.csv', newline='') as csvfile:
         return [
             Txn(*row) for row in csv.reader(csvfile, delimiter=',')
-            if token_address is None or row[0] == token_address
+            if row[0] != 'token_address' and (token_address is None or row[0] == token_address)
         ]
 
 
-def _count_col_vals(tuples, col: str):
+def count_col_vals(tuples, col: str):
     counts = defaultdict(lambda: 0)
 
     for txn in tuples:

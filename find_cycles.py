@@ -4,9 +4,9 @@ import logging
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass, replace
 from itertools import groupby
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from anytree import NodeMixin, RenderTree
+import networkx as nx
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.panel import Panel
@@ -44,8 +44,8 @@ log.setLevel(LOG_LEVEL)
 log.handlers[0].setLevel(LOG_LEVEL)
 
 
-@dataclass
-class Txn(NodeMixin):
+@dataclass(unsafe_hash=True)
+class Txn():
     token_address: str
     from_address: str
     to_address: str
@@ -82,7 +82,7 @@ class Txn(NodeMixin):
 Txn.current_cycle_color = START_CYCLE_COLOR
 
 
-def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: Txn, depth: int = 0):
+def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: Txn, depth: int = 0) -> None:
     """
     Start from the from_txn.to_address wallet, build a tree.
 
@@ -123,8 +123,9 @@ def build_txn_tree(wallets_txns: Dict[str, List[Txn]], starting_txn: Txn, txn: T
         build_txn_tree(wallets_txns, starting_txn, child_txn, depth + 1)
 
 
-def get_token_txions(token_address) -> Dict[str, List[Txn]]:
+def get_wallets_txions(token_address: str) -> Dict[str, List[Txn]]:
     """Get all txns for a given token"""
+    load_txions
     with open('data/output_15770001_15780000.csv', newline='') as csvfile:
         txns = [Txn(*row) for row in csv.reader(csvfile, delimiter=',') if row[0] == token_address]
 
@@ -134,6 +135,19 @@ def get_token_txions(token_address) -> Dict[str, List[Txn]]:
         from_address: sorted(list(txns), key=time_sorter)
         for from_address, txns in groupby(txns, wallet_sorter)
     }
+
+
+def get_token_txion_graph(token_address: str) -> nx.MultiDiGraph:
+    wallets_txions = get_wallets_txions(token_address)
+    graph = nx.MultiDiGraph(wallets_txions.keys())
+
+
+def load_txions(token_address: Optional[str] = None) -> List[Txn]:
+    with open('data/output_15770001_15780000.csv', newline='') as csvfile:
+        return [
+            Txn(*row) for row in csv.reader(csvfile, delimiter=',')
+            if token_address is None or row[0] == token_address
+        ]
 
 
 def _count_col_vals(tuples, col: str):

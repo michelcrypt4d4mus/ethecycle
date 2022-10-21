@@ -13,13 +13,13 @@ from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecyle.logging import print_wallet_header
 from ethecyle.transaction import Txn
-from ethecyle.transaction_loader import UDST_ADDRESS, get_wallets_txions
+from ethecyle.transaction_loader import USDT_ADDRESS, get_wallets_txions
 
 ADDRESS = 'address'
 WALLET = 'wallet'
 TXN = 'transaction'
 
-wallets_txns = get_wallets_txions(UDST_ADDRESS)
+wallets_txns = get_wallets_txions(USDT_ADDRESS)
 wallet_addresses = list(set(list(wallets_txns.keys())))
 all_txns = list(chain(*wallets_txns.values()))
 
@@ -43,20 +43,20 @@ def count_vertices(g) -> int:
 def build_graph(graph: GraphTraversalSource, txns: List[Txn], wallet_addresses: List[str]) -> None:
     """Add both vertices (wallets) and edges (txions) in one traversal."""
     wallets = [{'address': address} for address in wallet_addresses]
-    graph.withSideEffect("txns", [t.__dict__ for t in txns]). \
+    graph.withSideEffect('txns', [t.__dict__ for t in txns]). \
         inject(wallets).sideEffect(
             unfold(). \
                 addV(WALLET). \
                     property(id_, select('address')). \
-                    group("m"). \
+                    group('m'). \
                     by(id_). \
                     by(unfold()) \
-        ).select("txns").unfold().as_("t"). \
+        ).select('txns').unfold().as_('t'). \
             addE(TXN). \
-                from_(select("m").select(select("t").select("from_address"))). \
-                to(select("m").select(select("t").select("to_address"))). \
-                property(id_, select("transaction_id")). \
-                property("value", select("value")) \
+                from_(select('m').select(select('t').select('from_address'))). \
+                to(select('m').select(select('t').select('to_address'))). \
+                property(id_, select('transaction_id')). \
+                property('value', select('value')) \
             .iterate()
 
 

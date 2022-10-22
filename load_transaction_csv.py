@@ -21,7 +21,10 @@ parser.add_argument('-t', '--token',
                     help='token to filter transactions for',
                     choices=TOKENS.keys())
 
+parser.add_argument('-D', '--debug', action='store_true',
+                    help='debug output (shows full XML, etc)')
+
 # Parse args, run loader
 args = parser.parse_args()
 Graph.delete_graph()
-load_txns_to_graph(args.csv_path, args.token)
+load_txns_to_graph(args.csv_path, args.token, args.debug)

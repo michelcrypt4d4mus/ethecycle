@@ -11,7 +11,7 @@ from xml.etree import ElementTree as ET
 from bs4 import BeautifulSoup
 
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
-from ethecycle.logging import console
+from ethecycle.util.logging import console
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import *
 

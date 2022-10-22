@@ -31,6 +31,8 @@ from xml.etree import ElementTree as ET
 from ethecyle.export.gremlin_csv import OUTPUT_DIR
 from ethecyle.transaction import Txn
 
+GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.graphml')
+
 PROPERTIES = {
     'value': 'double',  # number_of_tokens
     'block_number': 'int',
@@ -74,5 +76,5 @@ def export_xml(wallets_addresses: Dict[str, List[Txn]]) :
     root.append(graph)
     tree = ET.ElementTree(root)
 
-    with open(path.join(OUTPUT_DIR, 'nodes.xml'), "wb") as files:
+    with open(GRAPHML_OUTPUT_FILE, "wb") as files:
         tree.write(files)

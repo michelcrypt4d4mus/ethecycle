@@ -51,6 +51,7 @@ EDGE_PROPERTIES = [
     EdgeProperty('value', 'double'),
     EdgeProperty('block_number', 'int'),
     EdgeProperty('token_address', 'string'),
+    EdgeProperty('token', 'string'),
 ]
 
 GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
@@ -74,10 +75,8 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
         for txn in txions:
             _add_transaction(graph, txn)
 
-    tree = ET.ElementTree(root)
-
-    with open(GRAPHML_OUTPUT_FILE, "wb") as files:
-        tree.write(files)
+    with open(GRAPHML_OUTPUT_FILE, "wb") as file:
+        ET.ElementTree(root).write(file)
 
     return GRAPHML_OUTPUT_FILE
 

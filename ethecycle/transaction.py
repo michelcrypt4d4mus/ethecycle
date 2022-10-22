@@ -5,6 +5,8 @@ from typing import List
 from rich.pretty import pprint
 from rich.text import Text
 
+
+
 MILLION = 1000000
 BILLION = MILLION * 1000
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
@@ -26,6 +28,7 @@ class Txn():
         self.block_number = int(self.block_number)
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
+        self.token = get_token_by_address(self.token_address) or 'unknown'
 
     def __rich__(self) -> Text:
         txt = Text('<').append(self.transaction_hash[:8], style='magenta')

@@ -29,9 +29,9 @@ txions = g.E().limit(1000).elementMap().toList()
 
 Note that there's no persistence though the `gremlin-server` container will stay up (and keep the graph in memory) til you explicitly stop it with `docker stop`.
 
-### Useful Commands
-1. Get shell on the Tinkergraph server: `scripts/gremlin_server_shell.sh`
-1.
+### Other Useful Commands
+1. Get shell on the Tinkergraph server: `scripts/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
+
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)

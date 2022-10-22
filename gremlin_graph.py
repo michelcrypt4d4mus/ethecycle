@@ -5,22 +5,18 @@ https://dkuppitz.github.io/gremlin-cheat-sheet/101.html
 from itertools import chain
 from typing import List
 
-from gremlin_python.driver.driver_remote_connection import \
-    DriverRemoteConnection
-from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __, id_, select, unfold
 from gremlin_python.process.traversal import Column
 from gremlin_python.structure.graph import GraphTraversalSource
 
-from ethecyle.logging import print_wallet_header
+from ethecyle.graph import get_graph
 from ethecyle.transaction import ADDRESS, TXN, WALLET, Txn
 from ethecyle.transaction_loader import USDT_ADDRESS, get_wallets_txions
 
 wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT_ADDRESS)
 wallet_addresses = list(wallets_txns.keys())
 all_txns = list(chain(*wallets_txns.values()))
-
-graph = traversal().withRemote(DriverRemoteConnection('ws://tinkerpop:8182/gremlin', 'g'))
+graph = get_graph()
 
 
 def add_wallets_as_vertices(wallet_addresses: List[str]) -> None:

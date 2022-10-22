@@ -26,7 +26,7 @@ class Txn():
 
     def __post_init__(self):
         self.value = float(self.csv_value) / 10 ** 18
-        self.value_str = "{:,.1f}".format(self.value)
+        self.value_str = "{:,.18f}".format(self.value)
         self.block_number = int(self.block_number)
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"

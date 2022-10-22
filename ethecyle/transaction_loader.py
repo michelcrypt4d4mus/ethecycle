@@ -16,7 +16,7 @@ wallet_sorter = lambda txn: txn.from_address
 
 def get_wallets_txions(file_path: str, token_address: str) -> Dict[str, List[Txn]]:
     """Get all txns for a given token"""
-    txns = sorted(load_txions(file_path, token_address), key=wallet_sorter)
+    txns = sorted(load_txion_csv(file_path, token_address), key=wallet_sorter)
 
     return {
         from_address: sorted(list(txns), key=time_sorter)
@@ -24,7 +24,8 @@ def get_wallets_txions(file_path: str, token_address: str) -> Dict[str, List[Txn
     }
 
 
-def load_txions(file_path: str, token_address: Optional[str] = None) -> List[Txn]:
+def load_txion_csv(file_path: str, token_address: Optional[str] = None) -> List[Txn]:
+    """Load txions from a CSV."""
     with open(file_path, newline='') as csvfile:
         return [
             Txn(*row) for row in csv.reader(csvfile, delimiter=',')

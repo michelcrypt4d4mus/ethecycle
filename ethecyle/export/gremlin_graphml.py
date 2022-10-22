@@ -51,13 +51,11 @@ def export_xml(wallets_addresses: Dict[str, List[Txn]]) :
     root = ET.Element('graphml', XML_PROPS)
 
     for i, (attribute, attribute_type) in enumerate(PROPERTIES.items()):
-        #root.append(
-            ET.SubElement(
-                root,
-                'key',
-                {'id': f"d{i}", 'for': 'node', 'attr.name': attribute, 'attr.type': attribute_type}
-            )
-        #)
+        ET.SubElement(
+            root,
+            'key',
+            {'id': f"d{i}", 'for': 'node', 'attr.name': attribute, 'attr.type': attribute_type}
+        )
 
     graph = ET.SubElement(root, 'graph')
 

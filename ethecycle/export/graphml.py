@@ -30,10 +30,9 @@ class GraphObjectProperty:
     name: str
     data_type: str
 
-    def to_graphml(self, root: ET.Element) -> ET.Element:
+    def to_graphml(self) -> ET.Element:
         """Attach as a subelement to root object"""
-        return ET.SubElement(
-            root,
+        return ET.Element(
             'key',
             {'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
         )
@@ -60,11 +59,13 @@ GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
 def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> str:
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
     root = ET.Element('graphml', XML_PROPS)
-    graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Describe the properties our vertices or edges will have.
     for graph_obj_property in GRAPH_OBJ_PROPERTIES:
-        graph_obj_property.to_graphml(root)
+        root.append(graph_obj_property.to_graphml())
+
+    # Add the graph. Note that the object properties <key> elements MUST come before the <graph>
+    graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Export wallets as vertices (IDs are the integer version of the hex address)
     for wallet_address in wallets_addresses.keys():

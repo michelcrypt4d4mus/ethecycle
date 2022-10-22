@@ -38,4 +38,4 @@ Note that there's no persistence though the `gremlin-server` container will stay
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 
 # Resources
-GraphML / GraphSON: https://tinkerpop.apache.org/docs/3.4.1/dev/io/
+* [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)

@@ -12,7 +12,7 @@ Graph.write_graph('graph.xml')
 Graph.delete_graph()
 g = Graph.graph
 
-g.addV('VA').property('id', 'i4').property('PartitionKey', 'test').addV('VA').property('id', 'i5').property('PartitionKey', 'test').addE('EAA').from_(__.V('i4')).to(__.V('i5'))
+#g.addV('VA').property('id', 'i4').property('PartitionKey', 'test').addV('VA').property('id', 'i5').property('PartitionKey', 'test').addE('EAA').from_(__.V('i4')).to(__.V('i5'))
 
 g.V().property("prop1", "prop1_val").as_("a") \
  .V().property("prop2", "prop2_val").as_("b") \

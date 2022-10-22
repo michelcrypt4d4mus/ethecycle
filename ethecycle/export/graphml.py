@@ -75,9 +75,6 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
             edge = ET.SubElement(graph, 'edge', _txn_edge_attribs(txn))
 
             for edge_property in EDGE_PROPERTIES:
-                if edge_property.name == LABEL_E:
-                    continue
-
                 data = ET.SubElement(edge, 'data', {'key': edge_property.name})
                 data.text = txn.value_str if edge_property.name == 'value' else str(vars(txn)[edge_property.name])
 

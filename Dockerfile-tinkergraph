@@ -1,0 +1,8 @@
+FROM tinkerpop/gremlin-server:latest
+
+ARG TINKERGRAPH_CONFIG=/opt/gremlin-server/conf/tinkergraph-empty.properties
+
+# Allow any kind of vertex or edge ID, not just int/long which is the default
+RUN echo -e "\ngremlin.tinkergraph.edgeIdManager=ANY\n" >> ${TINKERGRAPH_CONFIG}
+RUN cat ${TINKERGRAPH_CONFIG} | sed -e "s/vertexIdManager=LONG/vertexIdManager=ANY/" > ${TINKERGRAPH_CONFIG}.bak
+RUN mv ${TINKERGRAPH_CONFIG}.bak ${TINKERGRAPH_CONFIG}

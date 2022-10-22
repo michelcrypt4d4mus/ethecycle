@@ -83,7 +83,7 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
                 else:
                     data.text = str(value)
 
-    root.append(graph)
+    #root.append(graph)
     tree = ET.ElementTree(root)
 
     with open(GRAPHML_OUTPUT_FILE, "wb") as files:

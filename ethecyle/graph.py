@@ -7,3 +7,9 @@ TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
 def get_graph() -> GraphTraversalSource:
     return traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
+
+
+def delete_graph() -> None:
+    graph = get_graph()
+    graph.V().drop().iterate()
+    #graph.E().drop().iterate()

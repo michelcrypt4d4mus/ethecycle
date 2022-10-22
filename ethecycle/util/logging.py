@@ -24,3 +24,9 @@ def print_wallet_header(wallet_address, wallet_txns):
     txt = Text('Wallet ').append(wallet_address, style='green').append(' has ')
     txt.append(str(len(wallet_txns)), style='cyan').append(' txns')
     console.print(Panel(txt, expand=False))
+
+
+def print_headline(headline: str) -> None:
+    console.line(2)
+    console.print(Panel(headline, style='reverse', width=60))
+    console.line()

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecycle.export.graphml import export_graphml, pretty_print_xml
-from ethecycle.graph import get_graph
+from ethecycle.graph import Graph
 from ethecycle.transaction import Txn
 
 time_sorter = lambda txn: txn.block_number
@@ -36,12 +36,5 @@ def load_txns_to_graph(txn_csv_file_path: str, token_address: str) -> GraphTrave
     wallets_txns = get_wallets_txions(txn_csv_file_path, token_address)
     filename = export_graphml(wallets_txns, 'ethereum')
     pretty_print_xml()
-    graph = get_graph()
-    graph.io(filename).read().iterate()
-    return graph
-
-
-def write_graph(graph: GraphTraversalSource, output_file: str) -> None:
-    """Write graph?"""
-    graph.io(output_file).write().iterate()
-
+    Graph.graph.io(filename).read().iterate()
+    return Graph.graph

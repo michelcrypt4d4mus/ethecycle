@@ -18,6 +18,7 @@ See [gremlin_graph.py](gremlin_graph.py) for example of how to connect and write
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
+1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 
 # Resources
 GraphML / GraphSON: https://tinkerpop.apache.org/docs/3.4.1/dev/io/

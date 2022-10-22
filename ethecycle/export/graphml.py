@@ -21,6 +21,8 @@ http://graphml.graphdrawing.org/primer/graphml-primer.html
   </graph>
 </graphml>
 """
+from dataclasses import dataclass
+from functools import partial
 from os import path
 from typing import Dict, List
 from xml.etree import ElementTree as ET
@@ -32,31 +34,45 @@ from ethecycle.logging import console
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import *
 
+
+@dataclass
+class GraphObjectProperty:
+    obj_type: str
+    name: str
+    data_type: str
+
+    def to_graphml(self, root: ET.Element) -> ET.Element:
+        """Attach as a subelement to root object"""
+        return ET.SubElement(
+            root,
+            'key',
+            {'id': self.name, 'for': self.data_type, 'attr.name': self.name, 'attr.type':self.data_type}
+        )
+
+
+NodeProperty = partial(GraphObjectProperty, 'node')
+EdgeProperty = partial(GraphObjectProperty, 'edge')
+
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
-TXN_PROPERTIES = {
-    'value': 'double',  # number_of_tokens
-    'block_number': 'int',
-    #'token': 'string',  # TODO: write the token name (e.g. 'USDT')
-    #'address': 'string'
-    'token_address': 'string'
-}
+NODE_PROPERTIES = [
+    NodeProperty('labelV', 'string')
+]
 
-COMMON_PROPERTIES = {
-    'labelV': 'string',
-    'labelE': 'string'
-}
+EDGE_PROPERTIES = [
+    EdgeProperty('labelE', 'string'),
+    EdgeProperty('value', 'double'),
+    EdgeProperty('block_number', 'int'),
+    EdgeProperty('token_address', 'string'),
+]
 
-ALL_PROPERTIES = TXN_PROPERTIES.copy()
-ALL_PROPERTIES.update(COMMON_PROPERTIES)
+GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
 
 XML_PROPS = {
     'xmlns': "http://graphml.graphdrawing.org/xmlns",
     'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
     'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
 }
-
-property_id = lambda i: f"d{i}"
 
 
 def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> str:
@@ -65,13 +81,8 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Describe the properties our vertices or edges will have.
-    # TODO: remove enumerate
-    for i, (attribute, attribute_type) in enumerate(ALL_PROPERTIES.items()):
-        ET.SubElement(
-            root,
-            'key',
-            {'id': attribute, 'for': 'all', 'attr.name': attribute, 'attr.type': attribute_type}
-        )
+    for graph_obj_property in GRAPH_OBJ_PROPERTIES:
+        graph_obj_property.to_graphml(root)
 
     # Export wallets as vertices (IDs are the integer version of the hex address)
     for wallet_address in wallets_addresses.keys():
@@ -87,15 +98,16 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
             label = ET.SubElement(edge, 'data', {'key': LABEL_E})
             label.text = TXN
 
-            # TODO: remove enumerate
-            for i, property in enumerate(TXN_PROPERTIES.keys()):
-                data = ET.SubElement(edge, 'data', {'key': property})
+            for edge_property in EDGE_PROPERTIES:
+                if edge_property.name == LABEL_E:
+                    continue
 
-                if property == 'value':
+                data = ET.SubElement(edge, 'data', {'key': edge_property.name})
+
+                if edge_property.name == 'value':
                     data.text = txn.value_str
                 else:
-                    value = vars(txn)[property]
-                    data.text = str(value)
+                    data.text = str(edge_property.name)
 
     #root.append(graph)
     tree = ET.ElementTree(root)

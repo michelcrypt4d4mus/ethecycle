@@ -27,12 +27,8 @@ class Graph:
         return cls.graph.E().limit(limit).elementMap().toList()
 
     @classmethod
-    def find_vertex(cls, vertex_id: str) -> Optional[dict]:
-        return cls.graph.V(vertex_id).elementMap().next()
-
-    @classmethod
-    def list_by_label_name(cls, vertex_label, name):
-        return cls.graph.V().has(vertex_label, 'name', name).elementMap().toList()
+    def find_wallet(cls, wallet_address: str) -> Optional[dict]:
+        return cls.graph.V(wallet_address).elementMap().next()
 
     @classmethod
     def write_graph(cls, output_file: str) -> None:

@@ -9,9 +9,9 @@ from gremlin_python.process.graph_traversal import __, id_, select, unfold
 from gremlin_python.process.traversal import Column
 from gremlin_python.structure.graph import GraphTraversalSource
 
-from ethecyle.graph import get_graph
-from ethecyle.transaction import ADDRESS, TXN, WALLET, Txn
-from ethecyle.transaction_loader import USDT_ADDRESS, get_wallets_txions
+from ethecycle.graph import get_graph
+from ethecycle.transaction import ADDRESS, TXN, WALLET, Txn
+from ethecycle.transaction_loader import USDT_ADDRESS, get_wallets_txions
 
 wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT_ADDRESS)
 wallet_addresses = list(wallets_txns.keys())

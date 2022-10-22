@@ -27,9 +27,9 @@ from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
 
-from ethecyle.export.gremlin_csv import OUTPUT_DIR
-from ethecyle.logging import console
-from ethecyle.transaction import Txn
+from ethecycle.export.gremlin_csv import OUTPUT_DIR
+from ethecycle.logging import console
+from ethecycle.transaction import Txn
 
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 

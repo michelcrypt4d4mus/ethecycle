@@ -16,8 +16,8 @@ import csv
 from os.path import dirname, join, pardir, realpath
 from typing import List
 
-from ethecyle.util.string_constants import ADDRESS, TXN, WALLET
-from ethecyle.transaction import Txn
+from ethecycle.util.string_constants import ADDRESS, TXN, WALLET
+from ethecycle.transaction import Txn
 
 OUTPUT_DIR = realpath(join(dirname(__file__), pardir, pardir, 'output'))
 VERTEX_HEADER = ['~id', '~label']

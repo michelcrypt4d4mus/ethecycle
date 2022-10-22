@@ -4,9 +4,9 @@ from typing import Dict, List, Optional
 
 from gremlin_python.structure.graph import GraphTraversalSource
 
-from ethecyle.export.graphml import export_graphml, pretty_print_xml
-from ethecyle.graph import get_graph
-from ethecyle.transaction import Txn
+from ethecycle.export.graphml import export_graphml, pretty_print_xml
+from ethecycle.graph import get_graph
+from ethecycle.transaction import Txn
 
 time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address

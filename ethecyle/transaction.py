@@ -28,6 +28,7 @@ class Txn():
         self.value = float(self.csv_value) / 10 ** 18
         self.value_str = "{:,.1f}".format(self.value)
         self.block_number = int(self.block_number)
+        # Some txns have multiple internal transfers so append log_index to achieve uniqueness
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
 
     def __rich__(self) -> Text:
@@ -43,6 +44,7 @@ class Txn():
 
     @classmethod
     def count_col_vals(cls, txns: List['Txn'], col: str):
+        """Given a list of txns and a column name, count occurences of each value and show top 100"""
         counts = defaultdict(lambda: 0)
 
         for txn in txns:

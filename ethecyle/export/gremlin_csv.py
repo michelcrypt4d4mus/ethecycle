@@ -1,4 +1,8 @@
 """
+AWS Neptune calls this the 'Gremlin CSV format' although Gremlin no longer seems to support it.
+There is a script at https://github.com/awslabs/amazon-neptune-tools.git/graphml2csv that can
+convert GraphML files to this format.
+
 Vertices:
     ~id, name:String, age:Int, lang:String, interests:String[], ~label
     v1, "marko", 29, , "sailing;graphs", person

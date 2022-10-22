@@ -9,7 +9,7 @@ TRANSACTION_FILE = '/trondata/output_1000_lines.csv'
 
 def load_txns_to_graph() -> GraphTraversalSource:
     wallets_txns = get_wallets_txions(TRANSACTION_FILE, USDT_ADDRESS)
-    filename = export_graphml(wallets_txns)
+    filename = export_graphml(wallets_txns, 'ethereum')
     pretty_print_xml()
     graph = get_graph()
     graph.io(filename).read().iterate()

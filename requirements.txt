@@ -3,3 +3,4 @@ bpython
 gremlinpython
 lxml
 rich
+rich_argparse_plus

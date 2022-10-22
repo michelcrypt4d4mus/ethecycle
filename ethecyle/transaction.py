@@ -1,13 +1,9 @@
 from collections import defaultdict
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import List
 
 from rich.pretty import pprint
 from rich.text import Text
-
-ADDRESS = 'address'
-WALLET = 'wallet'
-TXN = 'transaction'
 
 MILLION = 1000000
 BILLION = MILLION * 1000

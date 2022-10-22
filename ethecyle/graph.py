@@ -9,6 +9,11 @@ def get_graph() -> GraphTraversalSource:
     return traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 
+def count_vertices() -> int:
+    return get_graph().V().hasLabel('wallet').count().next()
+    #return get_graph().V().count().next()
+
+
 def delete_graph() -> None:
     graph = get_graph()
     graph.V().drop().iterate()

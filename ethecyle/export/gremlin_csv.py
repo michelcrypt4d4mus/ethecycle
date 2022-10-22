@@ -14,9 +14,10 @@ Edges:
 """
 import csv
 from os.path import dirname, join, pardir, realpath
-from typing import Dict, List
+from typing import List
 
-from ethecyle.transaction import ADDRESS, TXN, WALLET, Txn
+from ethecyle.util.string_constants import ADDRESS, TXN, WALLET
+from ethecyle.transaction import Txn
 
 OUTPUT_DIR = realpath(join(dirname(__file__), pardir, pardir, 'output'))
 VERTEX_HEADER = ['~id', '~label']

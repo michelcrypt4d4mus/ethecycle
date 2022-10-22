@@ -4,11 +4,9 @@ from typing import Dict, List, Optional
 
 from gremlin_python.structure.graph import GraphTraversalSource
 
+from ethecyle.export.graphml import export_graphml, pretty_print_xml
+from ethecyle.graph import get_graph
 from ethecyle.transaction import Txn
-
-USDT_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'.lower()
-WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'.lower()
-PILLAGERS_ADDRESS = '0x17f2fdd7e1dae1368d1fc80116310f54f40f30a9'.lower()
 
 time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address
@@ -33,6 +31,17 @@ def load_txion_csv(file_path: str, token_address: Optional[str] = None) -> List[
         ]
 
 
+def load_txns_to_graph(txn_csv_file_path: str, token_address: str) -> GraphTraversalSource:
+    """Load txns from a CSV file, filter them for token_address only, and load to graph via GraphML."""
+    wallets_txns = get_wallets_txions(txn_csv_file_path, token_address)
+    filename = export_graphml(wallets_txns, 'ethereum')
+    pretty_print_xml()
+    graph = get_graph()
+    graph.io(filename).read().iterate()
+    return graph
+
+
 def write_graph(graph: GraphTraversalSource, output_file: str) -> None:
     """Write graph?"""
     graph.io(output_file).write().iterate()
+

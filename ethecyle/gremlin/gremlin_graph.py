@@ -28,9 +28,6 @@ def add_wallets_as_vertices(wallet_addresses: List[str]) -> None:
         ).iterate()
 
 
-def count_vertices(g) -> int:
-    return g.V().hasLabel(WALLET).count().next()
-
 
 # Doesn't work yet... https://stackoverflow.com/questions/71406191/bulk-upsert-in-gremlin-python-fails-with-typeerror-graphtraversal-object-is
 def build_graph(graph: GraphTraversalSource, txns: List[Txn], wallet_addresses: List[str]) -> None:

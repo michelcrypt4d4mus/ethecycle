@@ -72,11 +72,7 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     # Export txions as edges
     for txions in wallets_addresses.values():
         for txn in txions:
-            edge = ET.SubElement(graph, 'edge', _txn_edge_attribs(txn))
-
-            for edge_property in EDGE_PROPERTIES:
-                data = ET.SubElement(edge, 'data', {'key': edge_property.name})
-                data.text = txn.value_str if edge_property.name == 'value' else str(vars(txn)[edge_property.name])
+            _add_transaction(graph, txn)
 
     tree = ET.ElementTree(root)
 
@@ -88,6 +84,17 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
 
 def pretty_print_xml():
     console.print(BeautifulSoup(open(GRAPHML_OUTPUT_FILE), 'xml').prettify())
+
+
+def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
+    """Add txn as an edge as a sub element of the <graph> xml element."""
+    edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
+
+    for edge_property in EDGE_PROPERTIES:
+        data = ET.SubElement(edge, 'data', {'key': edge_property.name})
+        data.text = txn.value_str if edge_property.name == 'value' else str(vars(txn)[edge_property.name])
+
+    return edge
 
 
 def _txn_edge_attribs(txn: Txn) -> dict:

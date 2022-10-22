@@ -31,7 +31,7 @@ from xml.etree import ElementTree as ET
 from ethecyle.export.gremlin_csv import OUTPUT_DIR
 from ethecyle.transaction import Txn
 
-GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.graphml')
+GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
 PROPERTIES = {
     'value': 'double',  # number_of_tokens

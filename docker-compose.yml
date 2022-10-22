@@ -5,6 +5,8 @@ services:
     image: tinkerpop/gremlin-server:latest
     ports:
       - '8182:8182'
+    volumes:
+      - .:/ethecycle
   shell:
     build:
       context: .

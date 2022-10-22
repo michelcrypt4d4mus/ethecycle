@@ -7,13 +7,12 @@ from rich.text import Text
 
 from ethecycle.util.string_constants import get_token_by_address
 
-
 MILLION = 1000000
 BILLION = MILLION * 1000
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
 
 
-@dataclass(unsafe_hash=True)
+@dataclass
 class Txn():
     token_address: str
     from_address: str
@@ -40,10 +39,10 @@ class Txn():
         return self.__rich__().plain
 
     def __eq__(self, other: 'Txn'):
-        return self.transaction_hash == other.transaction_hash
+        return self.transaction_id == other.transaction_id
 
     @classmethod
-    def count_col_vals(cls, txns: List['Txn'], col: str):
+    def count_col_vals(cls, txns: List['Txn'], col: str) -> None:
         """Given a list of txns and a column name, count occurences of each value and show top 100"""
         counts = defaultdict(lambda: 0)
 

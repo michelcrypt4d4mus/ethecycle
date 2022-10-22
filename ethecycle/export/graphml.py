@@ -61,18 +61,18 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
     root = ET.Element('graphml', XML_PROPS)
 
-    # Describe the properties our vertices or edges will have.
+    # <key> elements describe the properties vertices and edges can have.
     for graph_obj_property in GRAPH_OBJ_PROPERTIES:
         root.append(graph_obj_property.to_graphml())
 
-    # Add the graph. Note that the object properties <key> elements MUST come before the <graph>
+    # Add the <graph>. Note that the <key> elements MUST come before the <graph>.
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
-    # Export wallets as vertices (IDs are the integer version of the hex address)
+    # Wallets are <node> elements.
     for wallet_address in wallets_addresses.keys():
         wallet_node = ET.SubElement(graph, 'node', {'id': wallet_address, 'label': WALLET})
 
-    # Export txions as edges
+    # Transactions are <edge> elements.
     for txions in wallets_addresses.values():
         for txn in txions:
             _add_transaction(graph, txn)

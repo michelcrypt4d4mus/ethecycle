@@ -51,6 +51,7 @@ EDGE_PROPERTIES = [
     EdgeProperty('block_number', 'int'),
     EdgeProperty('token_address', 'string'),
     EdgeProperty('token', 'string'),
+    EdgeProperty('transaction_hash', 'string'),
 ]
 
 GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES

@@ -30,16 +30,25 @@ from bs4 import BeautifulSoup
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.logging import console
 from ethecycle.transaction import Txn
+from ethecycle.util.string_constants import *
 
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
-PROPERTIES = {
+TXN_PROPERTIES = {
     'value': 'double',  # number_of_tokens
     'block_number': 'int',
     #'token': 'string',  # TODO: write the token name (e.g. 'USDT')
     #'address': 'string'
     'token_address': 'string'
 }
+
+COMMON_PROPERTIES = {
+    'labelV': 'string',
+    'labelE': 'string'
+}
+
+ALL_PROPERTIES = TXN_PROPERTIES.copy()
+ALL_PROPERTIES.update(COMMON_PROPERTIES)
 
 XML_PROPS = {
     'xmlns': "http://graphml.graphdrawing.org/xmlns",
@@ -56,31 +65,36 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Describe the properties our vertices or edges will have.
-    for i, (attribute, attribute_type) in enumerate(PROPERTIES.items()):
+    # TODO: remove enumerate
+    for i, (attribute, attribute_type) in enumerate(ALL_PROPERTIES.items()):
         ET.SubElement(
             root,
             'key',
-            {'id': property_id(i), 'for': 'all', 'attr.name': attribute, 'attr.type': attribute_type}
+            {'id': attribute, 'for': 'all', 'attr.name': attribute, 'attr.type': attribute_type}
         )
 
     # Export wallets as vertices (IDs are the integer version of the hex address)
     for wallet_address in wallets_addresses.keys():
         wallet_node = ET.SubElement(graph, 'node', {'id': wallet_address})
-        #data = ET.SubElement(wallet_node, 'data', {'key': })
+        label = ET.SubElement(wallet_node, 'data', {'key': LABEL_V})
+        label.text = WALLET
 
     # Export txions as edges
     for txions in wallets_addresses.values():
         for txn in txions:
             txn_attribs = {'id': txn.transaction_id, 'source': txn.from_address, 'target': txn.to_address}
             edge = ET.SubElement(graph, 'edge', txn_attribs)
+            label = ET.SubElement(edge, 'data', {'key': LABEL_E})
+            label.text = TXN
 
-            for i, property in enumerate(PROPERTIES.keys()):
-                data = ET.SubElement(edge, 'data', {'key': property_id(i)})
-                value = vars(txn)[property]
+            # TODO: remove enumerate
+            for i, property in enumerate(TXN_PROPERTIES.keys()):
+                data = ET.SubElement(edge, 'data', {'key': property})
 
-                if isinstance(value, int):
-                    data.text = str(int(value))
+                if property == 'value':
+                    data.text = txn.value_str
                 else:
+                    value = vars(txn)[property]
                     data.text = str(value)
 
     #root.append(graph)

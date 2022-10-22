@@ -5,6 +5,10 @@ from typing import List
 from rich.pretty import pprint
 from rich.text import Text
 
+ADDRESS = 'address'
+WALLET = 'wallet'
+TXN = 'transaction'
+
 MILLION = 1000000
 BILLION = MILLION * 1000
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']

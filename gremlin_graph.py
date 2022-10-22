@@ -1,5 +1,6 @@
 """
 Build the graph. Helpful: https://tinkerpop.apache.org/docs/current/recipes/#long-traversals
+https://dkuppitz.github.io/gremlin-cheat-sheet/101.html
 """
 from itertools import chain
 from typing import List
@@ -12,15 +13,11 @@ from gremlin_python.process.traversal import Column
 from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecyle.logging import print_wallet_header
-from ethecyle.transaction import Txn
+from ethecyle.transaction import ADDRESS, TXN, WALLET, Txn
 from ethecyle.transaction_loader import USDT_ADDRESS, get_wallets_txions
 
-ADDRESS = 'address'
-WALLET = 'wallet'
-TXN = 'transaction'
-
-wallets_txns = get_wallets_txions(USDT_ADDRESS)
-wallet_addresses = list(set(list(wallets_txns.keys())))
+wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT_ADDRESS)
+wallet_addresses = list(wallets_txns.keys())
 all_txns = list(chain(*wallets_txns.values()))
 
 graph = traversal().withRemote(DriverRemoteConnection('ws://tinkerpop:8182/gremlin', 'g'))

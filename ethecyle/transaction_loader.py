@@ -14,9 +14,9 @@ wallet_sorter = lambda txn: txn.from_address
 time_sorter = lambda txn: txn.block_number
 
 
-def get_wallets_txions(token_address: str) -> Dict[str, List[Txn]]:
+def get_wallets_txions(file_path: str, token_address: str) -> Dict[str, List[Txn]]:
     """Get all txns for a given token"""
-    txns = sorted(load_txions(token_address), key=wallet_sorter)
+    txns = sorted(load_txions(file_path, token_address), key=wallet_sorter)
 
     return {
         from_address: sorted(list(txns), key=time_sorter)
@@ -24,8 +24,8 @@ def get_wallets_txions(token_address: str) -> Dict[str, List[Txn]]:
     }
 
 
-def load_txions(token_address: Optional[str] = None) -> List[Txn]:
-    with open('/trondata/data/output_15770001_15780000.csv', newline='') as csvfile:
+def load_txions(file_path: str, token_address: Optional[str] = None) -> List[Txn]:
+    with open(file_path, newline='') as csvfile:
         return [
             Txn(*row) for row in csv.reader(csvfile, delimiter=',')
             if row[0] != 'token_address' and (token_address is None or row[0] == token_address)
@@ -35,3 +35,7 @@ def load_txions(token_address: Optional[str] = None) -> List[Txn]:
 def write_graph(graph: GraphTraversalSource, output_file: str) -> None:
     """Write graph?"""
     graph.io(output_file).write().iterate()
+
+
+# def get_wallet_addresses(txns: List[Txn]) -> List[str]:
+#     return list(set(list(txns.keys())))

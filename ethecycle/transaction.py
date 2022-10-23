@@ -5,15 +5,14 @@ from typing import List
 from rich.pretty import pprint
 from rich.text import Text
 
-from ethecycle.util.string_constants import get_token_by_address
+from ethecycle.blockchains import get_chain_info
 
-MILLION = 1000000
-BILLION = MILLION * 1000
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
 
 
 @dataclass
 class Txn():
+    blockchain: str
     token_address: str
     from_address: str
     to_address: str
@@ -28,7 +27,10 @@ class Txn():
         self.block_number = int(self.block_number)
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
-        self.token = get_token_by_address(self.token_address) or 'unknown'
+
+        chain_info = get_chain_info(self.blockchain)
+        self.token = chain_info.get_token_by_address(self.token_address)
+        self.scanner_url = chain_info.scanner_url(self.transaction_hash)
 
     def __rich__(self) -> Text:
         txt = Text('<').append(self.transaction_hash[:8], style='magenta')

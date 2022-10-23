@@ -8,15 +8,13 @@ from rich.text import Text
 LOG_LEVEL = 'WARN'
 
 console = Console()
+log = logging.getLogger('ethecycle')
+log.addHandler(RichHandler(rich_tracebacks=True))
 
 
 def set_log_level(log_level) -> None:
     log.setLevel(LOG_LEVEL)
     log.handlers[0].setLevel(LOG_LEVEL)
-
-
-log = logging.getLogger('ethecycle')
-log.addHandler(RichHandler(rich_tracebacks=True))
 
 
 def print_wallet_header(wallet_address, wallet_txns):

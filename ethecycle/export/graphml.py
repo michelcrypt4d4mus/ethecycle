@@ -9,6 +9,7 @@ from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
+from ethecycle.blockchains import chain_info, get_chain_info
 from pympler.asizeof import asizeof
 
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
@@ -33,11 +34,12 @@ class GraphObjectProperty:
         )
 
 
+ObjProperty = partial(GraphObjectProperty, 'all')
 NodeProperty = partial(GraphObjectProperty, 'node')
 EdgeProperty = partial(GraphObjectProperty, 'edge')
 
 NODE_PROPERTIES = [
-    NodeProperty(LABEL_V, 'string')
+    NodeProperty(LABEL_V, 'string'),
 ]
 
 EDGE_PROPERTIES = [
@@ -49,7 +51,11 @@ EDGE_PROPERTIES = [
     EdgeProperty('transaction_hash', 'string'),
 ]
 
-GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
+OBJ_PROPERTIES = [
+    ObjProperty(SCANNER_URL, 'string')
+]
+
+GRAPH_OBJ_PROPERTIES = NODE_PROPERTIES + EDGE_PROPERTIES + OBJ_PROPERTIES
 GRAPHML_EXTENSION = '.graph.xml'  # .graphml extension is not recognized by Gremlin
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
@@ -63,6 +69,7 @@ XML_PROPS = {
 def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
     all_txns = [txn for txns in wallets_txns.values() for txn in txns]
+    chain_info = get_chain_info(blockchain)
     root = ET.Element('graphml', XML_PROPS)
 
     # <key> elements describe the properties vertices and edges can have.
@@ -78,6 +85,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     for wallet_address in wallets:
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
+        _attribute_xml(wallet, SCANNER_URL, chain_info.scanner_url(wallet_address))
 
     # Transactions are <edge> elements.
     for txn in all_txns:
@@ -96,7 +104,7 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
     accessible from the gremlin-server container.
     """
     if not output_path.endswith(GRAPHML_EXTENSION):
-        log.warning(f"GraphML output_path '{output_path}' doesn't end in .xml so we are appending it.")
+        log.warning(f"Forcing graphML output_path '{output_path}' to end in {GRAPHML_EXTENSION}.")
         output_path = output_path + GRAPHML_EXTENSION
 
     with open(output_path, 'wb') as file:
@@ -109,7 +117,7 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
 
 def pretty_print_xml_file(xml_file_path: str) -> None:
     """Pretty print an XML file"""
-    console.print(BeautifulSoup(open(GRAPHML_OUTPUT_FILE), 'xml').prettify())
+    console.print(BeautifulSoup(open(xml_file_path), 'xml').prettify())
 
 
 def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
@@ -117,7 +125,7 @@ def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
     edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
     txn.labelE = TXN  # Tag with 'labelE' for convenience of upcoming for loop
 
-    for edge_property in EDGE_PROPERTIES:
+    for edge_property in EDGE_PROPERTIES + OBJ_PROPERTIES:
         _attribute_xml(edge, edge_property.name, vars(txn)[edge_property.name])
 
     return edge
@@ -135,6 +143,7 @@ def _txn_edge_attribs(txn: Txn) -> dict:
 
 def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[float, int, str]):
     """Build the <data> elements that are graph properties."""
+    log.debug(f"Building attribute {attr_name}: {attr_value} for {graph_element}")
     data = ET.SubElement(graph_element, 'data', {'key': attr_name})
 
     if isinstance(attr_value, int):

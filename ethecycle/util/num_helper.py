@@ -2,6 +2,8 @@ from typing import Any
 
 from pympler.asizeof import asizeof
 
+MILLION = 1000000
+BILLION = MILLION * 1000
 BYTES = 'bytes'
 
 SIZES = {

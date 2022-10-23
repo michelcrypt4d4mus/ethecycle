@@ -8,7 +8,7 @@ from ethecycle.transaction_loader import load_txns_to_graph
 from ethecycle.util.logging import console, print_headline
 from ethecycle.util.string_constants import TOKENS
 
-DEBUG_LINES = 10
+DEBUG_LINES = 5
 
 # Argument parser
 RichHelpFormatterPlus.choose_theme('prince')
@@ -42,3 +42,6 @@ if args.debug:
 
     for edge in Graph.graph.E().limit(DEBUG_LINES).elementMap().toList():
         console.print(edge)
+
+console.print(f"Loaded {Graph.count_vertices()} wallets.")
+console.print(f"Loaded {Graph.count_edges()} transactions.")

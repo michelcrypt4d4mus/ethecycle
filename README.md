@@ -10,10 +10,14 @@ vi .env
 scripts/docker_shell.sh
 ```
 
-Once you are in the container shell, to load CSV (optionally filtered for a single token's txions) see `--help`:
+Once you are in the container shell, to load CSV (optionally filtered for a single token's txions):
 
 ```
+# Show help:
 ./load_transaction_csv.py --help
+
+# Load only USDT txions from CSV file /trondata/output_100000_lines.csv
+./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT
 ```
 
 To run Gremlin queries I use the `bpython` REPL (same as python REPL but has better tab completion, shows args of methods, etc.) Once yr in the REPL you can get the Gremlin graph object (the one that sends queries) from the [Graph](ethecycle/graph.py) class like this:
@@ -25,6 +29,9 @@ g = Graph.graph
 
 # Example query for 1000 txions:
 txions = g.E().limit(1000).elementMap().toList()
+
+# Find cycles
+cycles = Graph.find_cycles(max_cycle_length=3, limit=100)
 ```
 
 Note that there's no persistence though the `gremlin-server` container will stay up (and keep the graph in memory) til you explicitly stop it with `docker stop`.

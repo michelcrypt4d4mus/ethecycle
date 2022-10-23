@@ -39,7 +39,7 @@ NODE_PROPERTIES = [
 
 EDGE_PROPERTIES = [
     EdgeProperty(LABEL_E, 'string'),
-    EdgeProperty('value', 'double'),
+    EdgeProperty('num_tokens', 'double'),
     EdgeProperty('block_number', 'int'),
     EdgeProperty('token_address', 'string'),
     EdgeProperty('token', 'string'),

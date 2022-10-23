@@ -1,8 +1,9 @@
 from ethecycle.util.dict_helper import get_dict_key_by_value
 
 ADDRESS = 'address'
-WALLET = 'wallet'
+NUM_TOKENS = 'num_tokens'
 TXN = 'transaction'
+WALLET = 'wallet'
 
 USDT = 'USDT'
 WETH = 'WETH'

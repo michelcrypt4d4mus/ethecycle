@@ -17,14 +17,14 @@ class Txn():
     token_address: str
     from_address: str
     to_address: str
-    csv_value: str
+    csv_value: str  # num_tokens
     transaction_hash: str
     log_index: str
     block_number: int
 
     def __post_init__(self):
-        self.value = float(self.csv_value) / 10 ** 18
-        self.value_str = "{:,.18f}".format(self.value)
+        self.num_tokens = float(self.csv_value) / 10 ** 18
+        self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
@@ -33,7 +33,7 @@ class Txn():
     def __rich__(self) -> Text:
         txt = Text('<').append(self.transaction_hash[:8], style='magenta')
         txt.append(', To: ').append(self.to_address[:8], style='color(222)').append(', value: ')
-        return txt.append(f"{self.value_str}", style='cyan').append('>')
+        return txt.append(f"{self.num_tokens_str}", style='cyan').append('>')
 
     def __str__(self) -> str:
         return self.__rich__().plain

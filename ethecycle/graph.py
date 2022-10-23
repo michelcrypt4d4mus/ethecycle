@@ -6,8 +6,8 @@ from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, in
 from gremlin_python.process.traversal import P, T
 from gremlin_python.statics import load_statics
 
+from ethecycle.util.string_constants import NUM_TOKENS, TXN, WALLET
 from ethecycle.util.logging import console
-from ethecycle.util.string_constants import TXN, WALLET
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
@@ -62,17 +62,17 @@ def write_graph(output_file: str) -> None:
 
 def wallets_with_min_outbound_txns(num_transactions: int) -> List[dict]:
     """Wallets with minimum number of outbound txions"""
-    return g.V().where(out().count().is_(P.gte(num_transactions))).elementMap().toList()
+    return g.V().where(out().count().is_(P.gte(num_transactions))).toList()
 
 
 def wallets_with_outbound_txns_in_range(lower_bound: int, upper_bound: int) -> List[dict]:
     """Wallets with lower_bound <= num_outbound_txns < upper_bound."""
-    return g.V().where(out().count().is_(P.within(lower_bound, upper_bound))).elementMap().toList()
+    return g.V().where(out().count().is_(P.within(lower_bound, upper_bound))).toList()
 
 
-def wallets_with_min_outbound_txn_value(total_value: Union[float, int]) -> List[dict]:
-    """Wallets with minimum number of outbound txions"""
-    return g.V().where(outE().values('value').sum().is_(P.gte(total_value))).elementMap().toList()
+def wallets_with_min_outbound_num_tokens(total_tokens: Union[float, int]) -> List[dict]:
+    """Wallets with minimum number of outbound tokens when summed acrooss txns."""
+    return g.V().where(outE().values(NUM_TOKENS).sum().is_(P.gte(total_tokens))).elementMap().toList()
 
 
 def txns_from_wallet(address: str) -> List[dict]:
@@ -81,7 +81,7 @@ def txns_from_wallet(address: str) -> List[dict]:
 
 def txns_values_to_wallet(address: str) -> List[dict]:
     """Show all values of txions to a wallet address."""
-    return g.V(address).inE().values('value').toList()
+    return g.V(address).inE().values(NUM_TOKENS).toList()
 
 
 def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length: int) -> GraphTraversal:

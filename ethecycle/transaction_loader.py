@@ -10,6 +10,7 @@ from gremlin_python.structure.graph import GraphTraversalSource
 from ethecycle.export.graphml import export_graphml, pretty_print_xml_file
 from ethecycle.graph import g
 from ethecycle.transaction import Txn
+from ethecycle.util.logging import console
 from ethecycle.util.string_constants import TOKENS
 
 time_sorter = lambda txn: txn.block_number
@@ -24,6 +25,7 @@ def load_txn_csv_to_graph(txn_csv_file_path: str, token: str, debug: bool = Fals
     if debug:
         pretty_print_xml_file(filename)
 
+    console.print(f"Loading graphML from '{filename}'...")
     g.io(filename).read().iterate()
     return g
 

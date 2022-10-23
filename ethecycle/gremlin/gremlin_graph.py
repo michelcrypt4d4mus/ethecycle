@@ -10,10 +10,11 @@ from gremlin_python.process.traversal import Column
 from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecycle.graph import g
-from ethecycle.transaction import ADDRESS, TXN, WALLET, Txn
-from ethecycle.transaction_loader import USDT_ADDRESS, get_wallets_txions
+from ethecycle.transaction import Txn
+from ethecycle.transaction_loader import get_wallets_txions
+from ethecycle.util.string_constants import *
 
-wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT_ADDRESS)
+wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT)
 wallet_addresses = list(wallets_txns.keys())
 all_txns = list(chain(*wallets_txns.values()))
 
@@ -45,7 +46,7 @@ def build_graph(graph: GraphTraversalSource, txns: List[Txn], wallet_addresses: 
                 from_(select('m').select(select('t').select('from_address'))). \
                 to(select('m').select(select('t').select('to_address'))). \
                 property(id_, select('transaction_id')). \
-                property('value', select('value')) \
+                property(NUM_TOKENS, select(NUM_TOKENS)) \
             .iterate()
 
 

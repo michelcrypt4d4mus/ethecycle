@@ -1,3 +1,8 @@
+# Transaction Graph DB
+* Wallet addresses are vertices AKA nodes
+* ERC20 Transactions are edges and contain properties like `value`, `block_number`, etc.
+
+# Usage
 To launch docker containers:
 
 ```bash

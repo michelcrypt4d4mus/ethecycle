@@ -47,3 +47,10 @@ Note that there's no persistence though the `gremlin-server` container will stay
 * [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
 * [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
 
+### Python Differences from Java/Groovy
+
+| Java | Python |
+|------|--------|
+| `as('a')` | `as_('a')` |
+| `from('a')` | `from_('a')` |
+| `vadas.property("name", "vadas", id_, 2l)`  | `vadas.property('name', 'vadas').property('id', 2)` |

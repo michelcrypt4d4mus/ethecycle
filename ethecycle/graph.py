@@ -3,11 +3,13 @@ from typing import List, Optional, Union
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import (__, GraphTraversal, bothE, inE, out,
-     outE, range_, unfold)
+     outE, range_, unfold, values)
 from gremlin_python.process.traversal import P, T
 from gremlin_python.statics import load_statics
+from gremlin_python.structure.graph import Path
 
-from ethecycle.util.string_constants import NUM_TOKENS, TXN, WALLET
+from ethecycle.util.num_helper import is_even
+from ethecycle.util.string_constants import *
 from ethecycle.util.logging import console
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
@@ -78,7 +80,12 @@ def wallets_with_min_outbound_num_tokens(total_tokens: Union[float, int]) -> Lis
 
 
 def txns_from_wallet(address: str) -> List[dict]:
-    return g.V(address).outE().elementMap().toList()
+    return g.V(address).outE().limit(5).path().by(values(BLOCK_NUMBER, NUM_TOKENS).fold()).toList()
+
+
+def two_hops_from_wallet(address: str) -> List[dict]:
+    """Second hop must have a higher block_number"""
+    return g.V(address).outE().as_('txn1').inV().outE().where(P.gt('txn1')).by(BLOCK_NUMBER).toList()
 
 
 def txns_values_to_wallet(address: str) -> List[dict]:
@@ -86,8 +93,20 @@ def txns_values_to_wallet(address: str) -> List[dict]:
     return g.V(address).inE().values(NUM_TOKENS).toList()
 
 
+def print_paths(paths: List[Path]) -> None:
+    for i, path in (enumerate(paths)):
+        console.print("\nPATH", style='u')
+
+        for i, path_element in enumerate(path):
+            if is_even(i):
+                console.print(f"  Step {i}: Wallet {path_element}")
+            else:
+                console.print(f"    Step {i}: Sent {path_element} tokens to:")
+
+
 def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length: int) -> GraphTraversal:
     """
+    TODO: Too slow.
     Return query to find de-deuped cycles. Note that this does not respect the arrow of time (yet).
     Note you must call iterate() on the returned query (or explain(), or whatever).
     Cycle Detection recipe: https://tinkerpop.apache.org/docs/current/recipes/#cycle-detection

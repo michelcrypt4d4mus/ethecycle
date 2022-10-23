@@ -24,3 +24,7 @@ def size_string(number: int) -> str:
 def memsize_string(obj: Any):
     """Build a string representing the in memory size of 'obj'."""
     return size_string(asizeof(obj))
+
+
+def is_even(number: int) -> bool:
+    return divmod(number, 2)[1] == 0

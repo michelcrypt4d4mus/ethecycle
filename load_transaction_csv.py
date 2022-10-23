@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains import BLOCKCHAINS
-from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
 from ethecycle.util.logging import console, print_headline, set_log_level

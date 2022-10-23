@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.graph import count_edges, count_vertices, delete_graph, g
+from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
 from ethecycle.util.logging import console, print_headline
 from ethecycle.util.string_constants import TOKENS
@@ -49,5 +49,4 @@ if args.debug:
     for edge in g.E().limit(DEBUG_LINES).elementMap().toList():
         console.print(edge)
 
-console.print(f"Loaded {count_vertices()} wallets.")
-console.print(f"Loaded {count_edges()} transactions.")
+print_obj_counts()

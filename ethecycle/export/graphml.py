@@ -5,7 +5,7 @@ Example: https://github.com/tinkerpop/gremlin/blob/master/data/graph-example-1.x
 from dataclasses import dataclass
 from functools import partial
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
@@ -58,6 +58,7 @@ XML_PROPS = {
 
 def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> str:
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
+    all_txns = [txn for txns in wallets_addresses.values() for txn in txns]
     root = ET.Element('graphml', XML_PROPS)
 
     # <key> elements describe the properties vertices and edges can have.
@@ -67,11 +68,15 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     # Add the <graph>. IMPORTANT: the <key> elements MUST come before the <graph> in the XML.
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
-    # Wallets are <node> elements.
-    for wallet_address in wallets_addresses.keys():
-        wallet = ET.SubElement(graph, 'node', {'id': wallet_address}) #, 'label': WALLET})
-        label = ET.SubElement(wallet, 'data', {'key': LABEL_V})
-        label.text = WALLET
+    # Wallets are <node> elements. TODO: wallets still don't label correctly...
+    wallets = set(wallets_addresses.keys())
+    wallets = wallets.union(set([txn.to_address for txn in all_txns]))
+    console.print(f"Loading {len(wallets)} wallet nodes...")
+    console.print(f"Loading {len(all_txns)} transaction edges...")
+
+    for wallet_address in wallets:
+        wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
+        _attribute_xml(wallet, LABEL_V, WALLET)
 
     # Transactions are <edge> elements.
     for txions in wallets_addresses.values():
@@ -91,14 +96,11 @@ def pretty_print_xml_file(xml_file_path: str) -> None:
 
 def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
     """Add txn as an edge as a sub element of the <graph> xml element."""
-    txn.labelE = TXN
     edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
-    # label = ET.SubElement(edge, 'data', {'key': LABEL_E})
-    # label.text = TXN
+    txn.labelE = TXN  # Tag with 'labelE' for convenience of upcoming for loop
 
     for edge_property in EDGE_PROPERTIES:
-        data = ET.SubElement(edge, 'data', {'key': edge_property.name})
-        data.text = txn.value_str if edge_property.name == 'value' else str(vars(txn)[edge_property.name])
+        _attribute_xml(edge, edge_property.name, vars(txn)[edge_property.name])
 
     return edge
 
@@ -111,3 +113,15 @@ def _txn_edge_attribs(txn: Txn) -> dict:
         'source': txn.from_address,
         'target': txn.to_address,
     }
+
+
+def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[float, int, str]):
+    """Build the <data> elements that are graph properties."""
+    data = ET.SubElement(graph_element, 'data', {'key': attr_name})
+
+    if isinstance(attr_value, int):
+        data.text = str(int(attr_value))  # Force non-scientific notation
+    elif isinstance(attr_value, float):
+        data.text = "{:,.18f}".format(attr_value)
+    else:
+        data.text = attr_value

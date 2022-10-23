@@ -2,9 +2,10 @@ from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import GraphTraversal, out, unfold
+from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, out, unfold
 from gremlin_python.process.traversal import P, T
 
+from ethecycle.util.logging import console
 from ethecycle.util.string_constants import TXN, WALLET
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
@@ -12,23 +13,34 @@ TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 
-def count_vertices() -> int:
-    return g.V().hasLabel('vertex').count().next()
+def print_obj_counts() -> None:
+    console.print(f"Graph contains {count_wallets()} wallets.")
+    console.print(f"Graph contains {count_txns()} transactions.")
 
 
-def count_edges() -> int:
+def count_wallets() -> int:
+    """Count all wallet nodes"""
+    return g.V().hasLabel(WALLET).count().next()
+
+
+def count_txns() -> int:
+    """Count all transaction edges."""
     return g.E().hasLabel(TXN).count().next()
 
 
+def wallets_without_txns() -> GraphTraversal:
+    return g.V().where(__.not_(bothE())).valueMap()
+
 def delete_graph() -> None:
+    """Reset graph to pristine state."""
     g.V().drop().iterate()
 
 
-def wallets(limit: int = 100) -> List[dict]:
+def get_wallets(limit: int = 100) -> List[dict]:
     return g.V().limit(limit).elementMap().toList()
 
 
-def transactions(limit: int = 100) -> List[dict]:
+def get_transactions(limit: int = 100) -> List[dict]:
     return g.E().limit(limit).elementMap().toList()
 
 

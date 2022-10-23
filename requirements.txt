@@ -2,5 +2,6 @@ beautifulsoup4
 bpython
 gremlinpython
 lxml
+pympler
 rich
 rich_argparse_plus

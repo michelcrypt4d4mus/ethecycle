@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import GraphTraversal, out, unfold
-from gremlin_python.process.traversal import T
+from gremlin_python.process.traversal import P, T
 
 from ethecycle.util.string_constants import WALLET
 
@@ -61,13 +61,13 @@ def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length:
 
 # https://stackoverflow.com/questions/40165426/gremlin-graph-traversal-that-uses-previous-edge-property-value-to-filter-later-e
 def arrow_of_time(address: str):
+    # (this comment should be next to the where() clause): compare with the first edge
     g.V(1).outE(). \
         as_('firstEdge'). \
         inV().outE(). \
+        where(P.gt('firstEdge')).  \
+        by('block_number') # // use only the 'weight' property for the equality check
 
-        where(eq('firstEdge')).   # compare with the first edge
-        by('weight') # // use only the 'weight' property for the equality check
-    #==>e[10][4-created->5]
 
 
 # StackExchange:

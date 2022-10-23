@@ -7,11 +7,12 @@ that last traversed edge"). To use connect with:
   chain_history = traversal(TimeTraversal).with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
 
 See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl
+How to record steps: https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up#How-Can-I-Save-Values-During-Traversals%3F
 """
-from tracemalloc import start
-from gremlin_python.process.graph_traversal import GraphTraversal, __ as AnonymousTraversal
+from gremlin_python.process.graph_traversal import GraphTraversal
+from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
+from gremlin_python.process.traversal import Bytecode, P
 from gremlin_python.structure.graph import GraphTraversalSource
-from gremlin_python.process.traversal import P, Bytecode
 
 
 class TimeTraversal(GraphTraversal):

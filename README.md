@@ -43,13 +43,13 @@ Note that there's no persistence though the `gremlin-server` container will stay
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 
 # Resources
-
-
+* [Gremling Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html)
 * [Gremlin query tutorials](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html) (Note these are not in python so the code may be slightly different than shown)
 * [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
 * [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
 * [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)
 * [Gremlin Python common imports](https://tinkerpop.apache.org/docs/current/reference/#python-imports)
+* [Gremlin algorithm development](https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up)
 * [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo `scripts/demo_data/load_air_routes_demo_data.py`
 
 ### Python Differences from Java/Groovy

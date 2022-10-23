@@ -20,5 +20,7 @@ WGET_CMD = f"wget https://raw.githubusercontent.com/krlawrence/graph/master/samp
 if not path.exists(AIR_ROUTES_XML_PATH):
     check_call(WGET_CMD.split())
 
+username = input("Are you sure you want to drop current graph and load air routes? (Ctrl-C for no): ")
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
+g.V().drop().iterate()
 g.io(AIR_ROUTES_XML_TINKERPOP_PATH).read().iterate()

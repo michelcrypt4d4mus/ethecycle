@@ -11,17 +11,9 @@ from xml.etree import ElementTree as ET
 from bs4 import BeautifulSoup
 
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
-from ethecycle.util.logging import console
 from ethecycle.transaction import Txn
+from ethecycle.util.logging import console
 from ethecycle.util.string_constants import *
-
-GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
-
-XML_PROPS = {
-    'xmlns': "http://graphml.graphdrawing.org/xmlns",
-    'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
-    'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
-}
 
 
 @dataclass
@@ -42,11 +34,11 @@ NodeProperty = partial(GraphObjectProperty, 'node')
 EdgeProperty = partial(GraphObjectProperty, 'edge')
 
 NODE_PROPERTIES = [
-    # NodeProperty('labelV', 'string')
+    NodeProperty(LABEL_V, 'string')
 ]
 
 EDGE_PROPERTIES = [
-    # EdgeProperty('labelE', 'string'),
+    EdgeProperty(LABEL_E, 'string'),
     EdgeProperty('value', 'double'),
     EdgeProperty('block_number', 'int'),
     EdgeProperty('token_address', 'string'),
@@ -55,6 +47,13 @@ EDGE_PROPERTIES = [
 ]
 
 GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
+GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
+
+XML_PROPS = {
+    'xmlns': "http://graphml.graphdrawing.org/xmlns",
+    'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
+    'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
+}
 
 
 def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> str:
@@ -65,12 +64,14 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     for graph_obj_property in GRAPH_OBJ_PROPERTIES:
         root.append(graph_obj_property.to_graphml())
 
-    # Add the <graph>. Note that the <key> elements MUST come before the <graph>.
+    # Add the <graph>. IMPORTANT: the <key> elements MUST come before the <graph> in the XML.
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Wallets are <node> elements.
     for wallet_address in wallets_addresses.keys():
-        wallet_node = ET.SubElement(graph, 'node', {'id': wallet_address, 'label': WALLET})
+        wallet = ET.SubElement(graph, 'node', {'id': wallet_address, 'label': WALLET})
+        label = ET.SubElement(wallet, 'data', {'key': LABEL_V})
+        label.text = WALLET
 
     # Transactions are <edge> elements.
     for txions in wallets_addresses.values():
@@ -83,13 +84,17 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     return GRAPHML_OUTPUT_FILE
 
 
-def pretty_print_xml():
+def pretty_print_xml_file(xml_file_path: str) -> None:
+    """Pretty print an XML file"""
     console.print(BeautifulSoup(open(GRAPHML_OUTPUT_FILE), 'xml').prettify())
 
 
 def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
     """Add txn as an edge as a sub element of the <graph> xml element."""
+    txn.labelE = TXN
     edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
+    # label = ET.SubElement(edge, 'data', {'key': LABEL_E})
+    # label.text = TXN
 
     for edge_property in EDGE_PROPERTIES:
         data = ET.SubElement(edge, 'data', {'key': edge_property.name})

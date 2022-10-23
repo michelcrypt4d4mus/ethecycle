@@ -1,5 +1,6 @@
 """
 Scratch pad with some copy/paste of the example graphs that only come in the Java packages.
+https://github.com/apache/tinkerpop/blob/master/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerFactory.java
 """
 
 from gremlin_python.process.graph_traversal import __, id_, select, unfold

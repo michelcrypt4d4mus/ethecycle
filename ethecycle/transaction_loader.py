@@ -1,10 +1,13 @@
+"""
+Load transactions from CSV as python lists and/or directly into the graph database.
+"""
 import csv
 from itertools import groupby
 from typing import Dict, List, Optional
 
 from gremlin_python.structure.graph import GraphTraversalSource
 
-from ethecycle.export.graphml import export_graphml, pretty_print_xml
+from ethecycle.export.graphml import export_graphml, pretty_print_xml_file
 from ethecycle.graph import g
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import TOKENS
@@ -19,7 +22,7 @@ def load_txn_csv_to_graph(txn_csv_file_path: str, token: str, debug: bool = Fals
     filename = export_graphml(wallets_txns, 'ethereum')
 
     if debug:
-        pretty_print_xml()
+        pretty_print_xml_file(filename)
 
     g.io(filename).read().iterate()
     return g

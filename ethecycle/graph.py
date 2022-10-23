@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, out, unfold
+from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, inE, out, outE, unfold
 from gremlin_python.process.traversal import P, T
 from gremlin_python.statics import load_statics
 
@@ -60,6 +60,24 @@ def write_graph(output_file: str) -> None:
     g.io(output_file).write().iterate()
 
 
+def wallets_with_min_outbound_txns(num_transactions: int) -> List[dict]:
+    """Wallets with minimum number of outbound txions"""
+    return g.V().where(out().count().is_(P.gte(num_transactions))).elementMap().toList()
+
+
+def wallets_with_min_outbound_txn_value(total_value: Union[float, int]) -> List[dict]:
+    """Wallets with minimum number of outbound txions"""
+    return g.V().where(outE().values('value').sum().is_(P.gte(total_value))).elementMap().toList()
+
+
+def txns_from_wallet(address: str) -> List[dict]:
+    return g.V(address).outE().elementMap().toList()
+
+
+def txns_values_to_wallet(address: str) -> List[dict]:
+    return g.V(address).inE().values('value').toList()
+
+
 def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length: int) -> GraphTraversal:
     """
     Return query to find de-deuped cycles. Note that this does not respect the arrow of time (yet).
@@ -75,9 +93,9 @@ def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length:
 
 
 # https://stackoverflow.com/questions/40165426/gremlin-graph-traversal-that-uses-previous-edge-property-value-to-filter-later-e
-def arrow_of_time(address: str):
+def arrow_of_time(start_address: str):
     # (this comment should be next to the where() clause): compare with the first edge
-    g.V(1).outE(). \
+    g.V(start_address).outE(). \
         as_('firstEdge'). \
         inV().outE(). \
         where(P.gt('firstEdge')).  \

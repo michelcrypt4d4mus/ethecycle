@@ -50,6 +50,8 @@ Note that there's no persistence though the `gremlin-server` container will stay
 * [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)
 * [Gremlin Python common imports](https://tinkerpop.apache.org/docs/current/reference/#python-imports)
 * [Gremlin algorithm development](https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up)
+* [More Gremlin examples](https://www.doanduyhai.com/blog/?p=13374)
+* [Tuning Gremlin queries](https://docs.aws.amazon.com/neptune/latest/userguide/gremlin-traversal-tuning.html)
 * [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo `scripts/demo_data/load_air_routes_demo_data.py`
 
 ### Python Differences from Java/Groovy

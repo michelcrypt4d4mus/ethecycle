@@ -50,6 +50,9 @@ cycles = Graph.find_cycles(max_cycle_length=3, limit=100)
 
 Note that there's no persistence though the `gremlin-server` container will stay up (and keep the graph in memory) til you explicitly stop it with `docker stop`.
 
+### Troubleshooting
+If you get a message about how the gremlin-server is not available at `tinkerpop:8182` I suspect you just have to wait for the server to come up.  However if waiting doesn't seem to help it may be worth trying to relaunch the containers with `docker-compose up`.
+
 ### Other Useful Commands
 1. Get shell on the Tinkergraph server: `scripts/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
 

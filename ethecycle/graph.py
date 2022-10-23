@@ -2,7 +2,8 @@ from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, inE, out, outE, range_, unfold
+from gremlin_python.process.graph_traversal import (__, GraphTraversal, bothE, inE, out,
+     outE, range_, unfold)
 from gremlin_python.process.traversal import P, T
 from gremlin_python.statics import load_statics
 
@@ -13,7 +14,7 @@ TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
 # Load the common predicates into global variable space
 # See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-imports
-load_statics(globals())
+#load_statics(globals())
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 

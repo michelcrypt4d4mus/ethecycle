@@ -3,5 +3,6 @@ bpython
 gremlinpython
 lxml
 pympler
+pytest
 rich
 rich_argparse_plus

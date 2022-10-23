@@ -7,6 +7,7 @@ medium_wallets = wallets_with_outbound_txns_in_range(5, 10)
 
 g.V(medium_wallets[0]).repeat(out()).emit().path().limit(10).toList()
 
+
 # Show path walked - start and end point with edge txion IDs
 for p in g.V(medium_wallets[0]).repeat(outE().inV()).emit().path().limit(10).toList():
     console.print("\nPATH", style='u')
@@ -14,7 +15,7 @@ for p in g.V(medium_wallets[0]).repeat(outE().inV()).emit().path().limit(10).toL
         console.print(f"  Step {i}: {path_element}")
 
 
-# Page 43...
+# Page 43 of Kelvin book
 for p in g.V(medium_wallets[0]).repeat(outE().inV()).emit().path().limit(10).toList():
     console.print("\nPATH", style='u')
     for i, path_element in enumerate(p):

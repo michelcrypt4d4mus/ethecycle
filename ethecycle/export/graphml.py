@@ -12,8 +12,10 @@ from bs4 import BeautifulSoup
 
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
-from ethecycle.util.logging import console
+from ethecycle.util.logging import console, log
+from ethecycle.util.num_helper import memsize_string
 from ethecycle.util.string_constants import *
+from ethecycle.util.types import WalletTxns
 
 
 @dataclass
@@ -47,6 +49,7 @@ EDGE_PROPERTIES = [
 ]
 
 GRAPH_OBJ_PROPERTIES = EDGE_PROPERTIES + NODE_PROPERTIES
+GRAPHML_EXTENSION = '.graph.xml'  # .graphml extension is not recognized by Gremlin
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
 XML_PROPS = {
@@ -56,9 +59,9 @@ XML_PROPS = {
 }
 
 
-def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> str:
+def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
-    all_txns = [txn for txns in wallets_addresses.values() for txn in txns]
+    all_txns = [txn for txns in wallets_txns.values() for txn in txns]
     root = ET.Element('graphml', XML_PROPS)
 
     # <key> elements describe the properties vertices and edges can have.
@@ -69,7 +72,7 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Wallets are <node> elements. TODO: wallets still don't label correctly...
-    wallets = set(wallets_addresses.keys()).union(set([txn.to_address for txn in all_txns]))
+    wallets = set(wallets_txns.keys()).union(set([txn.to_address for txn in all_txns]))
 
     for wallet_address in wallets:
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
@@ -79,11 +82,21 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     for txn in all_txns:
         _add_transaction(graph, txn)
 
-    with open(GRAPHML_OUTPUT_FILE, "wb") as file:
-        ET.ElementTree(root).write(file)
-
+    xml = ET.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
+    console.print(f"In memory size of XML: {memsize_string(xml)}")
+    return xml
+
+
+def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) -> str:
+    if not output_path.endswith(GRAPHML_EXTENSION):
+        log.warning(f"GraphML output_path '{output_path}' doesn't end in .xml so we are appending it.")
+        output_path = output_path + GRAPHML_EXTENSION
+
+    with open(output_path, 'wb') as file:
+        build_graphml(wallets_txns, blockchain).write(file)
+
     return GRAPHML_OUTPUT_FILE
 
 

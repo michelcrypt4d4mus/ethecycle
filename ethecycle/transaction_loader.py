@@ -8,6 +8,7 @@ from os.path import basename
 from typing import Dict, List, Optional
 
 from gremlin_python.structure.graph import GraphTraversalSource
+from rich.text import Text
 
 from ethecycle.export.graphml import GRAPHML_EXTENSION, export_graphml, pretty_print_xml_file
 from ethecycle.graph import g
@@ -50,6 +51,13 @@ def load_txion_csv(file_path: str, token: Optional[str] = None) -> List[Txn]:
     """Load txions from a CSV, optionally filtered for 'token' records only."""
     if not (token is None or token in TOKENS):
         raise ValueError(f"Address for '{token}' token not found.")
+
+    msg = Text('Loading ')
+
+    if token:
+        msg.append(token + ' ', style='color(207)')
+
+    console.print(msg.append(f"transactions from '").append(file_path, 'green').append("'..."))
 
     with open(file_path, newline='') as csvfile:
         return [

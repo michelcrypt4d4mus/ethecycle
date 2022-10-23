@@ -14,13 +14,13 @@ TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
 # Load the common predicates into global variable space
 # See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-imports
-#load_statics(globals())
+load_statics(globals())
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 
 def print_obj_counts() -> None:
-    console.print(f"Graph contains {count_wallets()} wallets.")
-    console.print(f"Graph contains {count_txns()} transactions.")
+    console.print(f"Graph now contains {count_wallets()} wallets.")
+    console.print(f"Graph now contains {count_txns()} transactions.")
 
 
 def count_wallets() -> int:
@@ -53,6 +53,7 @@ def find_wallet(wallet_address: str) -> Optional[dict]:
 
 def delete_graph() -> None:
     """Reset graph to pristine state."""
+    console.print("Dropping current graph...", style='red')
     g.V().drop().iterate()
 
 

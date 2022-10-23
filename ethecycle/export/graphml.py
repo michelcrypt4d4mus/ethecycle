@@ -95,9 +95,11 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
         output_path = output_path + GRAPHML_EXTENSION
 
     with open(output_path, 'wb') as file:
-        build_graphml(wallets_txns, blockchain).write(file)
+        graphml = build_graphml(wallets_txns, blockchain)
+        console.print(f"Writing graphML to '{output_path}'...")
+        graphml.write(file)
 
-    return GRAPHML_OUTPUT_FILE
+    return output_path
 
 
 def pretty_print_xml_file(xml_file_path: str) -> None:

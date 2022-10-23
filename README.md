@@ -82,3 +82,13 @@ Gremlin's Python bindings are different from Java's in a few important cases. [S
 | `vadas.property("name", "vadas", id_, 2l)`  | `vadas.property('name', 'vadas').property('id', 2)` |
 
 [Here's a good gist with a lot of python specific queries](https://gist.github.com/okram/f193d5616563a69ad5714a42c504276f).
+
+### Other Technologies
+* [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
+* [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
+* [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
+* [MemGraph](https://memgraph.com) - In memory graph DB.
+* TigerGraph comes up sometimes
+
+### Other Resources
+* [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)

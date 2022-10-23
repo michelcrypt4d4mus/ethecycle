@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, inE, out, outE, unfold
+from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, inE, out, outE, range_, unfold
 from gremlin_python.process.traversal import P, T
 from gremlin_python.statics import load_statics
 
@@ -65,6 +65,11 @@ def wallets_with_min_outbound_txns(num_transactions: int) -> List[dict]:
     return g.V().where(out().count().is_(P.gte(num_transactions))).elementMap().toList()
 
 
+def wallets_with_outbound_txns_in_range(lower_bound: int, upper_bound: int) -> List[dict]:
+    """Wallets with lower_bound <= num_outbound_txns < upper_bound."""
+    return g.V().where(out().count().is_(P.within(lower_bound, upper_bound))).elementMap().toList()
+
+
 def wallets_with_min_outbound_txn_value(total_value: Union[float, int]) -> List[dict]:
     """Wallets with minimum number of outbound txions"""
     return g.V().where(outE().values('value').sum().is_(P.gte(total_value))).elementMap().toList()
@@ -75,6 +80,7 @@ def txns_from_wallet(address: str) -> List[dict]:
 
 
 def txns_values_to_wallet(address: str) -> List[dict]:
+    """Show all values of txions to a wallet address."""
     return g.V(address).inE().values('value').toList()
 
 

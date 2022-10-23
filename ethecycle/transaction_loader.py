@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from gremlin_python.structure.graph import GraphTraversalSource
 
 from ethecycle.export.graphml import export_graphml, pretty_print_xml
-from ethecycle.graph import Graph
+from ethecycle.graph import g
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import TOKENS
 
@@ -21,8 +21,8 @@ def load_txns_to_graph(txn_csv_file_path: str, token: str, debug: bool = False) 
     if debug:
         pretty_print_xml()
 
-    Graph.graph.io(filename).read().iterate()
-    return Graph.graph
+    g.io(filename).read().iterate()
+    return g
 
 
 def get_wallets_txions(file_path: str, token: str) -> Dict[str, List[Txn]]:

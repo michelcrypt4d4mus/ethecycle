@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.graph import Graph
+from ethecycle.graph import count_edges, count_vertices, delete_graph, g
 from ethecycle.transaction_loader import load_txns_to_graph
 from ethecycle.util.logging import console, print_headline
 from ethecycle.util.string_constants import TOKENS
@@ -29,19 +29,19 @@ parser.add_argument('-D', '--debug', action='store_true',
 
 # Parse args, run loader
 args = parser.parse_args()
-Graph.delete_graph()
+delete_graph()
 load_txns_to_graph(args.csv_path, args.token, args.debug)
 
 if args.debug:
     print_headline(f"Sample of {DEBUG_LINES} Wallets in Graph")
 
-    for node in Graph.graph.V().limit(DEBUG_LINES).elementMap().toList():
+    for node in g.V().limit(DEBUG_LINES).elementMap().toList():
         console.print(node)
 
     print_headline(f"Sample of {DEBUG_LINES} Transactions in Graph")
 
-    for edge in Graph.graph.E().limit(DEBUG_LINES).elementMap().toList():
+    for edge in g.E().limit(DEBUG_LINES).elementMap().toList():
         console.print(edge)
 
-console.print(f"Loaded {Graph.count_vertices()} wallets.")
-console.print(f"Loaded {Graph.count_edges()} transactions.")
+console.print(f"Loaded {count_vertices()} wallets.")
+console.print(f"Loaded {count_edges()} transactions.")

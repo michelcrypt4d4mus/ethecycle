@@ -9,19 +9,18 @@ from gremlin_python.process.graph_traversal import __, id_, select, unfold
 from gremlin_python.process.traversal import Column
 from gremlin_python.structure.graph import GraphTraversalSource
 
-from ethecycle.graph import get_graph
+from ethecycle.graph import g
 from ethecycle.transaction import ADDRESS, TXN, WALLET, Txn
 from ethecycle.transaction_loader import USDT_ADDRESS, get_wallets_txions
 
 wallets_txns = get_wallets_txions('/trondata/output_1000_lines.csv', USDT_ADDRESS)
 wallet_addresses = list(wallets_txns.keys())
 all_txns = list(chain(*wallets_txns.values()))
-graph = get_graph()
 
 
 def add_wallets_as_vertices(wallet_addresses: List[str]) -> None:
     """Add wallets as vertices."""
-    graph.inject([{ADDRESS: address} for address in wallet_addresses]).unfold().as_(WALLET). \
+    g.inject([{ADDRESS: address} for address in wallet_addresses]).unfold().as_(WALLET). \
         addV(WALLET).as_('v').sideEffect(
             __.select(WALLET).unfold().as_('kv').select('v'). \
                 property(__.select('kv').by(Column.keys), __.select('kv').by(Column.values))

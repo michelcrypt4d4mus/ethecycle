@@ -1,54 +1,80 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import GraphTraversal, out, unfold
+from gremlin_python.process.traversal import T
+
+from ethecycle.util.string_constants import WALLET
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
+g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
-class Graph:
-    graph = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
-    @classmethod
-    def count_vertices(cls) -> int:
-        return cls.graph.V().hasLabel('vertex').count().next()
+def count_vertices() -> int:
+    return g.V().hasLabel('vertex').count().next()
 
-    @classmethod
-    def count_vertices(cls) -> int:
-        return cls.graph.V().hasLabel('vertex').count().next()
 
-    @classmethod
-    def count_edges(cls) -> int:
-        return cls.graph.E().hasLabel('edge').count().next()
+def count_vertices() -> int:
+    return g.V().hasLabel('vertex').count().next()
 
-    @classmethod
-    def delete_graph(cls) -> None:
-        cls.graph.V().drop().iterate()
 
-    @classmethod
-    def vertices(cls, limit: int = 500) -> List[dict]:
-        return cls.graph.V().limit(limit).elementMap().toList()
+def count_edges() -> int:
+    return g.E().hasLabel('edge').count().next()
 
-    @classmethod
-    def edges(cls, limit: int = 500) -> List[dict]:
-        return cls.graph.E().limit(limit).elementMap().toList()
 
-    @classmethod
-    def find_wallet(cls, wallet_address: str) -> Optional[dict]:
-        return cls.graph.V(wallet_address).elementMap().next()
+def delete_graph() -> None:
+    g.V().drop().iterate()
 
-    @classmethod
-    def write_graph(cls, output_file: str) -> None:
-        """Write graph?"""
-        cls.graph.io(output_file).write().iterate()
 
-    @classmethod
-    def find_cycles_query(cls, max_cycle_length: int) -> GraphTraversal:
-        """
-        Return query to find de-deuped cycles. Note that this does not respect the arrow of time (yet).
-        Note you must call iterate() on the returned query (or explain(), or whatever).
-        """
-        return cls.graph.V().as_('a').repeat(out().simplePath()).times(max_cycle_length). \
-            where(out().as_('a')).path(). \
-            dedup().by(unfold().order().by(id).dedup().fold())
+def wallets(limit: int = 100) -> List[dict]:
+    return g.V().limit(limit).elementMap().toList()
+
+
+def transactions(limit: int = 100) -> List[dict]:
+    return g.E().limit(limit).elementMap().toList()
+
+
+def find_wallet(wallet_address: str) -> Optional[dict]:
+    return g.V(wallet_address).elementMap().next()
+
+
+def write_graph(output_file: str) -> None:
+    """Write graph?"""
+    g.io(output_file).write().iterate()
+
+
+def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length: int) -> GraphTraversal:
+    """
+    Return query to find de-deuped cycles. Note that this does not respect the arrow of time (yet).
+    Note you must call iterate() on the returned query (or explain(), or whatever).
+    Cycle Detection recipe: https://tinkerpop.apache.org/docs/current/recipes/#cycle-detection
+    """
+    addresses = addresses if isinstance(addresses, list) else [addresses]
+
+    return g.V(*addresses).as_(WALLET).repeat(out().simplePath()).side_effect(lambda x: print(x)). \
+        times(max_cycle_length). \
+        where(out().as_(WALLET)).path(). \
+        dedup().by(unfold().order().by(id).dedup().fold())
+
+
+
+# g.V('1','2','3','56').
+#   sideEffect(
+#     outE('route').
+#     inV().
+#     hasLabel('airport').
+#     where(without('labels')).
+#     limit(2).
+#     aggregate('labels')).
+#   sideEffect(
+#     inE('contains').
+#     outV().
+#     hasLabel('country').
+#     where(without('labels')).
+#     limit(2).
+#     aggregate('labels')).
+#   cap('labels').
+#   unfold().
+#   values('desc')

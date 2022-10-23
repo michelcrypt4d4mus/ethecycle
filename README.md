@@ -23,9 +23,7 @@ Once you are in the container shell, to load CSV (optionally filtered for a sing
 To run Gremlin queries I use the `bpython` REPL (same as python REPL but has better tab completion, shows args of methods, etc.) Once yr in the REPL you can get the Gremlin graph object (the one that sends queries) from the [Graph](ethecycle/graph.py) class like this:
 
 ```python
-from ethecycle.graph import Graph
-
-g = Graph.graph
+from ethecycle.graph import g
 
 # Example query for 1000 txions:
 txions = g.E().limit(1000).elementMap().toList()
@@ -45,4 +43,7 @@ Note that there's no persistence though the `gremlin-server` container will stay
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 
 # Resources
+* [Gremlin query tutorials](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html) (Note these are not in python so the code may be slightly different than shown)
 * [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
+* [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
+

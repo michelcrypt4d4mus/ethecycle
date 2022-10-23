@@ -43,7 +43,7 @@ Note that there's no persistence though the `gremlin-server` container will stay
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 
 # Resources
-* [Gremling Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html)
+* [Gremling Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)
 * [Gremlin query tutorials](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html) (Note these are not in python so the code may be slightly different than shown)
 * [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
 * [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)

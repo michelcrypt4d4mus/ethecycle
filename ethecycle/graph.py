@@ -28,12 +28,8 @@ def count_txns() -> int:
     return g.E().hasLabel(TXN).count().next()
 
 
-def wallets_without_txns() -> GraphTraversal:
-    return g.V().where(__.not_(bothE())).valueMap()
-
-def delete_graph() -> None:
-    """Reset graph to pristine state."""
-    g.V().drop().iterate()
+def wallets_without_txns() -> int:
+    return g.V().where(__.not_(bothE())).count().next()
 
 
 def get_wallets(limit: int = 100) -> List[dict]:
@@ -46,6 +42,11 @@ def get_transactions(limit: int = 100) -> List[dict]:
 
 def find_wallet(wallet_address: str) -> Optional[dict]:
     return g.V(wallet_address).elementMap().next()
+
+
+def delete_graph() -> None:
+    """Reset graph to pristine state."""
+    g.V().drop().iterate()
 
 
 def write_graph(output_file: str) -> None:

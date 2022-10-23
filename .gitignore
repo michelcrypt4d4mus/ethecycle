@@ -131,3 +131,4 @@ dmypy.json
 /graphml_lep/
 /output/
 /data/
+/tests/fixture_files/air-routes-small-latest.xml

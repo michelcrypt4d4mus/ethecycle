@@ -13,7 +13,7 @@ time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address
 
 
-def load_txns_to_graph(txn_csv_file_path: str, token: str, debug: bool = False) -> GraphTraversalSource:
+def load_txn_csv_to_graph(txn_csv_file_path: str, token: str, debug: bool = False) -> GraphTraversalSource:
     """Load txns from a CSV file, filter them for token_address only, and load to graph via GraphML."""
     wallets_txns = get_wallets_txions(txn_csv_file_path, token)
     filename = export_graphml(wallets_txns, 'ethereum')

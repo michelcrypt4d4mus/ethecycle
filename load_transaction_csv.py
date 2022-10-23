@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.graph import count_edges, count_vertices, delete_graph, g
-from ethecycle.transaction_loader import load_txns_to_graph
+from ethecycle.transaction_loader import load_txn_csv_to_graph
 from ethecycle.util.logging import console, print_headline
 from ethecycle.util.string_constants import TOKENS
 
@@ -30,7 +30,7 @@ parser.add_argument('-D', '--debug', action='store_true',
 # Parse args, run loader
 args = parser.parse_args()
 delete_graph()
-load_txns_to_graph(args.csv_path, args.token, args.debug)
+load_txn_csv_to_graph(args.csv_path, args.token, args.debug)
 
 if args.debug:
     print_headline(f"Sample of {DEBUG_LINES} Wallets in Graph")

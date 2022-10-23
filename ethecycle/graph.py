@@ -59,7 +59,18 @@ def find_cycles_from_wallets(addresses: Union[str, List[str]], max_cycle_length:
         dedup().by(unfold().order().by(id).dedup().fold())
 
 
+# https://stackoverflow.com/questions/40165426/gremlin-graph-traversal-that-uses-previous-edge-property-value-to-filter-later-e
+def arrow_of_time(address: str):
+    g.V(1).outE(). \
+        as_('firstEdge'). \
+        inV().outE(). \
 
+        where(eq('firstEdge')).   # compare with the first edge
+        by('weight') # // use only the 'weight' property for the equality check
+    #==>e[10][4-created->5]
+
+
+# StackExchange:
 # g.V('1','2','3','56').
 #   sideEffect(
 #     outE('route').

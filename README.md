@@ -46,6 +46,7 @@ Note that there's no persistence though the `gremlin-server` container will stay
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
+1. Do you have a rough estimate as far as blocks per hour and/or blocks per day?
 
 # Resources
 * [Gremling Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)

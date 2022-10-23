@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   tinkerpop:
-    #image: tinkerpop/gremlin-server:latest
     build:
       dockerfile: Dockerfile-tinkergraph
     ports:

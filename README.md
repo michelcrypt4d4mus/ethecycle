@@ -2,6 +2,17 @@
 * Wallet addresses are vertices AKA nodes
 * ERC20 Transactions are edges and contain properties like `value`, `block_number`, etc.
 
+### Prerequisites
+This is known to work with these versions of `docker` and `docker-compose`.
+
+```
+$ docker-compose --version
+Docker Compose version v2.10.2
+
+$ docker --version
+Docker version 20.10.17, build 100c701
+```
+
 # Usage
 To launch docker containers:
 

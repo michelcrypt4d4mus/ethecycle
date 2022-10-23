@@ -83,7 +83,7 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
         ET.ElementTree(root).write(file)
 
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
-    console.print(f"Created XML for  {len(all_txns)} transaction edges...")
+    console.print(f"Created XML for {len(all_txns)} transaction edges...")
     return GRAPHML_OUTPUT_FILE
 
 
@@ -120,6 +120,6 @@ def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[
     if isinstance(attr_value, int):
         data.text = str(int(attr_value))  # Force non-scientific notation
     elif isinstance(attr_value, float):
-        data.text = "{:,.18f}".format(attr_value)
+        data.text = "{:.18f}".format(attr_value)
     else:
         data.text = attr_value

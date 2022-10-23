@@ -44,7 +44,7 @@ Note that there's no persistence though the `gremlin-server` container will stay
 
 # Resources
 * [Gremling Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)
-* [Gremlin query tutorials](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html) (Note these are not in python so the code may be slightly different than shown)
+* [Gremlin query book](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html). Best resource I have found. Note these are not in python so the code may be slightly different than shown.
 * [Tinkerpop Gremlin documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
 * [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
 * [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)

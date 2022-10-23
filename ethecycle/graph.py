@@ -5,7 +5,7 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import GraphTraversal, out, unfold
 from gremlin_python.process.traversal import P, T
 
-from ethecycle.util.string_constants import WALLET
+from ethecycle.util.string_constants import TXN, WALLET
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
@@ -16,12 +16,8 @@ def count_vertices() -> int:
     return g.V().hasLabel('vertex').count().next()
 
 
-def count_vertices() -> int:
-    return g.V().hasLabel('vertex').count().next()
-
-
 def count_edges() -> int:
-    return g.E().hasLabel('edge').count().next()
+    return g.E().hasLabel(TXN).count().next()
 
 
 def delete_graph() -> None:

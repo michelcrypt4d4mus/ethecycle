@@ -24,12 +24,18 @@ parser.add_argument('-t', '--token',
                     help='token to filter transactions for',
                     choices=TOKENS.keys())
 
+parser.add_argument('-n', '--no-drop', action='store_true',
+                    help="don't drop the current graph before loading new data")
+
 parser.add_argument('-D', '--debug', action='store_true',
                     help='debug output (shows full XML, etc)')
 
 # Parse args, run loader
 args = parser.parse_args()
-delete_graph()
+
+if not args.no_drop:
+    delete_graph()
+
 load_txn_csv_to_graph(args.csv_path, args.token, args.debug)
 
 if args.debug:

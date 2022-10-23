@@ -69,7 +69,7 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
 
     # Wallets are <node> elements.
     for wallet_address in wallets_addresses.keys():
-        wallet = ET.SubElement(graph, 'node', {'id': wallet_address, 'label': WALLET})
+        wallet = ET.SubElement(graph, 'node', {'id': wallet_address}) #, 'label': WALLET})
         label = ET.SubElement(wallet, 'data', {'key': LABEL_V})
         label.text = WALLET
 

@@ -61,3 +61,5 @@ Gremlin's Python bindings are different from Java's in a few important cases. [S
 | `as('a')` | `as_('a')` |
 | `from('a')` | `from_('a')` |
 | `vadas.property("name", "vadas", id_, 2l)`  | `vadas.property('name', 'vadas').property('id', 2)` |
+
+[Here's a good gist with a lot of python specific queries](https://gist.github.com/okram/f193d5616563a69ad5714a42c504276f).

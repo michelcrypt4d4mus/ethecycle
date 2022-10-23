@@ -4,12 +4,16 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __, GraphTraversal, bothE, out, unfold
 from gremlin_python.process.traversal import P, T
+from gremlin_python.statics import load_statics
 
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import TXN, WALLET
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
+# Load the common predicates into global variable space
+# See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-imports
+load_statics(globals())
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 
@@ -29,10 +33,12 @@ def count_txns() -> int:
 
 
 def wallets_without_txns() -> int:
+    """https://stackoverflow.com/questions/52857677/gremlin-query-to-get-the-list-of-vertex-not-connected-with-any-other-vertex"""
     return g.V().where(__.not_(bothE())).count().next()
 
 
 def get_wallets(limit: int = 100) -> List[dict]:
+    # Extract just the address strings: wallet_addresses = [w[T.id] for w in get_wallets(2)]
     return g.V().limit(limit).elementMap().toList()
 
 

@@ -69,23 +69,21 @@ def export_graphml(wallets_addresses: Dict[str, List[Txn]], blockchain: str) -> 
     graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
 
     # Wallets are <node> elements. TODO: wallets still don't label correctly...
-    wallets = set(wallets_addresses.keys())
-    wallets = wallets.union(set([txn.to_address for txn in all_txns]))
-    console.print(f"Loading {len(wallets)} wallet nodes...")
-    console.print(f"Loading {len(all_txns)} transaction edges...")
+    wallets = set(wallets_addresses.keys()).union(set([txn.to_address for txn in all_txns]))
 
     for wallet_address in wallets:
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
 
     # Transactions are <edge> elements.
-    for txions in wallets_addresses.values():
-        for txn in txions:
-            _add_transaction(graph, txn)
+    for txn in all_txns:
+        _add_transaction(graph, txn)
 
     with open(GRAPHML_OUTPUT_FILE, "wb") as file:
         ET.ElementTree(root).write(file)
 
+    console.print(f"Created XML for {len(wallets)} wallet nodes...")
+    console.print(f"Created XML for  {len(all_txns)} transaction edges...")
     return GRAPHML_OUTPUT_FILE
 
 

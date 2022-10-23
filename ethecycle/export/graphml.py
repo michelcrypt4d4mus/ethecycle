@@ -9,11 +9,12 @@ from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
+from pympler.asizeof import asizeof
 
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
 from ethecycle.util.logging import console, log
-from ethecycle.util.num_helper import memsize_string
+from ethecycle.util.num_helper import memsize_string, size_string
 from ethecycle.util.string_constants import *
 from ethecycle.util.types import WalletTxns
 
@@ -85,11 +86,15 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     xml = ET.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    console.print(f"In memory size of XML: {memsize_string(xml)}")
+    console.print(f"In memory size of generated XML: {(size_string(_xml_size(xml)))}")
     return xml
 
 
 def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) -> str:
+    """
+    Build graphML data for 'wallets_txns' and write to output_path. Note that output_path must also be
+    accessible from the gremlin-server container.
+    """
     if not output_path.endswith(GRAPHML_EXTENSION):
         log.warning(f"GraphML output_path '{output_path}' doesn't end in .xml so we are appending it.")
         output_path = output_path + GRAPHML_EXTENSION
@@ -138,3 +143,12 @@ def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[
         data.text = "{:.18f}".format(attr_value)
     else:
         data.text = attr_value
+
+
+def _xml_size(xml: ET.ElementTree):
+    size = asizeof(xml)
+
+    for element in xml.iter():
+        size += asizeof(element)
+
+    return size

@@ -1,6 +1,5 @@
 """
 Load transactions from CSV as python lists and/or directly into the graph database.
-There is a bit of quirkiness around
 """
 import csv
 from itertools import groupby
@@ -26,7 +25,6 @@ def load_txn_csv_to_graph(txn_csv_file_path: str, token: str, debug: bool = Fals
     """Load txns from a CSV file, filter them for token_address only, and load to graph via GraphML."""
     wallets_txns = get_wallets_txions(txn_csv_file_path, token)
     output_file_path = str(GRAPHML_OUTPUT_DIR.joinpath(basename(txn_csv_file_path) + GRAPHML_EXTENSION))
-
     export_graphml(wallets_txns, 'ethereum', output_file_path)
 
     if debug:

@@ -50,3 +50,4 @@ if args.debug:
         console.print(edge)
 
 print_obj_counts()
+console.line()

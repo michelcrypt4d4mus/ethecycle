@@ -5,17 +5,17 @@ Example: https://github.com/tinkerpop/gremlin/blob/master/data/graph-example-1.x
 from dataclasses import dataclass
 from functools import partial
 from os import path
-from typing import Dict, List, Union
+from typing import Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
-from ethecycle.blockchains import chain_info, get_chain_info
 from pympler.asizeof import asizeof
 
+from ethecycle.blockchains import get_chain_info
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
 from ethecycle.util.logging import console, log
-from ethecycle.util.num_helper import memsize_string, size_string
+from ethecycle.util.num_helper import SIZES, size_string
 from ethecycle.util.string_constants import *
 from ethecycle.util.types import WalletTxns
 
@@ -117,6 +117,12 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
 
 def pretty_print_xml_file(xml_file_path: str) -> None:
     """Pretty print an XML file"""
+    file_size = path.getsize(xml_file_path)
+
+    if file_size > SIZES['megabytes']:
+        console.print(f"'{xml_file_path}' is {size_string(file_size)}... Too big to print for debugging.")
+        return
+
     console.print(BeautifulSoup(open(xml_file_path), 'xml').prettify())
 
 

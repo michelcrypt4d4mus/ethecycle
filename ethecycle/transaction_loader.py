@@ -56,10 +56,10 @@ def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None)
     chain_info = get_chain_info(blockchain)
     token_address = None
 
-    if not (token is None or token in chain_info.token_addresses()):
+    if not (token is None or token in chain_info.tokens()):
         raise ValueError(f"Address for '{token}' token not found.")
 
-    msg = Text('Loading ').append(blockchain, style='color(112)')
+    msg = Text('Loading ').append(blockchain, style='color(112)').append(' ')
 
     if token:
         msg.append(token + ' ', style='color(207)')

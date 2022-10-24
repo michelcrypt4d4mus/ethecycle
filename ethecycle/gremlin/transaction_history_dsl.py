@@ -14,6 +14,8 @@ from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
 from gremlin_python.process.traversal import Bytecode, P
 from gremlin_python.structure.graph import GraphTraversalSource
 
+from ethecycle.util.string_constants import *
+
 
 class TimeTraversal(GraphTraversal):
     # def knows(self, person_name):
@@ -24,7 +26,7 @@ class TimeTraversal(GraphTraversal):
 
     def in_block_range(self, start_block: int, end_block: int) -> GraphTraversal:
         """Analyze only transactions found in block numbers between start_block and end_block."""
-        return self.out_e('block_number').is_(P.gte(start_block)).and_(P.lte(end_block))
+        return self.outE().is_(P.gte(start_block)).and_(P.lte(end_block))
 
 
 class __(AnonymousTraversal):

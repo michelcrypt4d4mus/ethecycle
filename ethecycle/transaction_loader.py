@@ -71,8 +71,6 @@ def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None)
     console.print(f"   (File size: {size_string(file_size)})", style='dim')
 
     with open(file_path, newline='') as csvfile:
-        # for row in csv.reader(csvfile, delimiter=','):
-        #     console.print(f"ROW: {row}")
         txns = [
             Txn(*([blockchain] + row)) for row in csv.reader(csvfile, delimiter=',')
             if row[0] != 'token_address' and (token is None or row[0] == token_address)

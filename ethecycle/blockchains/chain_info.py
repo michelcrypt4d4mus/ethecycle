@@ -1,5 +1,6 @@
 """
-Simple class to hold blockchain specific info (address lengths, token specifications, etc.)
+Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
+Should be implemented for each chain with the appropriate overrides of the abstract methods.
 """
 import json
 from abc import ABC, abstractmethod

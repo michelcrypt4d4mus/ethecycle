@@ -1,7 +1,3 @@
-from typing import Optional
-
-from ethecycle.util.dict_helper import get_dict_key_by_value
-
 ADDRESS = 'address'
 TXN = 'transaction'
 WALLET = 'wallet'

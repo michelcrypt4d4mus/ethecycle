@@ -5,7 +5,7 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import (__, GraphTraversal, bothE, inE, out,
      outE, range_, unfold, values)
 from gremlin_python.process.traversal import P, T
-from gremlin_python.statics import load_statics
+#from gremlin_python.statics import load_statics
 from gremlin_python.structure.graph import Path
 
 from ethecycle.util.num_helper import is_even
@@ -16,7 +16,7 @@ TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
 # Load the common predicates into global variable space
 # See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-imports
-load_statics(globals())
+#load_statics(globals())
 g = traversal().withRemote(DriverRemoteConnection(TINKERPOP_URI, 'g'))
 
 
@@ -85,7 +85,19 @@ def txns_from_wallet(address: str) -> List[dict]:
 
 def two_hops_from_wallet(address: str) -> List[dict]:
     """Second hop must have a higher block_number"""
-    return g.V(address).outE().as_('txn1').inV().outE().where(P.gt('txn1')).by(BLOCK_NUMBER).toList()
+    paths = g.V(address).outE().as_('txn1').inV().outE().where(P.gt('txn1')).by(BLOCK_NUMBER).as_('txn2'). \
+        inV().outE().where(P.gt('txn2')).by(BLOCK_NUMBER).inV().path().by(T.id).by(values(BLOCK_NUMBER, NUM_TOKENS).fold()).toList()
+
+    for i, path in (enumerate(paths)):
+        console.print("\nPATH", style='u')
+
+        for i, path_element in enumerate(path):
+            if is_even(i):
+                console.print(f"  Step {i}: Wallet {path_element}")
+            else:
+                console.print(f"    Step {i}: Sent {path_element[0]} tokens in block {path_element[1]} to:")
+
+    return paths
 
 
 def txns_values_to_wallet(address: str) -> List[dict]:

@@ -8,9 +8,9 @@ from gremlin_python.process.traversal import P, T
 #from gremlin_python.statics import load_statics
 from gremlin_python.structure.graph import Path
 
+from ethecycle.util.logging import console, print_headline
 from ethecycle.util.num_helper import is_even
 from ethecycle.util.string_constants import *
-from ethecycle.util.logging import console
 
 TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
 
@@ -38,6 +38,18 @@ def count_txns() -> int:
 def is_wallet_in_graph(address: str) -> bool:
     """True if wallet with this address is in graph already."""
     return g.V(address).count().next() != 0
+
+
+def print_graph_sample(sample_size: int = 5) -> None:
+    print_headline(f"Sample of {sample_size} Wallets in Graph")
+
+    for node in g.V().limit(sample_size).elementMap().toList():
+        console.print(node)
+
+    print_headline(f"Sample of {sample_size} Transactions in Graph")
+
+    for edge in g.E().limit(sample_size).elementMap().toList():
+        console.print(edge)
 
 
 def wallets_without_txns() -> int:

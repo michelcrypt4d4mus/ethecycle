@@ -60,7 +60,7 @@ If you get a message about how the gremlin-server is not available at `tinkerpop
 
 ### Other Useful Commands
 1. Get shell on the Tinkergraph server: `scripts/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
-
+1. Dump a sample of the graph's vertices and edges along with all properties to the screen: `scripts/sample_graph.py`
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)

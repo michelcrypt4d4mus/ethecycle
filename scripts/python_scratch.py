@@ -62,7 +62,7 @@ for i, path in (enumerate(paths)):
         else:
             console.print(f"    Step {i}: Sent {path_element[0]} tokens in block {path_element[1]} to:")
 
-print_paths(two_hops)
+print_paths(paths)
 
 
 

@@ -14,12 +14,16 @@ Docker version 20.10.17, build 100c701
 ```
 
 # Usage
-To launch docker containers:
+To launch docker containers and load graph data:
 
 ```bash
-cp .env.example .env
+# Clone repo and cd into the repo directory
+git clone https://github.com/michelcrypt4d4mus/ethecycle.git
+cd ethecycle
 
-# edit local copy of .env to set TXION_DATA_DIR as the location of some txion CSVs
+# Edit local copy of .env to set TXION_DATA_DIR as the location of some txion CSVs
+cp .env.example .env
+# Use vi or whatever editor you prefer
 vi .env
 
 # docker-compose should build / pull / launch everything and leave you in a bash shell

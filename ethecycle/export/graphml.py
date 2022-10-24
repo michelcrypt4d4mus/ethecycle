@@ -116,10 +116,12 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTr
     wallets = set(wallets_txns.keys()).union(set([txn.to_address for txn in all_txns]))
 
     for wallet_address in wallets:
-        if is_wallet_in_graph(wallet_address):
-            log.debug(f"Wallet '{wallet_address}' is already in graph...")
-            wallets_already_in_graph_count += 1
-            continue
+        # Commented out because until we have a way to actually totally bisect the graph this is an
+        # unnecessary cost.
+        # if is_wallet_in_graph(wallet_address):
+        #     log.debug(f"Wallet '{wallet_address}' is already in graph...")
+        #     wallets_already_in_graph_count += 1
+        #     continue
 
         wallet = etree.SubElement(graph, 'node', **{'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
@@ -133,8 +135,8 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTr
 
     xml = etree.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
-    console.print(f"   Skipped {wallets_already_in_graph_count} wallets already extant in graph...", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
+    console.print(f"   Skipped {wallets_already_in_graph_count} wallets already extant in graph...", style='dim')
     console.print(f"   Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))}", style='dim')
     return xml
 

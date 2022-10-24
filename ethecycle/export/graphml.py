@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from functools import partial
 from os import path
 from typing import List, Optional, Union
-from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
+from lxml import etree
 from pympler.asizeof import asizeof
 
 from ethecycle.blockchains import get_chain_info
@@ -29,11 +29,11 @@ class GraphObjectProperty:
     name: str
     data_type: str
 
-    def to_graphml(self) -> ET.Element:
+    def to_graphml(self) -> etree._Element:
         """Attach as a subelement to root object"""
-        return ET.Element(
+        return etree.Element(
             'key',
-            {'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
+            **{'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
         )
 
 ObjProperty = partial(GraphObjectProperty, 'all')
@@ -90,18 +90,18 @@ class GraphPropertyManager:
 GRAPHML_EXTENSION = '.graph.xml'  # .graphml extension is not recognized by Gremlin
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
-XML_PROPS = {
-    'xmlns': "http://graphml.graphdrawing.org/xmlns",
-    'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
-    'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
-}
+# XML_PROPS = {
+#     'xmlns': "http://graphml.graphdrawing.org/xmlns",
+#     'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
+#     'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
+# }
 
 
-def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
+def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTree:
     """Export txions to GraphML format. Graph ID is 'blockchain'. Returns file written."""
     all_txns = [txn for txns in wallets_txns.values() for txn in txns]
     chain_info = get_chain_info(blockchain)
-    root = ET.Element('graphml', XML_PROPS)
+    root = etree.Element('graphml')#, **XML_PROPS)
     wallets_already_in_graph_count = 0
 
     # <key> elements describe the properties vertices and edges can have.
@@ -109,7 +109,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
         root.append(graph_obj_property.to_graphml())
 
     # Add the <graph>. IMPORTANT: the <key> elements MUST come before the <graph> in the XML.
-    graph = ET.SubElement(root, 'graph', {'id': blockchain, 'edgedefault': 'directed'})
+    graph = etree.SubElement(root, 'graph', **{'id': blockchain, 'edgedefault': 'directed'})
 
     # Wallets are <node> elements. TODO: wallets still don't label correctly...
     wallets = set(wallets_txns.keys()).union(set([txn.to_address for txn in all_txns]))
@@ -120,7 +120,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
             wallets_already_in_graph_count += 1
             continue
 
-        wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
+        wallet = etree.SubElement(graph, 'node', **{'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
 
         if Config.include_extended_properties:
@@ -130,11 +130,11 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     for txn in all_txns:
         _add_transaction(graph, txn)
 
-    xml = ET.ElementTree(root)
+    xml = etree.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
     console.print(f"   (Skipped {wallets_already_in_graph_count} wallets that already existed in graph)", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
+    #console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
     return xml
 
 
@@ -176,9 +176,9 @@ def pretty_print_xml_file(xml_file_path: str, force: bool = False) -> None:
     console.print(BeautifulSoup(open(xml_file_path), 'xml').prettify())
 
 
-def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
+def _add_transaction(graph_xml: etree._Element, txn: Txn) -> etree._Element:
     """Add txn as an edge as a sub element of the <graph> xml element."""
-    edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
+    edge = etree.SubElement(graph_xml, 'edge', **_txn_edge_attribs(txn))
     txn.labelE = TXN  # Tag with 'labelE' for convenience of upcoming for loop
 
     for edge_property in GraphPropertyManager.edge_properties():
@@ -200,9 +200,9 @@ def _txn_edge_attribs(txn: Txn) -> dict:
     }
 
 
-def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[float, int, str]):
+def _attribute_xml(graph_element: etree._Element, attr_name: str, attr_value: Union[float, int, str]):
     """Build the <data> elements that are graph properties."""
-    data = ET.SubElement(graph_element, 'data', {'key': attr_name})
+    data = etree.SubElement(graph_element, 'data', **{'key': attr_name})
 
     if isinstance(attr_value, int):
         data.text = str(int(attr_value))  # Force non-scientific notation
@@ -212,7 +212,7 @@ def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[
         data.text = attr_value
 
 
-def _xml_size(xml: ET.ElementTree):
+def _xml_size(xml: etree._ElementTree):
     size = asizeof(xml)
 
     for element in xml.iter():

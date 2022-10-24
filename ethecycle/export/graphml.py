@@ -23,25 +23,25 @@ from ethecycle.util.string_constants import *
 from ethecycle.util.types import WalletTxns
 
 
-@dataclass
-class GraphObjectProperty:
-    obj_type: str
-    name: str
-    data_type: str
-
-    def to_graphml(self) -> etree._Element:
-        """Attach as a subelement to root object"""
-        return etree.Element(
-            'key',
-            **{'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
-        )
-
-ObjProperty = partial(GraphObjectProperty, 'all')
-NodeProperty = partial(GraphObjectProperty, 'node')
-EdgeProperty = partial(GraphObjectProperty, 'edge')
-
 
 class GraphPropertyManager:
+    @dataclass
+    class GraphObjectProperty:
+        obj_type: str
+        name: str
+        data_type: str
+
+        def to_graphml(self) -> etree._Element:
+            """Attach as a subelement to root object"""
+            return etree.Element(
+                'key',
+                **{'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
+            )
+
+    ObjProperty = partial(GraphObjectProperty, 'all')
+    NodeProperty = partial(GraphObjectProperty, 'node')
+    EdgeProperty = partial(GraphObjectProperty, 'edge')
+
     ALL_OBJ_PROPERTIES = [
         ObjProperty(SCANNER_URL, 'string')
     ]
@@ -88,13 +88,14 @@ class GraphPropertyManager:
 
 
 GRAPHML_EXTENSION = '.graph.xml'  # .graphml extension is not recognized by Gremlin
-GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
-# XML_PROPS = {
-#     'xmlns': "http://graphml.graphdrawing.org/xmlns",
-#     'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
-#     'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
-# }
+# Gremlin puts these props in its exported <graphml> but they don't seem to be necessary
+# (which is good because lxml doesn't like them).
+XML_PROPS = {
+    'xmlns': "http://graphml.graphdrawing.org/xmlns",
+    'xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance",
+    'xsi:schemaLocation': "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd",
+}
 
 
 def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTree:
@@ -134,7 +135,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTr
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
     console.print(f"   (Skipped {wallets_already_in_graph_count} wallets that already existed in graph)", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    #console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
+    console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
     return xml
 
 

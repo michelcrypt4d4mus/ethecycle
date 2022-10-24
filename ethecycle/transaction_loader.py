@@ -17,7 +17,7 @@ from ethecycle.graph import g
 from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import (GRAPHML_OUTPUT_DIR, file_size_string,
      is_running_in_container, system_path_to_container_path)
-from ethecycle.util.logging import console
+from ethecycle.util.logging import BYTES_HIGHLIGHT, console
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.util.types import WalletTxns
 
@@ -52,6 +52,8 @@ def load_txn_csv_to_graph(
     g.io(output_file_path).read().iterate()
     load_duration = time.perf_counter() - load_start_time
     console.print(f"   Loaded to graph in {load_duration:02.2f} seconds...", style='benchmark')
+    overall_duration = time.perf_counter() - start_time
+    console.print(f"Start to finish runtime: {overall_duration:02.2f} seconds...", style=BYTES_HIGHLIGHT)
 
 
 def get_wallets_txions(file_path: str, blockchain: str, token: Optional[str] = None) -> WalletTxns:

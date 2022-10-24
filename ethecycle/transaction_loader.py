@@ -56,7 +56,6 @@ def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None)
     """Load txions from a CSV, optionally filtered for 'token' records only."""
     chain_info = get_chain_info(blockchain)
     file_size = getsize(file_path)
-    console.print(f"Loading {size_string(file_size)}) file", style='yellow')
     token_address = None
 
     if not (token is None or token in chain_info.tokens()):

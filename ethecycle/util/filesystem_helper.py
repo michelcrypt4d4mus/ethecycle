@@ -6,6 +6,7 @@ from pathlib import Path, PosixPath
 from subprocess import check_call
 from typing import List, Optional
 
+from ethecycle.util.num_helper import size_string
 from ethecycle.util.logging import console
 
 PROJECT_ROOT_DIR: PosixPath = importlib.resources.files('ethecycle').joinpath(os.pardir).resolve()
@@ -29,6 +30,10 @@ def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:
         files = [f for f in files if f.endswith(f".{with_extname}")]
 
     return files
+
+
+def file_size_string(file_path: str) -> str:
+    return "File size: " + size_string(path.getsize(file_path))
 
 
 def split_big_file(file_path: str, lines_per_file: int = DEFAULT_LINES_PER_FILE) -> List[str]:

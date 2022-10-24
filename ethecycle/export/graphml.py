@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from pympler.asizeof import asizeof
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.config import EthecycleConfig
 from ethecycle.graph import is_wallet_in_graph
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
@@ -34,29 +35,56 @@ class GraphObjectProperty:
             {'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}
         )
 
-
 ObjProperty = partial(GraphObjectProperty, 'all')
 NodeProperty = partial(GraphObjectProperty, 'node')
 EdgeProperty = partial(GraphObjectProperty, 'edge')
 
-NODE_PROPERTIES = [
-    NodeProperty(LABEL_V, 'string'),
-]
 
-EDGE_PROPERTIES = [
-    EdgeProperty(LABEL_E, 'string'),
-    EdgeProperty('num_tokens', 'double'),
-    EdgeProperty('block_number', 'int'),
-    EdgeProperty('token_address', 'string'),
-    EdgeProperty('token', 'string'),
-    EdgeProperty('transaction_hash', 'string'),
-]
+class GraphPropertyManager:
+    ALL_OBJ_PROPERTIES = [
+        ObjProperty(SCANNER_URL, 'string')
+    ]
 
-OBJ_PROPERTIES = [
-    ObjProperty(SCANNER_URL, 'string')
-]
+    NODE_PROPERTIES = [
+        NodeProperty(LABEL_V, 'string'),
+    ]
 
-GRAPH_OBJ_PROPERTIES = NODE_PROPERTIES + EDGE_PROPERTIES + OBJ_PROPERTIES
+    EDGE_PROPERTIES = [
+        EdgeProperty(LABEL_E, 'string'),
+        EdgeProperty('num_tokens', 'double'),
+        EdgeProperty('block_number', 'int'),
+        EdgeProperty('token_address', 'string'),
+    ]
+
+    EXTENDED_NODE_PROPERTIES = ALL_OBJ_PROPERTIES + NODE_PROPERTIES
+
+    EXTENDED_EDGE_PROPERTIES = ALL_OBJ_PROPERTIES + EDGE_PROPERTIES + [
+        EdgeProperty('token', 'string'),
+        EdgeProperty('transaction_hash', 'string'),
+    ]
+
+    @classmethod
+    def node_properties(cls):
+        if EthecycleConfig.include_extended_properties:
+            return cls.EXTENDED_NODE_PROPERTIES
+        else:
+            return cls.NODE_PROPERTIES
+
+    @classmethod
+    def edge_properties(cls):
+        if EthecycleConfig.include_extended_properties:
+            return cls.EXTENDED_EDGE_PROPERTIES
+        else:
+            return cls.EDGE_PROPERTIES
+
+    @classmethod
+    def all_obj_properties(cls):
+        if EthecycleConfig.include_extended_properties:
+            return cls.EXTENDED_EDGE_PROPERTIES + cls.NODE_PROPERTIES
+        else:
+            return cls.EDGE_PROPERTIES + cls.NODE_PROPERTIES
+
+
 GRAPHML_EXTENSION = '.graph.xml'  # .graphml extension is not recognized by Gremlin
 GRAPHML_OUTPUT_FILE = path.join(OUTPUT_DIR, 'nodes.xml')
 
@@ -75,7 +103,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     wallets_already_in_graph_count = 0
 
     # <key> elements describe the properties vertices and edges can have.
-    for graph_obj_property in GRAPH_OBJ_PROPERTIES:
+    for graph_obj_property in GraphPropertyManager.all_obj_properties():
         root.append(graph_obj_property.to_graphml())
 
     # Add the <graph>. IMPORTANT: the <key> elements MUST come before the <graph> in the XML.
@@ -92,7 +120,9 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
 
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
-        _attribute_xml(wallet, SCANNER_URL, chain_info.scanner_url(wallet_address))
+
+        if EthecycleConfig.include_extended_properties:
+            _attribute_xml(wallet, SCANNER_URL, chain_info.scanner_url(wallet_address))
 
     # Transactions are <edge> elements.
     for txn in all_txns:
@@ -139,7 +169,7 @@ def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
     edge = ET.SubElement(graph_xml, 'edge', _txn_edge_attribs(txn))
     txn.labelE = TXN  # Tag with 'labelE' for convenience of upcoming for loop
 
-    for edge_property in EDGE_PROPERTIES + OBJ_PROPERTIES:
+    for edge_property in GraphPropertyManager.edge_properties():
         _attribute_xml(edge, edge_property.name, vars(txn)[edge_property.name])
 
     return edge

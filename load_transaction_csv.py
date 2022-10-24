@@ -11,6 +11,7 @@ from rich.text import Text
 from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains import BLOCKCHAINS
+from ethecycle.config import EthecycleConfig
 from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
 from ethecycle.util.filesystem_helper import DEFAULT_LINES_PER_FILE, files_in_dir, split_big_file
@@ -63,6 +64,10 @@ parser.add_argument('-D', '--debug',
                     metavar='LINES',
                     const=DEFAULT_DEBUG_LINES)
 
+
+parser.add_argument('-x', '--extended-properties', action='store_true',
+                    help='include extended properties like scanner_url, transaction_hash, etc. in the graph')
+
 parser.add_argument(LIST_TOKEN_SYMBOLS, action='store_true',
                     help='show all configured tokens selectable with --token and exit')
 
@@ -80,6 +85,9 @@ args = parser.parse_args()
 if args.debug:
     console.log("Debug mode...")
     set_log_level('DEBUG')
+
+if args.extended_properties:
+    EthecycleConfig.include_extended_properties = True
 
 if not args.no_drop:
     delete_graph()

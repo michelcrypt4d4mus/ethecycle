@@ -2,6 +2,7 @@ from typing import Dict
 from urllib.parse import urljoin
 
 from ethecycle.blockchains.chain_info import ChainInfo
+from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
 
 
@@ -23,7 +24,8 @@ class Ethereum(ChainInfo):
         elif address == cls.ETH_ADDRESS:
             return 'n/a'
         else:
-            raise ValueError(f"{cls}: {address} has length {address_length}, cannot create etherscan URL")
+            log.warning(f"Can't generate scanner URL for address '{address}'")
+            #raise ValueError(f"{cls}: {address} has length {address_length}, cannot create etherscan URL")
 
     @classmethod
     def token_info_dir(cls) -> str:

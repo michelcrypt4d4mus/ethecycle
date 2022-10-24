@@ -133,9 +133,9 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> etree._ElementTr
 
     xml = etree.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
-    console.print(f"   (Skipped {wallets_already_in_graph_count} wallets that already existed in graph)", style='dim')
+    console.print(f"   Skipped {wallets_already_in_graph_count} wallets already extant in graph...", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
+    console.print(f"   Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))}", style='dim')
     return xml
 
 
@@ -155,13 +155,13 @@ def export_graphml(
     start_time = time.perf_counter()
     graphml = build_graphml(wallets_txns, blockchain)
     transform_duration = time.perf_counter() - start_time
-    console.print(f"   (Transformed to in memory graphML in {transform_duration:02.2f} seconds)", style='benchmark')
+    console.print(f"   Transformed to in memory graphML in {transform_duration:02.2f} seconds...", style='benchmark')
 
     with open(output_path, 'wb') as file:
         console.print(f"Writing graphML to '{output_path}'...")
         graphml.write(file)
         write_duration = time.perf_counter() - transform_duration - start_time
-        console.print(f"   (Wrote graphML to disk in {write_duration:02.2f} seconds)", style='benchmark')
+        console.print(f"   Wrote graphML to disk in {write_duration:02.2f} seconds...", style='benchmark')
 
     return output_path
 

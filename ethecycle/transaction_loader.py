@@ -35,7 +35,7 @@ def load_txn_csv_to_graph(
     start_time = time.perf_counter()
     wallets_txns = get_wallets_txions(txn_csv_path, blockchain, token)
     extract_duration = time.perf_counter() - start_time
-    console.print(f"   (Extracted CSV in {extract_duration:02.2f} seconds)", style='benchmark')
+    console.print(f"   Extracted CSV in {extract_duration:02.2f} seconds...", style='benchmark')
     output_file_path = str(GRAPHML_OUTPUT_DIR.joinpath(basename(txn_csv_path) + GRAPHML_EXTENSION))
     export_graphml(wallets_txns, ETHEREUM, output_file_path)
 
@@ -43,7 +43,7 @@ def load_txn_csv_to_graph(
         pretty_print_xml_file(output_file_path)
 
     console.print(f"Loading graphML from '{output_file_path}'...")
-    console.print(f"   ({file_size_string(output_file_path)})", style='dim')
+    console.print(f"   {file_size_string(output_file_path)}", style='dim')
     load_start_time = time.perf_counter()
 
     if not is_running_in_container():
@@ -51,7 +51,7 @@ def load_txn_csv_to_graph(
 
     g.io(output_file_path).read().iterate()
     load_duration = time.perf_counter() - load_start_time
-    console.print(f"   (Loaded to graph in {load_duration:02.2f} seconds)", style='benchmark')
+    console.print(f"   Loaded to graph in {load_duration:02.2f} seconds...", style='benchmark')
 
 
 def get_wallets_txions(file_path: str, blockchain: str, token: Optional[str] = None) -> WalletTxns:
@@ -79,7 +79,7 @@ def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None)
         token_address = chain_info.token_address(token)
 
     console.print(msg.append(f"transactions from '").append(file_path, 'green').append("'..."))
-    console.print(f"   ({file_size_string(file_path)})", style='dim')
+    console.print(f"   {file_size_string(file_path)}", style='dim')
 
     with open(file_path, newline='') as csvfile:
         txns = [

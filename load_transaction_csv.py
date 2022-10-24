@@ -5,10 +5,10 @@ from argparse import ArgumentParser
 from functools import partial
 from os import path
 
-from rich_argparse_plus import RichHelpFormatterPlus
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.text import Text
+from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.graph import print_obj_counts, delete_graph, g
@@ -93,18 +93,6 @@ load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args
 
 if path.isfile(args.csv_path):
     load_csv(args.csv_path)
-
-    # # To load edges from file edges cannot touch any extant vertices... Basically not possible. :(
-    # if file_size < SPLIT_BIG_FILES_THRESHOLD:
-    #     load_csv(args.csv_path)
-    # else:
-    #     console.print(f"Large file ({size_string(file_size)}) detected, splitting...", style='yellow')
-    #     files = split_big_file(args.csv_path, args.split)
-
-    #     for file in files:
-    #         load_csv(file)
-
-    #     console.print(f"Load complete. NOT cleaning up; {len(files)} files left in '{path.dirname(files[0])}'.")
 elif path.isdir(args.csv_path):
     files = files_in_dir(args.csv_path)
     msg = Text("Directory with ", 'yellow').append(str(len(files)), style='cyan').append(' files detected...')

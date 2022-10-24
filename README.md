@@ -61,6 +61,7 @@ If you get a message about how the gremlin-server is not available at `tinkerpop
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 1. Do you have a rough estimate as far as blocks per hour and/or blocks per day?
+1. Are there lists of tokens with their contract addresses available somewhere for each blockchain? (Esp. any blockchains we may care about)
 
 # Potential Queries
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)

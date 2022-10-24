@@ -63,3 +63,8 @@ for i, path in (enumerate(paths)):
             console.print(f"    Step {i}: Sent {path_element[0]} tokens in block {path_element[1]} to:")
 
 print_paths(two_hops)
+
+
+
+paths = g.V(medium_wallet).outE().as_('txn1').inV().outE().where(P.gt('txn1')).by(BLOCK_NUMBER).as_('txn2'). \
+    inV().outE().where(P.gt('txn2')).by(BLOCK_NUMBER).inV().path().by(T.id).by(values(BLOCK_NUMBER, NUM_TOKENS).fold()).toList()

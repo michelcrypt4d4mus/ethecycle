@@ -10,10 +10,12 @@ from gremlin_python.structure.graph import GraphTraversalSource
 from rich.text import Text
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.config import Config
 from ethecycle.export.graphml import GRAPHML_EXTENSION, export_graphml, pretty_print_xml_file
 from ethecycle.graph import g
 from ethecycle.transaction import Txn
-from ethecycle.util.filesystem_helper import GRAPHML_OUTPUT_DIR, file_size_string
+from ethecycle.util.filesystem_helper import (GRAPHML_OUTPUT_DIR, file_size_string,
+     is_running_in_container, system_path_to_container_path)
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.util.types import WalletTxns
@@ -27,7 +29,7 @@ def load_txn_csv_to_graph(
         blockchain: str,
         token: str,
         debug: bool = False
-    ) -> GraphTraversalSource:
+    ):
     """Load txns from a CSV file, filter them for token_address only, and load to graph via GraphML."""
     wallets_txns = get_wallets_txions(txn_csv_path, blockchain, token)
     output_file_path = str(GRAPHML_OUTPUT_DIR.joinpath(basename(txn_csv_path) + GRAPHML_EXTENSION))
@@ -38,8 +40,11 @@ def load_txn_csv_to_graph(
 
     console.print(f"Loading graphML from '{output_file_path}'...")
     console.print(f"   ({file_size_string(output_file_path)})", style='dim')
+
+    if not is_running_in_container():
+        output_file_path = system_path_to_container_path(output_file_path)
+
     g.io(output_file_path).read().iterate()
-    return g
 
 
 def get_wallets_txions(file_path: str, blockchain: str, token: Optional[str] = None) -> WalletTxns:

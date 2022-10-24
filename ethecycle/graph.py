@@ -1,18 +1,26 @@
+from operator import is_
+from os import environ
 from typing import List, Optional, Union
 
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.graph_traversal import (__, GraphTraversal, bothE, inE, out,
-     outE, range_, unfold, values)
+from gremlin_python.process.graph_traversal import (__, GraphTraversal, bothE, inE,
+      out, outE, range_, unfold, values)
 from gremlin_python.process.traversal import P, T
 #from gremlin_python.statics import load_statics
 from gremlin_python.structure.graph import Path
 
+from ethecycle.config import Config
+from ethecycle.util.filesystem_helper import is_running_in_container
 from ethecycle.util.logging import console, print_headline
 from ethecycle.util.num_helper import is_even
 from ethecycle.util.string_constants import *
 
-TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
+if is_running_in_container():
+    TINKERPOP_URI = 'ws://tinkerpop:8182/gremlin'
+else:
+    TINKERPOP_URI = 'ws://localhost:8182/gremlin'
+
 
 # Load the common predicates into global variable space
 # See: https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-imports

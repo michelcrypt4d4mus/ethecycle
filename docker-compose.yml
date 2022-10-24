@@ -4,9 +4,9 @@ services:
   tinkerpop:
     build:
       dockerfile: Dockerfile-tinkergraph
-    # Uncomment if you want to connect to the TinkerGraph server from outside of docker
-    # ports:
-    #   - '8182:8182'
+    # Uncomment ports if you want to connect to the TinkerGraph server from outside of docker
+    ports:
+       - '8182:8182'
     volumes:
       - .:/ethecycle
       #- ${TXION_DATA_DIR}:/trondata

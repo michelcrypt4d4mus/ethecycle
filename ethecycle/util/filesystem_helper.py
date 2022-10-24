@@ -1,5 +1,6 @@
 import importlib.resources
 import os
+import re
 import shutil
 from os import path
 from pathlib import Path, PosixPath
@@ -16,9 +17,10 @@ DATA_DIR = PROJECT_ROOT_DIR.joinpath('data')
 # If files are really big we automatically split them up for loading
 SPLIT_FILES_DIR = GRAPHML_OUTPUT_DIR.joinpath('tmp')
 DEFAULT_LINES_PER_FILE = 250000
+ETHECYCLE_DIR = '/ethecycle'
 
 # Token info repo is checked out as part of Dockerfile build process
-TOKEN_DATA_DIR = os.path.join(os.environ['TOKEN_DATA_PATH'], 'tokens', 'tokens')
+TOKEN_DATA_DIR = os.path.join(os.environ['TOKEN_DATA_REPO_PARENT_DIR'], 'tokens', 'tokens')
 
 
 def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:
@@ -34,6 +36,16 @@ def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:
 
 def file_size_string(file_path: str) -> str:
     return "File size: " + size_string(path.getsize(file_path))
+
+
+def is_running_in_container() -> bool:
+    """Hacky way to guess if we're in a container or on the OS."""
+    return str(PROJECT_ROOT_DIR).startswith(ETHECYCLE_DIR)
+
+
+def system_path_to_container_path(file_path: str):
+    """Take a file_path on the broader system and turn it into one accessible from inside containers."""
+    return re.sub(f".*{ETHECYCLE_DIR}", ETHECYCLE_DIR, str(file_path))
 
 
 def split_big_file(file_path: str, lines_per_file: int = DEFAULT_LINES_PER_FILE) -> List[str]:

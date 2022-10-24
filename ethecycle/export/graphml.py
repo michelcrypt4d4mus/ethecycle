@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from pympler.asizeof import asizeof
 
 from ethecycle.blockchains import get_chain_info
-from ethecycle.config import EthecycleConfig
+from ethecycle.config import Config
 from ethecycle.graph import is_wallet_in_graph
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
@@ -66,21 +66,21 @@ class GraphPropertyManager:
 
     @classmethod
     def node_properties(cls) -> List[GraphObjectProperty]:
-        if EthecycleConfig.include_extended_properties:
+        if Config.include_extended_properties:
             return cls.EXTENDED_NODE_PROPERTIES
         else:
             return cls.NODE_PROPERTIES
 
     @classmethod
     def edge_properties(cls) -> List[GraphObjectProperty]:
-        if EthecycleConfig.include_extended_properties:
+        if Config.include_extended_properties:
             return cls.EXTENDED_EDGE_PROPERTIES
         else:
             return cls.EDGE_PROPERTIES
 
     @classmethod
     def all_obj_properties(cls) -> List[GraphObjectProperty]:
-        if EthecycleConfig.include_extended_properties:
+        if Config.include_extended_properties:
             return cls.EXTENDED_EDGE_PROPERTIES + cls.NODE_PROPERTIES
         else:
             return cls.EDGE_PROPERTIES + cls.NODE_PROPERTIES
@@ -122,7 +122,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
 
-        if EthecycleConfig.include_extended_properties:
+        if Config.include_extended_properties:
             _attribute_xml(wallet, SCANNER_URL, chain_info.scanner_url(wallet_address))
 
     # Transactions are <edge> elements.

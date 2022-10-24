@@ -55,6 +55,19 @@ cycles = Graph.find_cycles(max_cycle_length=3, limit=100)
 
 Note that there's no persistence though the `gremlin-server` container will stay up (and keep the graph in memory) til you explicitly stop it with `docker stop`.
 
+### Running From Outside Of Docker Container
+Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Given the fact that reading/writing to the system disk is seriously crippled when done from inside a Docker container it can be faster to run the loader from the real OS.  To do so:
+
+1. Rebuild the docker image: `docker-compose build shell` (this actually has no bearing on running the loader from outside the OS but is required for stuff to work in the container given the changes made to support this way of doing things).
+1. Create a virtual env in the project dir: `python -m venv .venv`
+1. Activate the venv: `. .venv/bin/activate`
+1. Bring up the gremlin container if it's not up. `docker-compose up tinkerpop` should do it (maybe try with `-d` for daemon if there's an issue).
+1. You need to checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
+1. When running the loader script, you need to specify the parent dir of the token data repo with the `TOKEN_DATA_REPO_PARENT_DIR` environment variable. Example:
+   ```bash
+   TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
+   ```
+
 ### Troubleshooting
 If you get a message about how the gremlin-server is not available at `tinkerpop:8182` I suspect you just have to wait for the server to come up.  However if waiting doesn't seem to help it may be worth trying to relaunch the containers with `docker-compose up`.
 

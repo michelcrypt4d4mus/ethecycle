@@ -1,5 +1,4 @@
-#!/usr/local/bin/python
-from curses import meta
+#!/usr/bin/env python
 import sys
 from argparse import ArgumentParser
 from functools import partial
@@ -11,10 +10,11 @@ from rich.text import Text
 from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains import BLOCKCHAINS
-from ethecycle.config import EthecycleConfig
+from ethecycle.config import Config
 from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
-from ethecycle.util.filesystem_helper import DEFAULT_LINES_PER_FILE, files_in_dir, split_big_file
+from ethecycle.util.filesystem_helper import (DEFAULT_LINES_PER_FILE, files_in_dir,
+     split_big_file)
 from ethecycle.util.num_helper import MEGABYTE, size_string
 from ethecycle.util.logging import console, print_headline, set_log_level
 from ethecycle.util.string_constants import ETHEREUM
@@ -87,7 +87,7 @@ if args.debug:
     set_log_level('DEBUG')
 
 if args.extended_properties:
-    EthecycleConfig.include_extended_properties = True
+    Config.include_extended_properties = True
 
 if not args.no_drop:
     delete_graph()
@@ -100,6 +100,7 @@ if args.token and args.token not in CONFIGURED_TOKENS:
 load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args.token, debug=args.debug)
 
 if path.isfile(args.csv_path):
+    print ("LOAD FILE")
     load_csv(args.csv_path)
 elif path.isdir(args.csv_path):
     files = files_in_dir(args.csv_path)
@@ -108,6 +109,8 @@ elif path.isdir(args.csv_path):
 
     for file in files:
         args.csv_path(file)
+else:
+    raise ValueError(f"'{args.csv_path}' is not a file")
 
 
 if args.debug:

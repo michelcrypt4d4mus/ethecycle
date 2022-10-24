@@ -2,10 +2,11 @@
 Turn txions into Gremlin style GraphML.
 Example: https://github.com/tinkerpop/gremlin/blob/master/data/graph-example-1.xml
 """
+import time
 from dataclasses import dataclass
 from functools import partial
 from os import path
-from typing import List, Union
+from typing import List, Optional, Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
@@ -137,7 +138,11 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     return xml
 
 
-def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) -> str:
+def export_graphml(
+        wallets_txns: WalletTxns,
+        blockchain: str,
+        output_path: str
+    ) -> str:
     """
     Build graphML data for 'wallets_txns' and write to output_path. Note that output_path must also be
     accessible from the gremlin-server container.
@@ -146,10 +151,16 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
         log.warning(f"Forcing graphML output_path '{output_path}' to end in {GRAPHML_EXTENSION}.")
         output_path = output_path + GRAPHML_EXTENSION
 
+    start_time = time.perf_counter()
+    graphml = build_graphml(wallets_txns, blockchain)
+    transform_duration = time.perf_counter() - start_time
+    console.print(f"   (Transformed to in memory graphML in {transform_duration:02.2f} seconds)", style='benchmark')
+
     with open(output_path, 'wb') as file:
-        graphml = build_graphml(wallets_txns, blockchain)
         console.print(f"Writing graphML to '{output_path}'...")
         graphml.write(file)
+        write_duration = time.perf_counter() - transform_duration - start_time
+        console.print(f"   (Wrote graphML to disk in {write_duration:02.2f} seconds)", style='benchmark')
 
     return output_path
 

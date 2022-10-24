@@ -100,7 +100,6 @@ if args.token and args.token not in CONFIGURED_TOKENS:
 load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args.token, debug=args.debug)
 
 if path.isfile(args.csv_path):
-    print ("LOAD FILE")
     load_csv(args.csv_path)
 elif path.isdir(args.csv_path):
     files = files_in_dir(args.csv_path)

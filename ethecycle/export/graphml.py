@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from pympler.asizeof import asizeof
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.graph import is_wallet_in_graph
 from ethecycle.export.gremlin_csv import OUTPUT_DIR
 from ethecycle.transaction import Txn
 from ethecycle.util.logging import console, log
@@ -71,6 +72,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     all_txns = [txn for txns in wallets_txns.values() for txn in txns]
     chain_info = get_chain_info(blockchain)
     root = ET.Element('graphml', XML_PROPS)
+    wallets_already_in_graph_count = 0
 
     # <key> elements describe the properties vertices and edges can have.
     for graph_obj_property in GRAPH_OBJ_PROPERTIES:
@@ -83,6 +85,11 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     wallets = set(wallets_txns.keys()).union(set([txn.to_address for txn in all_txns]))
 
     for wallet_address in wallets:
+        if is_wallet_in_graph(wallet_address):
+            log.debug(f"Wallet '{wallet_address}' is already in graph...")
+            wallets_already_in_graph_count += 1
+            continue
+
         wallet = ET.SubElement(graph, 'node', {'id': wallet_address})
         _attribute_xml(wallet, LABEL_V, WALLET)
         _attribute_xml(wallet, SCANNER_URL, chain_info.scanner_url(wallet_address))
@@ -93,8 +100,9 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
 
     xml = ET.ElementTree(root)
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
+    console.print(f"   (Skipped {wallets_already_in_graph_count} wallets that already existed in graph)", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    console.print(f"In memory size of generated XML: {(size_string(_xml_size(xml)))}")
+    console.print(f"   (In memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
     return xml
 
 
@@ -115,11 +123,11 @@ def export_graphml(wallets_txns: WalletTxns, blockchain: str, output_path: str) 
     return output_path
 
 
-def pretty_print_xml_file(xml_file_path: str) -> None:
+def pretty_print_xml_file(xml_file_path: str, force: bool = False) -> None:
     """Pretty print an XML file"""
     file_size = path.getsize(xml_file_path)
 
-    if file_size > MEGABYTE:
+    if file_size > MEGABYTE and not force:
         console.print(f"XML file '{xml_file_path}' is {size_string(file_size)}, too big to print for debugging...")
         return
 
@@ -149,7 +157,6 @@ def _txn_edge_attribs(txn: Txn) -> dict:
 
 def _attribute_xml(graph_element: ET.Element, attr_name: str, attr_value: Union[float, int, str]):
     """Build the <data> elements that are graph properties."""
-    log.debug(f"Building attribute {attr_name}: {attr_value} for {graph_element}")
     data = ET.SubElement(graph_element, 'data', {'key': attr_name})
 
     if isinstance(attr_value, int):

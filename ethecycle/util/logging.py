@@ -13,8 +13,10 @@ log.addHandler(RichHandler(rich_tracebacks=True))
 
 
 def set_log_level(log_level) -> None:
-    log.setLevel(LOG_LEVEL)
-    log.handlers[0].setLevel(LOG_LEVEL)
+    log.setLevel(log_level)
+
+    for handler in log.handlers:
+        handler.setLevel(log_level)
 
 
 def print_wallet_header(wallet_address, wallet_txns):

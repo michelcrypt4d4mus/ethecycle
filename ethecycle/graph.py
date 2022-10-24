@@ -35,6 +35,11 @@ def count_txns() -> int:
     return g.E().hasLabel(TXN).count().next()
 
 
+def is_wallet_in_graph(address: str) -> bool:
+    """True if wallet with this address is in graph already."""
+    return g.V(address).count().next() != 0
+
+
 def wallets_without_txns() -> int:
     """https://stackoverflow.com/questions/52857677/gremlin-query-to-get-the-list-of-vertex-not-connected-with-any-other-vertex"""
     return g.V().where(__.not_(bothE())).count().next()

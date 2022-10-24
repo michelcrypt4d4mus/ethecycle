@@ -1,4 +1,5 @@
 #!/usr/local/bin/python
+from curses import meta
 import sys
 from argparse import ArgumentParser
 from functools import partial
@@ -12,7 +13,7 @@ from rich.text import Text
 from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
-from ethecycle.util.filesystem_helper import files_in_dir, split_big_file
+from ethecycle.util.filesystem_helper import DEFAULT_LINES_PER_FILE, files_in_dir, split_big_file
 from ethecycle.util.num_helper import MEGABYTE, size_string
 from ethecycle.util.logging import console, print_headline, set_log_level
 from ethecycle.util.string_constants import ETHEREUM
@@ -49,6 +50,11 @@ parser.add_argument('-t', '--token',
 
 parser.add_argument('-n', '--no-drop', action='store_true',
                     help="don't drop the current graph before loading new data")
+
+# parser.add_argument('-s', '--split',
+#                     help='large files will be split into chunks of LINES lines to reduce memory overhead',
+#                     metavar='LINES',
+#                     default=DEFAULT_LINES_PER_FILE)
 
 parser.add_argument('-D', '--debug',
                     help='debug output: shows full XML and optionally indicated number of elements in final graph',
@@ -90,17 +96,17 @@ if path.isfile(args.csv_path):
     console.print(f"Loading {size_string(file_size)}) file", style='yellow')
     load_csv(args.csv_path)
 
-    # in order to load in chunks you need to avoid duplicate vertices...
+    # # To load edges from file edges cannot touch any extant vertices... Basically not possible. :(
     # if file_size < SPLIT_BIG_FILES_THRESHOLD:
     #     load_csv(args.csv_path)
     # else:
     #     console.print(f"Large file ({size_string(file_size)}) detected, splitting...", style='yellow')
-    #     files = split_big_file(args.csv_path)
+    #     files = split_big_file(args.csv_path, args.split)
 
     #     for file in files:
     #         load_csv(file)
 
-    #     console.print(f"Load complete. NOT cleaning up {len(files)} in '{path.dirname(files[0])}'.")
+    #     console.print(f"Load complete. NOT cleaning up; {len(files)} files left in '{path.dirname(files[0])}'.")
 elif path.isdir(args.csv_path):
     files = files_in_dir(args.csv_path)
     msg = Text("Directory with ", 'yellow').append(str(len(files)), style='cyan').append(' files detected...')

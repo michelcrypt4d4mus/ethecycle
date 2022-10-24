@@ -29,7 +29,7 @@ class Txn():
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
 
         chain_info = get_chain_info(self.blockchain)
-        self.token = chain_info.get_token_by_address(self.token_address)
+        self.token = chain_info.token_symbol(self.token_address)
         self.scanner_url = chain_info.scanner_url(self.transaction_hash)
 
     def __rich__(self) -> Text:

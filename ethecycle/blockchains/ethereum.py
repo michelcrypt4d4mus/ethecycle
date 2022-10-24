@@ -25,7 +25,7 @@ class Ethereum(ChainInfo):
             return 'n/a'
         else:
             log.warning(f"Can't generate scanner URL for address '{address}'")
-            #raise ValueError(f"{cls}: {address} has length {address_length}, cannot create etherscan URL")
+            return 'n/a'
 
     @classmethod
     def token_info_dir(cls) -> str:

@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Optional
 from urllib.parse import urljoin
 
 from ethecycle.blockchains.chain_info import ChainInfo
+from ethecycle.blockchains.token import Token
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
 
@@ -10,11 +11,27 @@ class Ethereum(ChainInfo):
     ADDRESS_LENGTH = 42
     TXN_HASH_LENGTH = 66
     SCANNER_BASE_URI = 'https://etherscan.io/'
-    TOKEN_INFO_DIR = 'eth'
-    ETH_ADDRESS = '0x0'
+    ETH_ADDRESS = '0x0'  # Synthetic address because eth itself is not a token
+    ETH = 'eth'
+
+    # eth is not actually a token so this is a synthetic 'token'
+    ETH_TOKEN = Token(
+        blockchain=ETHEREUM,
+        token_type=None,
+        token_address=ETH_ADDRESS,
+        symbol=ETH,
+        name=ETHEREUM,
+        decimals=18  # TODO: is this right?
+    )
 
     @classmethod
-    def scanner_url(cls, address: str) -> str:
+    def add_hardcoded_tokens(cls) -> None:
+        """Add ethereum as 0x0"""
+        cls._tokens[cls.ETH] = cls.ETH_TOKEN
+        cls._tokens_by_address[cls.ETH_ADDRESS] = cls.ETH_TOKEN
+
+    @classmethod
+    def scanner_url(cls, address: str) -> Optional[str]:
         address_length = len(address)
 
         if address_length == cls.ADDRESS_LENGTH:
@@ -22,14 +39,14 @@ class Ethereum(ChainInfo):
         elif address_length == cls.TXN_HASH_LENGTH:
             return cls._build_scanner_url('tx', address)
         elif address == cls.ETH_ADDRESS:
-            return 'n/a'
+            return None
         else:
             log.warning(f"Can't generate scanner URL for address '{address}'")
-            return 'n/a'
+            return None
 
     @classmethod
     def token_info_dir(cls) -> str:
-        return cls.TOKEN_INFO_DIR
+        return cls.ETH
 
     @classmethod
     def _build_scanner_url(cls, restful_path: str, address: str) -> str:

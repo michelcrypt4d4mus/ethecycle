@@ -5,7 +5,7 @@ Example: https://github.com/tinkerpop/gremlin/blob/master/data/graph-example-1.x
 from dataclasses import dataclass
 from functools import partial
 from os import path
-from typing import Union
+from typing import List, Union
 from xml.etree import ElementTree as ET
 
 from bs4 import BeautifulSoup
@@ -54,31 +54,32 @@ class GraphPropertyManager:
         EdgeProperty('num_tokens', 'double'),
         EdgeProperty('block_number', 'int'),
         EdgeProperty('token_address', 'string'),
+        EdgeProperty('token', 'string'),
     ]
 
     EXTENDED_NODE_PROPERTIES = ALL_OBJ_PROPERTIES + NODE_PROPERTIES
 
     EXTENDED_EDGE_PROPERTIES = ALL_OBJ_PROPERTIES + EDGE_PROPERTIES + [
-        EdgeProperty('token', 'string'),
+        EdgeProperty('blockchain', 'string'),
         EdgeProperty('transaction_hash', 'string'),
     ]
 
     @classmethod
-    def node_properties(cls):
+    def node_properties(cls) -> List[GraphObjectProperty]:
         if EthecycleConfig.include_extended_properties:
             return cls.EXTENDED_NODE_PROPERTIES
         else:
             return cls.NODE_PROPERTIES
 
     @classmethod
-    def edge_properties(cls):
+    def edge_properties(cls) -> List[GraphObjectProperty]:
         if EthecycleConfig.include_extended_properties:
             return cls.EXTENDED_EDGE_PROPERTIES
         else:
             return cls.EDGE_PROPERTIES
 
     @classmethod
-    def all_obj_properties(cls):
+    def all_obj_properties(cls) -> List[GraphObjectProperty]:
         if EthecycleConfig.include_extended_properties:
             return cls.EXTENDED_EDGE_PROPERTIES + cls.NODE_PROPERTIES
         else:
@@ -132,7 +133,7 @@ def build_graphml(wallets_txns: WalletTxns, blockchain: str) -> ET.ElementTree:
     console.print(f"Created XML for {len(wallets)} wallet nodes...")
     console.print(f"   (Skipped {wallets_already_in_graph_count} wallets that already existed in graph)", style='dim')
     console.print(f"Created XML for {len(all_txns)} transaction edges...")
-    console.print(f"   (In memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
+    console.print(f"   (Estimated in memory size of generated XML: {(size_string(_xml_size(xml)))})", style='dim')
     return xml
 
 
@@ -170,7 +171,10 @@ def _add_transaction(graph_xml: ET.Element, txn: Txn) -> ET.Element:
     txn.labelE = TXN  # Tag with 'labelE' for convenience of upcoming for loop
 
     for edge_property in GraphPropertyManager.edge_properties():
-        _attribute_xml(edge, edge_property.name, vars(txn)[edge_property.name])
+        property_value = vars(txn)[edge_property.name]
+
+        if property_value:
+            _attribute_xml(edge, edge_property.name, vars(txn)[edge_property.name])
 
     return edge
 

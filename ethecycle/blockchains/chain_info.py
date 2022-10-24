@@ -5,7 +5,7 @@ Should be implemented for each chain with the appropriate overrides of the abstr
 import json
 from abc import ABC, abstractmethod
 from os import listdir, path
-from typing import Dict
+from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
 from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
@@ -28,26 +28,35 @@ class ChainInfo(ABC):
         pass
 
     @classmethod
+    def add_hardcoded_tokens(cls) -> None:
+        """
+        Overload this method for anything not in the ethereum-lists GitHub repo.
+        It should add key/value pairs to both cls_tokens and cls_tokens_by_address.
+        """
+        pass
+
+    @classmethod
     def token_address(cls, token_symbol: str) -> str:
         """Lookup a contract address by the symbol"""
         return cls.tokens()[token_symbol].token_address
 
     @classmethod
-    def token_symbol(cls, token_address: str) -> str:
+    def token_symbol(cls, token_address: str) -> Optional[str]:
         """Reverse lookup - takes an address, returns a symbol"""
         cls.tokens()  # Force load the tokens
 
         try:
             return cls._tokens_by_address[token_address].symbol
         except KeyError:
-            return 'unknown'
+            return None
 
     @classmethod
-    def tokens(cls):
+    def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
         if len(cls._tokens) > 0:
             return cls._tokens
 
+        cls.add_hardcoded_tokens()
         token_data_dir = path.join(TOKEN_DATA_DIR, cls.token_info_dir())
 
         for token_info_json_file in listdir(token_data_dir):
@@ -59,7 +68,7 @@ class ChainInfo(ABC):
                 address = token_info['address'].lower()
 
                 token = Token(
-                    blockchain=str(cls),
+                    blockchain=str(cls).lower(),
                     token_type=token_info.get('type'),  # Not always provided
                     token_address=address,
                     symbol=symbol,

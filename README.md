@@ -1,6 +1,7 @@
 # Transaction Graph DB
-* Wallet addresses are vertices AKA nodes
-* ERC20 Transactions are edges and contain properties like `value`, `block_number`, etc.
+* Wallet addresses are vertices AKA nodes. All vertices currently use the label `wallet` so the `.hasLabel()` predicates seen in many tutorials are irrelevant and do not need to be used.
+* Transactions are edges and contain properties like `value`, `block_number`, etc. All edges use the label `transaction` so the same rule applies. Theoretically we could distinguish `ETH` txions from `ERC20` txions from gas fees from swaps etc. down the road but for now they're just `transaction`.
+* Look in [Graph](ethecycle/graph.py) for examples of queries that actually work.
 
 ### Prerequisites
 This is known to work with these versions of `docker` and `docker-compose`.

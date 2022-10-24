@@ -1,17 +1,23 @@
 #!/usr/local/bin/python
 import sys
 from argparse import ArgumentParser
+from functools import partial
+from os import path
 
+from rich_argparse_plus import RichHelpFormatterPlus
 from rich.columns import Columns
 from rich.panel import Panel
-from rich_argparse_plus import RichHelpFormatterPlus
+from rich.text import Text
 
 from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.graph import print_obj_counts, delete_graph, g
 from ethecycle.transaction_loader import load_txn_csv_to_graph
+from ethecycle.util.filesystem_helper import files_in_dir, split_big_file
+from ethecycle.util.num_helper import MEGABYTE, size_string
 from ethecycle.util.logging import console, print_headline, set_log_level
 from ethecycle.util.string_constants import ETHEREUM
 
+SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
 LIST_TOKEN_SYMBOLS = '--list-token-symbols'
 DEFAULT_DEBUG_LINES = 5
 
@@ -30,7 +36,8 @@ parser = ArgumentParser(
     description="Load transactions from a CSV into Gremlin graph via XML export/import."
 )
 
-parser.add_argument('csv_path', metavar='CSV_FILE', help='CSV containing transaction data')
+parser.add_argument('csv_path',
+                    help='either a CSV containing txion data or a directory containing multiple such CSVs')
 
 parser.add_argument('-b', '--blockchain',
                     help='blockchain this CSV contains data for',
@@ -74,7 +81,34 @@ if not args.no_drop:
 if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")
 
-load_txn_csv_to_graph(args.csv_path, args.blockchain, args.token, args.debug)
+
+# The real action is here.
+load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args.token, debug=args.debug)
+
+if path.isfile(args.csv_path):
+    file_size = path.getsize(args.csv_path)
+    console.print(f"Loading {size_string(file_size)}) file", style='yellow')
+    load_csv(args.csv_path)
+
+    # in order to load in chunks you need to avoid duplicate vertices...
+    # if file_size < SPLIT_BIG_FILES_THRESHOLD:
+    #     load_csv(args.csv_path)
+    # else:
+    #     console.print(f"Large file ({size_string(file_size)}) detected, splitting...", style='yellow')
+    #     files = split_big_file(args.csv_path)
+
+    #     for file in files:
+    #         load_csv(file)
+
+    #     console.print(f"Load complete. NOT cleaning up {len(files)} in '{path.dirname(files[0])}'.")
+elif path.isdir(args.csv_path):
+    files = files_in_dir(args.csv_path)
+    msg = Text("Directory with ", 'yellow').append(str(len(files)), style='cyan').append(' files detected...')
+    console.print(msg)
+
+    for file in files:
+        args.csv_path(file)
+
 
 if args.debug:
     print_headline(f"Sample of {args.debug} Wallets in Graph")

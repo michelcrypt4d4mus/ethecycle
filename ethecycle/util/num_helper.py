@@ -4,12 +4,16 @@ from pympler.asizeof import asizeof
 
 MILLION = 1000000
 BILLION = MILLION * 1000
+
 BYTES = 'bytes'
+KILOBYTE = 1024
+MEGABYTE = 1024 * KILOBYTE
+GIGABYTE = 1024 * MEGABYTE
 
 SIZES = {
-    'gigabytes': 1024 * 1024 * 1024,
-    'megabytes': 1024 * 1024,
-    'kilobytes': 1024,
+    'gigabytes': GIGABYTE,
+    'megabytes': MEGABYTE,
+    'kilobytes': KILOBYTE,
     BYTES: 1,
 }
 

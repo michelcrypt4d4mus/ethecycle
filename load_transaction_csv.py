@@ -92,8 +92,6 @@ if args.token and args.token not in CONFIGURED_TOKENS:
 load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args.token, debug=args.debug)
 
 if path.isfile(args.csv_path):
-    file_size = path.getsize(args.csv_path)
-    console.print(f"Loading {size_string(file_size)}) file", style='yellow')
     load_csv(args.csv_path)
 
     # # To load edges from file edges cannot touch any extant vertices... Basically not possible. :(

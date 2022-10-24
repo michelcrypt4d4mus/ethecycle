@@ -3,7 +3,7 @@ Load transactions from CSV as python lists and/or directly into the graph databa
 """
 import csv
 from itertools import groupby
-from os.path import basename
+from os.path import basename, getsize
 from typing import Dict, List, Optional
 
 from gremlin_python.structure.graph import GraphTraversalSource
@@ -15,6 +15,7 @@ from ethecycle.graph import g
 from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import GRAPHML_OUTPUT_DIR
 from ethecycle.util.logging import console
+from ethecycle.util.num_helper import size_string
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.util.types import WalletTxns
 
@@ -54,18 +55,21 @@ def get_wallets_txions(file_path: str, blockchain: str, token: Optional[str] = N
 def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None) -> List[Txn]:
     """Load txions from a CSV, optionally filtered for 'token' records only."""
     chain_info = get_chain_info(blockchain)
+    file_size = getsize(file_path)
+    console.print(f"Loading {size_string(file_size)}) file", style='yellow')
     token_address = None
 
     if not (token is None or token in chain_info.tokens()):
         raise ValueError(f"Address for '{token}' token not found.")
 
-    msg = Text('Loading ').append(blockchain, style='color(112)').append(' ')
+    msg = Text('Loading ').append(blockchain, style='color(112)').append(' chain ')
 
     if token:
         msg.append(token + ' ', style='color(207)')
         token_address = chain_info.token_address(token)
 
     console.print(msg.append(f"transactions from '").append(file_path, 'green').append("'..."))
+    console.print(f"   (File size: {size_string(file_size)})", style='dim')
 
     with open(file_path, newline='') as csvfile:
         # for row in csv.reader(csvfile, delimiter=','):

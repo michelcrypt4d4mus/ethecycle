@@ -1,23 +1,17 @@
 #!/usr/bin/env python
-from multiprocessing.sharedctypes import Value
 import sys
 from argparse import ArgumentParser
-from functools import partial
 from os import path
 
 from rich.columns import Columns
 from rich.panel import Panel
-from rich.text import Text
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
-from ethecycle.export.neo4j import LOADER_CLI_ARGS, NEO4J_DB, generate_neo4j_csvs
+from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
-from ethecycle.util.filesystem_helper import (DEFAULT_LINES_PER_FILE, files_in_dir,
-     split_big_file)
-from ethecycle.util.num_helper import MEGABYTE, size_string
-from ethecycle.util.logging import console, print_headline, set_log_level
+from ethecycle.util.num_helper import MEGABYTE
+from ethecycle.util.logging import console, set_log_level
 from ethecycle.util.string_constants import ETHEREUM
 
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
@@ -80,8 +74,7 @@ if args.debug:
     set_log_level('DEBUG')
 
 if args.drop:
-    console.print(f"Generated neo4j-admin command will overwrite current DB '{NEO4J_DB}'...", style='red')
-    LOADER_CLI_ARGS['overwrite-destination'] = 'true'
+    Config.drop_database = True
 
 if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")

@@ -33,7 +33,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
     console.print(f"To actually load the CSV you need to get a shell on the Neo4j container run and copy paste the command below.")
     console.print(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n")
     console.print(f"{INDENT}scripts/docker/neo4j_shell.sh\n", style='bright_cyan')
-    console.print(f"This is the command to copy/paste. Note that it needs to be presented to bash as a single command.\n")
+    console.print(f"This is the command to copy/paste. Note that it needs to be presented to bash as a single command - no newlines!.")
     console.print(INDENT + neo4j_csvs.generate_admin_load_bash_command(), style='bright_red')
     console.line(2)
 

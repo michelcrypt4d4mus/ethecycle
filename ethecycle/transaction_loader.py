@@ -45,7 +45,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
         console.print(f"   Generated CSV for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
 
     generation_duration = time.perf_counter() - start_time
-    console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='benchmark')
+    console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='yellow')
     shell_command = Neo4jCsvs.admin_load_bash_command_multi_file(neo4j_csvs)
     print(shell_command)
     #console.print(INDENT + shell_command, style='bright_red')

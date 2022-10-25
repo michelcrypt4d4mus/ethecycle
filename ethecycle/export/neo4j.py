@@ -11,13 +11,14 @@ import csv
 from datetime import datetime
 from os import environ, path
 from typing import Any, Dict, List, Optional
+
+from rich.text import Text
+
 from ethecycle.config import Config
 from ethecycle.transaction import Txn
-
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import ETHEREUM
-from ethecycle.util.types import WalletTxns
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'
@@ -29,7 +30,7 @@ START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
 NODE_LABEL = 'WALLET'
 EDGE_LABEL = 'TXN'
-MISSING_ADDRESS = '[no_address]'
+MISSING_ADDRESS = 'no_address'
 INDENT = '      '
 
 WALLET_CSV_HEADER = [
@@ -56,6 +57,17 @@ LOADER_CLI_ARGS = {
     'skip-duplicate-nodes': 'true'
 }
 
+LOAD_INSTRUCTIONS = Text(f"\nTo load the CSV into Neo4j launch a shell on the Neo4j container run and copy paste the command below.") + \
+        Text(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n\n") + \
+        Text(f"{INDENT}scripts/docker/neo4j_shell.sh\n\n", style='bright_cyan')
+
+INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='bright_yellow') + \
+    Text(f"You must stop the server to run incremental import:\n") + \
+    Text(f"      {STOP_SERVER_CMD}\n", style='bright_cyan') + \
+    Text(f"Afterwards restart with:\n") + \
+    Text(f"      {START_SERVER_CMD}\n\n", style='bright_cyan') + \
+    Text(f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead", style='bright_yellow bold blink reverse')
+
 
 class Neo4jCsvs:
     def __init__(self, csv_basename: Optional[str] = None) -> None:
@@ -70,24 +82,22 @@ class Neo4jCsvs:
         neo4j_csvs = [write_header_csvs()] + neo4j_csvs
         wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
         txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
+        console.print(LOAD_INSTRUCTIONS)
 
-        console.print(f"To actually load the CSV you need to get a shell on the Neo4j container run and copy paste the command below.")
-        console.print(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n")
-        console.print(f"{INDENT}scripts/docker/neo4j_shell.sh\n", style='bright_cyan')
-        console.print(f"This is the command to copy/paste. Note that it needs to be presented to bash as a single command - no newlines!.")
+        msg = Text(
+            f"This is the command to copy/paste. It needs to be presented to bash as a single command (no newlines).\n",
+            style='color(183)'
+        )
+        console.print(msg)
 
         if Config.drop_database:
-            console.print(f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!", style='red blink')
+            msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!\n"
+            console.print(msg, style='red blink bold', justify='center')
             LOADER_CLI_ARGS['overwrite-destination'] = 'true'
             subcommand = 'full'
         else:
-            console.print(f"Incremental import to current DB '{NEO4J_DB}'...", style='bright_yellow')
-            console.print(f"You must stop the server to run incremental import:")
-            console.print(f"      {STOP_SERVER_CMD}", style='bright_cyan')
-            console.print(f"Afterwards restart with:")
-            console.print(f"      {START_SERVER_CMD}\n", style='bright_cyan')
-            console.print(f"Incremental load via neo4j-admin doesn't seem to work; use LOAD CSV instead", style='bright_red blink reverse')
-            LOADER_CLI_ARGS['force'] = 'true'
+            console.print(INCREMENTAL_INSTRUCTIONS)
+            LOADER_CLI_ARGS['force'] = 'true'  # Apparently required for incremental load
             #LOADER_CLI_ARGS['stage'] = 'build'
             subcommand = 'incremental'
 

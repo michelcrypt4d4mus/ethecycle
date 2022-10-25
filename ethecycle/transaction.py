@@ -22,14 +22,14 @@ class Txn():
     block_number: int
 
     def __post_init__(self):
+        # Some txns have multiple internal transfers so append log_index to achieve uniqueness
+        self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
+        chain_info = get_chain_info(self.blockchain)
+        self.token = chain_info.token_symbol(self.token_address)
         self.num_tokens = float(self.csv_value) / 10 ** 18
         self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
-        # Some txns have multiple internal transfers so append log_index to achieve uniqueness
-        self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
 
-        chain_info = get_chain_info(self.blockchain)
-        self.token = chain_info.token_symbol(self.token_address)
         self.scanner_url = chain_info.scanner_url(self.transaction_hash)
 
     def __rich__(self) -> Text:

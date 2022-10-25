@@ -10,7 +10,7 @@ Data types: int, long, float, double, boolean, byte, short, char, string, point,
 import csv
 from datetime import datetime
 from os import environ, path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from ethecycle.config import Config
 from ethecycle.transaction import Txn
 
@@ -29,6 +29,8 @@ START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
 NODE_LABEL = 'WALLET'
 EDGE_LABEL = 'TXN'
+MISSING_ADDRESS = '[no_address]'
+INDENT = '      '
 
 WALLET_CSV_HEADER = [
     'address:ID',
@@ -51,19 +53,29 @@ TXN_CSV_HEADER = [
 # Keys will be prefixed with '--' in the final command
 LOADER_CLI_ARGS = {
     'id-type': 'string',
+    'skip-duplicate-nodes': 'true'
 }
 
 
 class Neo4jCsvs:
-    def __init__(self) -> None:
+    def __init__(self, csv_basename: Optional[str] = None) -> None:
         """Generates filenames based on the timestamp."""
-        output_file_timestamp_str = timestamp_for_filename()
-        build_csv_path = lambda label: path.join(OUTPUT_DIR, f"{label}_{output_file_timestamp_str}.csv")
+        csv_basename = csv_basename or timestamp_for_filename()
+        build_csv_path = lambda label: path.join(OUTPUT_DIR, f"{label}_{csv_basename}.csv")
         self.wallet_csv_path = build_csv_path(NODE_LABEL)
         self.txn_csv_path = build_csv_path(EDGE_LABEL)
 
-    def generate_admin_load_bash_command(self) -> str:
-        """Generate a shell command to be run on the Neo4j container"""
+    @staticmethod
+    def admin_load_bash_command_multi_file(neo4j_csvs: List['Neo4jCsvs']) -> str:
+        neo4j_csvs = [write_header_csvs()] + neo4j_csvs
+        wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
+        txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
+
+        console.print(f"To actually load the CSV you need to get a shell on the Neo4j container run and copy paste the command below.")
+        console.print(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n")
+        console.print(f"{INDENT}scripts/docker/neo4j_shell.sh\n", style='bright_cyan')
+        console.print(f"This is the command to copy/paste. Note that it needs to be presented to bash as a single command - no newlines!.")
+
         if Config.drop_database:
             console.print(f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!", style='red blink')
             LOADER_CLI_ARGS['overwrite-destination'] = 'true'
@@ -75,19 +87,17 @@ class Neo4jCsvs:
             console.print(f"Afterwards restart with:")
             console.print(f"      {START_SERVER_CMD}\n", style='bright_cyan')
             console.print(f"Incremental load via neo4j-admin doesn't seem to work; use LOAD CSV instead", style='bright_red blink reverse')
-            LOADER_CLI_ARGS['skip-duplicate-nodes'] = 'true'
             LOADER_CLI_ARGS['force'] = 'true'
             #LOADER_CLI_ARGS['stage'] = 'build'
             subcommand = 'incremental'
 
-        console.line()
         load_args = [f"--{k}={v}" for k, v in LOADER_CLI_ARGS.items()]
-        load_args.append(f"--nodes={NODE_LABEL}={self.wallet_csv_path}")
-        load_args.append(f"--relationships={EDGE_LABEL}={self.txn_csv_path}")
+        load_args.append(f"--nodes={NODE_LABEL}={','.join(wallet_csvs)}")
+        load_args.append(f"--relationships={EDGE_LABEL}={','.join(txn_csvs)}")
         return f"{CSV_IMPORT_CMD} {subcommand} {' '.join(load_args)} {NEO4J_DB}"
 
 
-def generate_neo4j_csvs(wallets_txns: WalletTxns, blockchain: str = ETHEREUM) -> Neo4jCsvs:
+def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsvs:
     """Break out wallets and txions into two CSV files for nodes and edges."""
     extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
     neo4j_csvs = Neo4jCsvs()
@@ -95,10 +105,8 @@ def generate_neo4j_csvs(wallets_txns: WalletTxns, blockchain: str = ETHEREUM) ->
     # Wallet nodes
     with open(neo4j_csvs.wallet_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(WALLET_CSV_HEADER)
-        # TODO: We need all to and from addresses... the WalletTxns is not the most helpful structure
-        all_txns = [txn for txns in wallets_txns.values() for txn in txns]
-        wallets = set(wallets_txns.keys()).union(set([txn.to_address for txn in all_txns]))
+        wallets = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
+        wallets.add(MISSING_ADDRESS)
 
         for wallet_address in wallets:
             csv_writer.writerow([wallet_address, blockchain, extracted_at])
@@ -106,13 +114,27 @@ def generate_neo4j_csvs(wallets_txns: WalletTxns, blockchain: str = ETHEREUM) ->
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(TXN_CSV_HEADER)
 
-        for txns in wallets_txns.values():
-            for txn in txns:
-                csv_writer.writerow(_neo4j_csv_row(txn) + [extracted_at])
+        for txn in txns:
+            csv_writer.writerow(_neo4j_csv_row(txn) + [extracted_at])
 
     return neo4j_csvs
+
+
+def write_header_csvs() -> Neo4jCsvs:
+    """One row CSV with header info"""
+    header_csvs = Neo4jCsvs('header')
+
+    with open(header_csvs.txn_csv_path, 'w') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(TXN_CSV_HEADER)
+
+    with open(header_csvs.wallet_csv_path, 'w') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(WALLET_CSV_HEADER)
+
+    return header_csvs
+
 
 def _neo4j_csv_row(txn: Txn) -> List[Any]:
     """Generate row from Txn class."""
@@ -121,8 +143,8 @@ def _neo4j_csv_row(txn: Txn) -> List[Any]:
         txn.blockchain,
         txn.token_address,
         txn.token,
-        txn.from_address,
-        txn.to_address,
+        txn.from_address or MISSING_ADDRESS,
+        txn.to_address or MISSING_ADDRESS,
         txn.num_tokens,
         txn.block_number
     ]

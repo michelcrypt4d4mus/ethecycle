@@ -4,37 +4,51 @@ Load transactions from CSV as python lists and/or directly into the graph databa
 import csv
 import time
 from itertools import groupby
+from os import path
 from typing import List, Optional
 
 from rich.text import Text
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.config import Config
 from ethecycle.transaction import Txn
-from ethecycle.export.neo4j import generate_neo4j_csvs
-from ethecycle.util.filesystem_helper import (file_size_string)
+from ethecycle.export.neo4j import INDENT, Neo4jCsvs, generate_neo4j_csvs
+from ethecycle.util.filesystem_helper import (file_size_string, files_in_dir)
 from ethecycle.util.logging import console
 from ethecycle.util.types import WalletTxns
-
-INDENT = '      '
 
 time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address
 
 
 def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optional[str] = None) -> None:
-    start_time = time.perf_counter()
-    wallets_txns = get_wallets_txions(txn_csv_path, blockchain, token)
-    extract_duration = time.perf_counter() - start_time
-    console.print(f"   Extracted data from source CSV in {extract_duration:02.2f} seconds...", style='benchmark')
-    neo4j_csvs = generate_neo4j_csvs(wallets_txns)
-    generation_duration = time.perf_counter() - extract_duration -  start_time
-    console.print(f"   Generated import CSVs in {generation_duration:02.2f} seconds...", style='benchmark')
+    # Actual loading happens here
+    if path.isfile(txn_csv_path):
+        csv_files = [txn_csv_path]
+    elif path.isdir(txn_csv_path):
+        console.print('Directory detected...', style='grey')
+        csv_files = [f for f in files_in_dir(txn_csv_path)] # if f.lower().endswith('.csv')]
+    else:
+        raise ValueError(f"'{txn_csv_path}' is not a filesystem path")
 
-    console.print(f"To actually load the CSV you need to get a shell on the Neo4j container run and copy paste the command below.")
-    console.print(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n")
-    console.print(f"{INDENT}scripts/docker/neo4j_shell.sh\n", style='bright_cyan')
-    console.print(f"This is the command to copy/paste. Note that it needs to be presented to bash as a single command - no newlines!.")
-    console.print(INDENT + neo4j_csvs.generate_admin_load_bash_command(), style='bright_red')
+    neo4j_csvs: List[Neo4jCsvs] = []
+    start_time = time.perf_counter()
+
+    for csv_file in csv_files:
+        start_file_time = time.perf_counter()
+        txns = load_txion_csv(csv_file, blockchain, token)
+        extract_duration = time.perf_counter() - start_file_time
+        console.print(f"   Extracted data from source CSV in {extract_duration:02.2f} seconds...", style='benchmark')
+
+        neo4j_csvs.append(generate_neo4j_csvs(txns, blockchain))
+        generation_duration = time.perf_counter() - extract_duration -  start_time
+        console.print(f"   Generated CSV for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
+
+    generation_duration = time.perf_counter() - start_time
+    console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='benchmark')
+    shell_command = Neo4jCsvs.admin_load_bash_command_multi_file(neo4j_csvs)
+    print(shell_command)
+    #console.print(INDENT + shell_command, style='bright_red')
     console.line(2)
 
 

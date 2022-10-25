@@ -17,7 +17,6 @@ from ethecycle.util.string_constants import ETHEREUM
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
 LIST_TOKEN_SYMBOLS = '--list-token-symbols'
 DEFAULT_DEBUG_LINES = 5
-INDENT = '      '
 
 CONFIGURED_TOKENS = set([
     token
@@ -80,12 +79,7 @@ if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")
 
 # Actual loading happens here
-if path.isfile(args.csv_path):
-    create_neo4j_bulk_load_csvs(args.csv_path, args.blockchain, args.token)
-elif path.isdir(args.csv_path):
-    raise ValueError("Loading directories is not supported yet. Specify a single file.")
-else:
-    raise ValueError(f"'{args.csv_path}' is not a file")
+create_neo4j_bulk_load_csvs(args.csv_path, args.blockchain, args.token)
 
 # if args.debug:
 #     print_headline(f"Sample of {args.debug} Wallets in Graph")

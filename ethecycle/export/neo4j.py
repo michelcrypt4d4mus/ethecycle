@@ -59,14 +59,19 @@ LOADER_CLI_ARGS = {
 
 LOAD_INSTRUCTIONS = Text(f"\nTo load the CSV into Neo4j launch a shell on the Neo4j container run and copy paste the command below.") + \
         Text(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n\n") + \
-        Text(f"{INDENT}scripts/docker/neo4j_shell.sh\n\n", style='bright_cyan')
+        Text(f"{INDENT}scripts/docker/neo4j_shell.sh\n\n", style='bright_cyan') + \
+        Text(f"The command to copy/paste is below.", style='color(183) underline')
 
-INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='bright_yellow') + \
+INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='magenta bold') + \
     Text(f"You must stop the server to run incremental import:\n") + \
     Text(f"      {STOP_SERVER_CMD}\n", style='bright_cyan') + \
     Text(f"Afterwards restart with:\n") + \
     Text(f"      {START_SERVER_CMD}\n\n", style='bright_cyan') + \
-    Text(f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead", style='bright_yellow bold blink reverse')
+    Text(
+        f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead",
+        style='bright_yellow bold blink reverse',
+        justify='center'
+    )
 
 
 class Neo4jCsvs:
@@ -78,17 +83,11 @@ class Neo4jCsvs:
         self.txn_csv_path = build_csv_path(EDGE_LABEL)
 
     @staticmethod
-    def admin_load_bash_command_multi_file(neo4j_csvs: List['Neo4jCsvs']) -> str:
+    def admin_load_bash_command(neo4j_csvs: List['Neo4jCsvs']) -> str:
         neo4j_csvs = [write_header_csvs()] + neo4j_csvs
         wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
         txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
         console.print(LOAD_INSTRUCTIONS)
-
-        msg = Text(
-            f"This is the command to copy/paste. It needs to be presented to bash as a single command (no newlines).\n",
-            style='color(183)'
-        )
-        console.print(msg)
 
         if Config.drop_database:
             msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!\n"

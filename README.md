@@ -77,6 +77,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [Neo4j Desktop](https://neo4j.com/developer/neo4j-desktop/)
 * [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
 * [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
+* [Neo4J operations manual](https://neo4j.com/docs/operations-manual/current/)
 * [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
 * [Neo4j admin tools/config](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/)
 

@@ -21,10 +21,10 @@ from ethecycle.util.types import WalletTxns
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'
-ADMIN_LOADER_EXECUTABLE = '/var/lib/neo4j/bin/neo4j-admin'
-CSV_IMPORT_CMD = f"{ADMIN_LOADER_EXECUTABLE} database import "
-STOP_SERVER_CMD = f"{ADMIN_LOADER_EXECUTABLE} server stop "
-START_SERVER_CMD = f"{ADMIN_LOADER_EXECUTABLE} server start "
+NEO4J_ADMIN_EXECUTABLE = '/var/lib/neo4j/bin/neo4j-admin'
+CSV_IMPORT_CMD = f"{NEO4J_ADMIN_EXECUTABLE} database import "
+STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
+START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
 NODE_LABEL = 'WALLET'
@@ -74,11 +74,10 @@ class Neo4jCsvs:
             console.print(f"      {STOP_SERVER_CMD}", style='bright_cyan')
             console.print(f"Afterwards restart with:")
             console.print(f"      {START_SERVER_CMD}\n", style='bright_cyan')
-            console.print(f"INCREMENTAL LOAD DOESN'T SEEM TO WORK YET", style='bright_red blink reverse')
+            console.print(f"Incremental load via neo4j-admin doesn't seem to work; use LOAD CSV instead", style='bright_red blink reverse')
             LOADER_CLI_ARGS['skip-duplicate-nodes'] = 'true'
             LOADER_CLI_ARGS['force'] = 'true'
             #LOADER_CLI_ARGS['stage'] = 'build'
-
             subcommand = 'incremental'
 
         console.line()

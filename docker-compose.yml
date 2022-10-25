@@ -1,20 +1,11 @@
 version: "3.9"
 
 services:
-  tinkerpop:
-    build:
-      dockerfile: Dockerfile-tinkergraph
-    # Uncomment ports if you want to connect to the TinkerGraph server from outside of docker
-    ports:
-       - '8182:8182'
-    volumes:
-      - .:/ethecycle
-      #- ${TXION_DATA_DIR}:/trondata
   neo4j:
     image: neo4j:5.1.0-community
     ports:
-       - '7474:7474'
-       - '7687:7687'
+       - 7474:7474
+       - 7687:7687
     volumes:
        - ${NEO4J_DATA_DIR}/data:/data
        - ${NEO4J_DATA_DIR}/logs:/logs
@@ -26,10 +17,8 @@ services:
       - .env
     links:   # Should be unnecessary https://docs.docker.com/compose/networking/#multi-host-networking
       - neo4j
-      #- tinkerpop
     depends_on:
       - neo4j
-      #- tinkerpop
     volumes:
       - .:/ethecycle
       - ${TXION_DATA_DIR}:/trondata

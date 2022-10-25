@@ -42,6 +42,7 @@ Once you are in the container shell, to load CSV (optionally filtered for a sing
 ```
 
 
+
 ### Running From Outside Of Docker Container
 Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Given the fact that reading/writing to the system disk is seriously crippled when done from inside a Docker container it can be faster to run the loader from the real OS.  To do so:
 
@@ -55,57 +56,9 @@ Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Give
    TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
    ```
 
-### Troubleshooting
-If you get a message about how the gremlin-server is not available at `tinkerpop:8182` I suspect you just have to wait for the server to come up.  However if waiting doesn't seem to help it may be worth trying to relaunch the containers with `docker-compose up`.
-
 ### Other Useful Commands
-1. Get shell on the Tinkergraph server: `scripts/docker/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
-1. Dump a sample of the graph's vertices and edges along with all properties to the screen: `scripts/sample_graph.py`
+1. Get shell on the Neo4j server: `scripts/docker/neo4j_shell.sh`
 
-# Questions
-1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
-1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
-1. Do you have a rough estimate as far as blocks per hour and/or blocks per day?
-1. Are there lists of tokens with their contract addresses available somewhere for each blockchain? (Esp. any blockchains we may care about)
-
-# Potential Queries
-1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
-
-# Resources
-* [Gremlin Query Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)
-* [Gremlin query book by Kelvin Lawrence](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html). Best resource I have found. Note these are not in python so the code may be slightly different than shown.
-* [Tinkerpop Gremlin official documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
-* [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
-* [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)
-* [Gremlin Python common imports](https://tinkerpop.apache.org/docs/current/reference/#python-imports)
-* [Gremlin algorithm development](https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up)
-* [More Gremlin examples](https://www.doanduyhai.com/blog/?p=13374)
-* [Tuning Gremlin queries](https://docs.aws.amazon.com/neptune/latest/userguide/gremlin-traversal-tuning.html)
-* [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo by running: `scripts/demo_data/load_air_routes_demo_data.py`
-
-### Python Differences from Java/Groovy
-
-Gremlin's Python bindings are different from Java's in a few important cases. [See this section of the docs](https://github.com/apache/tinkerpop/blob/3.4-dev/docs/src/reference/gremlin-variants.asciidoc#differences-1) or [this small python script in official repo](https://github.com/apache/tinkerpop/blob/master/gremlin-python/src/main/python/example.py). Some examples:
-
-| Java | Python |
-|------|--------|
-| `as('a')` | `as_('a')` |
-| `from('a')` | `from_('a')` |
-| `vadas.property("name", "vadas", id_, 2l)`  | `vadas.property('name', 'vadas').property('id', 2)` |
-
-[Here's a good gist with a lot of python specific queries](https://gist.github.com/okram/f193d5616563a69ad5714a42c504276f).
-
-### Other Technologies
-* Neo4j is the clearly market dominant play.
-  * [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
-* [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
-* [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
-* [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
-* [MemGraph](https://memgraph.com) - In memory graph DB.
-* TigerGraph comes up sometimes
-
-### Other Resources
-* [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
 
 
 # Neo4j
@@ -120,3 +73,37 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
 * [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
 * [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
+
+# Questions
+1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
+1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
+1. Do you have a rough estimate as far as blocks per hour and/or blocks per day?
+1. Are there lists of tokens with their contract addresses available somewhere for each blockchain? (Esp. any blockchains we may care about)
+
+# Potential Queries
+1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
+
+# (DEPRECATED) Gremlin Resources
+* [Gremlin Query Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)
+* [Gremlin query book by Kelvin Lawrence](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html). Best resource I have found. Note these are not in python so the code may be slightly different than shown.
+* [Tinkerpop Gremlin official documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
+* [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
+* [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)
+* [Gremlin Python common imports](https://tinkerpop.apache.org/docs/current/reference/#python-imports)
+* [Gremlin algorithm development](https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up)
+* [More Gremlin examples](https://www.doanduyhai.com/blog/?p=13374)
+* [Tuning Gremlin queries](https://docs.aws.amazon.com/neptune/latest/userguide/gremlin-traversal-tuning.html)
+* [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo by running: `scripts/demo_data/load_air_routes_demo_data.py`
+
+### Other Technologies
+* Neo4j is the clearly market dominant play.
+  * [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
+* [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
+* [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
+* [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
+* [MemGraph](https://memgraph.com) - In memory graph DB.
+* TigerGraph comes up sometimes
+
+### Other Resources
+* [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
+

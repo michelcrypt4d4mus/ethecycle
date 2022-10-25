@@ -37,8 +37,13 @@ Once you are in the container shell, to load CSV (optionally filtered for a sing
 # Show help:
 ./load_transaction_csv.py --help
 
+# First time you must run with --drop to overwrite the database called 'neo4j'. (Community edition
+# only allows one database and it must be called 'neo4j'.)
+./load_transaction_csv.py transactions.csv --drop
+
 # Load only USDT txions from CSV file /trondata/output_100000_lines.csv
-./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT
+./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT --drop
+
 ```
 
 

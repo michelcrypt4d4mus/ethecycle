@@ -69,7 +69,7 @@ Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Give
 # Neo4j
 After starting you can browse to [http://localhost:7474/browser/](http://localhost:7474/browser/) to run queries.
 
-**IMPORTANT:** The community edition only allows you to have one database per server, and it must be called `neo4j`.
+**IMPORTANT:** The community edition only allows you to have one database per server and it must be called `neo4j`.
 
 * [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
 * [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
@@ -78,6 +78,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
 * [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
 * [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
+* [Neo4j admin tools/config](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/)
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)

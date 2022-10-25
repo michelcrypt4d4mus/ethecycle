@@ -27,8 +27,8 @@ cp .env.example .env
 # Use vi or whatever editor you prefer
 vi .env
 
-# docker-compose should build / pull / launch everything and leave you in a bash shell
-scripts/docker_shell.sh
+# docker-compose should build everything and leave you in a bash shell, at which time you can run 'bpython'
+scripts/docker/python_repl_shell.sh
 ```
 
 Once you are in the container shell, to load CSV (optionally filtered for a single token's txions):
@@ -41,19 +41,6 @@ Once you are in the container shell, to load CSV (optionally filtered for a sing
 ./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT
 ```
 
-To run Gremlin queries I use the `bpython` REPL (same as python REPL but has better tab completion, shows args of methods, etc.) Once yr in the REPL you can get the Gremlin graph object (the one that sends queries) from the [Graph](ethecycle/graph.py) class like this:
-
-```python
-from ethecycle.graph import g
-
-# Example query for 1000 txions:
-txions = g.E().limit(1000).elementMap().toList()
-
-# Find cycles
-cycles = Graph.find_cycles(max_cycle_length=3, limit=100)
-```
-
-Note that there's no persistence though the `gremlin-server` container will stay up (and keep the graph in memory) til you explicitly stop it with `docker stop`.
 
 ### Running From Outside Of Docker Container
 Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Given the fact that reading/writing to the system disk is seriously crippled when done from inside a Docker container it can be faster to run the loader from the real OS.  To do so:
@@ -61,7 +48,7 @@ Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Give
 1. Rebuild the docker image: `docker-compose build shell` (this actually has no bearing on running the loader from outside the OS but is required for stuff to work in the container given the changes made to support this way of doing things).
 1. Create a virtual env in the project dir: `python -m venv .venv`
 1. Activate the venv: `. .venv/bin/activate`
-1. Bring up the gremlin container if it's not up. `docker-compose up tinkerpop` should do it (maybe try with `-d` for daemon if there's an issue).
+1. Bring up the Neo4j container if it's not up. `docker-compose up tinkerpop` should do it (maybe try with `-d` for daemon if there's an issue).
 1. You need to checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
 1. When running the loader script, you need to specify the parent dir of the token data repo with the `TOKEN_DATA_REPO_PARENT_DIR` environment variable. Example:
    ```bash
@@ -72,7 +59,7 @@ Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Give
 If you get a message about how the gremlin-server is not available at `tinkerpop:8182` I suspect you just have to wait for the server to come up.  However if waiting doesn't seem to help it may be worth trying to relaunch the containers with `docker-compose up`.
 
 ### Other Useful Commands
-1. Get shell on the Tinkergraph server: `scripts/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
+1. Get shell on the Tinkergraph server: `scripts/docker/gremlin_server_shell.sh` (note that for any bulk loading or writing to/from XML files to occur the file (or destination dir, for writes) must be accessible from the Gremlin server container)
 1. Dump a sample of the graph's vertices and edges along with all properties to the screen: `scripts/sample_graph.py`
 
 # Questions
@@ -109,6 +96,8 @@ Gremlin's Python bindings are different from Java's in a few important cases. [S
 [Here's a good gist with a lot of python specific queries](https://gist.github.com/okram/f193d5616563a69ad5714a42c504276f).
 
 ### Other Technologies
+* Neo4j is the clearly market dominant play.
+  * [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
 * [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
 * [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
 * [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
@@ -117,3 +106,17 @@ Gremlin's Python bindings are different from Java's in a few important cases. [S
 
 ### Other Resources
 * [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
+
+
+# Neo4j
+After starting you can browse to [http://localhost:7474/browser/](http://localhost:7474/browser/) to run queries.
+
+**IMPORTANT:** The community edition only allows you to have one database per server, and it must be called `neo4j`.
+
+* [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
+* [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
+* [Neo4j ETL Tool](https://neo4j.com/developer/neo4j-etl/) Claims to be able to connect to an RDBMS and port data quickly.
+* [Neo4j Desktop](https://neo4j.com/developer/neo4j-desktop/)
+* [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
+* [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
+* [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)

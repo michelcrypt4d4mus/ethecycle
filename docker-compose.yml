@@ -10,15 +10,26 @@ services:
     volumes:
       - .:/ethecycle
       #- ${TXION_DATA_DIR}:/trondata
+  neo4j:
+    image: neo4j:5.1.0-community
+    ports:
+       - '7474:7474'
+       - '7687:7687'
+    volumes:
+       - ${NEO4J_DATA_DIR}/data:/data
+       - ${NEO4J_DATA_DIR}/logs:/logs
+       - .:/ethecycle
   shell:
     build:
       context: .
     env_file:
       - .env
     links:   # Should be unnecessary https://docs.docker.com/compose/networking/#multi-host-networking
-      - tinkerpop
+      - neo4j
+      #- tinkerpop
     depends_on:
-      - tinkerpop
+      - neo4j
+      #- tinkerpop
     volumes:
       - .:/ethecycle
       - ${TXION_DATA_DIR}:/trondata

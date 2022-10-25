@@ -2,6 +2,7 @@ import importlib.resources
 import os
 import re
 import shutil
+from datetime import datetime
 from os import path
 from pathlib import Path, PosixPath
 from subprocess import check_call
@@ -11,11 +12,11 @@ from ethecycle.util.num_helper import size_string
 from ethecycle.util.logging import console
 
 PROJECT_ROOT_DIR: PosixPath = importlib.resources.files('ethecycle').joinpath(os.pardir).resolve()
-GRAPHML_OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
+OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
 DATA_DIR = PROJECT_ROOT_DIR.joinpath('data')
 
 # If files are really big we automatically split them up for loading
-SPLIT_FILES_DIR = GRAPHML_OUTPUT_DIR.joinpath('tmp')
+SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')
 DEFAULT_LINES_PER_FILE = 250000
 ETHECYCLE_DIR = '/ethecycle'
 
@@ -46,6 +47,11 @@ def is_running_in_container() -> bool:
 def system_path_to_container_path(file_path: str):
     """Take a file_path on the broader system and turn it into one accessible from inside containers."""
     return re.sub(f".*{ETHECYCLE_DIR}", ETHECYCLE_DIR, str(file_path))
+
+
+def timestamp_for_filename() -> str:
+    """Returns a string showing current time in a file name friendly format."""
+    return datetime.now().strftime("%Y-%m-%dT%H.%M.%S")
 
 
 def split_big_file(file_path: str, lines_per_file: int = DEFAULT_LINES_PER_FILE) -> List[str]:

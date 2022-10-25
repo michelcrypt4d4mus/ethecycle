@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from functools import partial
 from os import path
-from typing import List, Optional, Union
+from typing import List, Union
 
 from bs4 import BeautifulSoup
 from lxml import etree
@@ -14,14 +14,12 @@ from pympler.asizeof import asizeof
 
 from ethecycle.blockchains import get_chain_info
 from ethecycle.config import Config
-from ethecycle.graph import is_wallet_in_graph
-from ethecycle.export.gremlin_csv import OUTPUT_DIR
+#from ethecycle.graph import is_wallet_in_graph
 from ethecycle.transaction import Txn
 from ethecycle.util.logging import console, log
-from ethecycle.util.num_helper import MEGABYTE, SIZES, size_string
+from ethecycle.util.num_helper import MEGABYTE, size_string
 from ethecycle.util.string_constants import *
 from ethecycle.util.types import WalletTxns
-
 
 
 class GraphPropertyManager:
@@ -32,7 +30,7 @@ class GraphPropertyManager:
         data_type: str
 
         def to_graphml(self) -> etree._Element:
-            """Attach as a subelement to root object"""
+            """Construct <key> XML element."""
             return etree.Element(
                 'key',
                 **{'id': self.name, 'for': self.obj_type, 'attr.name': self.name, 'attr.type':self.data_type}

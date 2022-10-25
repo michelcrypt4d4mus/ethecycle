@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from multiprocessing.sharedctypes import Value
 import sys
 from argparse import ArgumentParser
 from functools import partial
@@ -11,8 +12,8 @@ from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
-from ethecycle.graph import print_obj_counts, delete_graph, g
-from ethecycle.transaction_loader import load_txn_csv_to_graph
+from ethecycle.export.neo4j import LOADER_CLI_ARGS, NEO4J_DB, generate_neo4j_csvs
+from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
 from ethecycle.util.filesystem_helper import (DEFAULT_LINES_PER_FILE, files_in_dir,
      split_big_file)
 from ethecycle.util.num_helper import MEGABYTE, size_string
@@ -22,6 +23,7 @@ from ethecycle.util.string_constants import ETHEREUM
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
 LIST_TOKEN_SYMBOLS = '--list-token-symbols'
 DEFAULT_DEBUG_LINES = 5
+INDENT = '      '
 
 CONFIGURED_TOKENS = set([
     token
@@ -49,13 +51,8 @@ parser.add_argument('-b', '--blockchain',
 parser.add_argument('-t', '--token',
                     help='token symbol to filter transactions for (e.g. USDT, WETH)')
 
-parser.add_argument('-n', '--no-drop', action='store_true',
-                    help="don't drop the current graph before loading new data")
-
-# parser.add_argument('-s', '--split',
-#                     help='large files will be split into chunks of LINES lines to reduce memory overhead',
-#                     metavar='LINES',
-#                     default=DEFAULT_LINES_PER_FILE)
+parser.add_argument('-d', '--drop', action='store_true',
+                    help="drop and recreate the database")
 
 parser.add_argument('-D', '--debug',
                     help='debug output: shows full XML and optionally indicated number of elements in final graph',
@@ -63,10 +60,6 @@ parser.add_argument('-D', '--debug',
                     type=int,
                     metavar='LINES',
                     const=DEFAULT_DEBUG_LINES)
-
-
-parser.add_argument('-x', '--extended-properties', action='store_true',
-                    help='include extended properties like scanner_url, transaction_hash, etc. in the graph')
 
 parser.add_argument(LIST_TOKEN_SYMBOLS, action='store_true',
                     help='show all configured tokens selectable with --token and exit')
@@ -86,42 +79,31 @@ if args.debug:
     console.log("Debug mode...")
     set_log_level('DEBUG')
 
-if args.extended_properties:
-    Config.include_extended_properties = True
-
-if not args.no_drop:
-    delete_graph()
+if args.drop:
+    console.print(f"Generated neo4j-admin command will overwrite current DB '{NEO4J_DB}'...", style='red')
+    LOADER_CLI_ARGS['overwrite-destination'] = 'true'
 
 if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")
 
-
-# The real action is here.
-load_csv = partial(load_txn_csv_to_graph, blockchain=args.blockchain, token=args.token, debug=args.debug)
-
+# Actual loading happens here
 if path.isfile(args.csv_path):
-    load_csv(args.csv_path)
+    create_neo4j_bulk_load_csvs(args.csv_path, args.blockchain, args.token)
 elif path.isdir(args.csv_path):
-    files = files_in_dir(args.csv_path)
-    msg = Text("Directory with ", 'yellow').append(str(len(files)), style='cyan').append(' files detected...')
-    console.print(msg)
-
-    for file in files:
-        args.csv_path(file)
+    raise ValueError("Loading directories is not supported yet. Specify a single file.")
 else:
     raise ValueError(f"'{args.csv_path}' is not a file")
 
+# if args.debug:
+#     print_headline(f"Sample of {args.debug} Wallets in Graph")
 
-if args.debug:
-    print_headline(f"Sample of {args.debug} Wallets in Graph")
+#     for node in g.V().limit(args.debug).elementMap().toList():
+#         console.print(node)
 
-    for node in g.V().limit(args.debug).elementMap().toList():
-        console.print(node)
+#     print_headline(f"Sample of {args.debug} Transactions in Graph")
 
-    print_headline(f"Sample of {args.debug} Transactions in Graph")
+#     for edge in g.E().limit(args.debug).elementMap().toList():
+#         console.print(edge)
 
-    for edge in g.E().limit(args.debug).elementMap().toList():
-        console.print(edge)
-
-print_obj_counts()
-console.line()
+# print_obj_counts()
+# console.line()

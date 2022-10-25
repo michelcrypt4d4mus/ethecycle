@@ -58,11 +58,9 @@ class Neo4jCsvs:
     def __init__(self) -> None:
         """Generates filenames based on the timestamp."""
         output_file_timestamp_str = timestamp_for_filename()
-
-        self.wallet_csv_path, self.txn_csv_path = (
-            path.join(OUTPUT_DIR, f"{label}_{output_file_timestamp_str}.csv")
-            for label in [NODE_LABEL, EDGE_LABEL]
-        )
+        build_csv_path = lambda label: path.join(OUTPUT_DIR, f"{label}_{output_file_timestamp_str}.csv")
+        self.wallet_csv_path = build_csv_path(NODE_LABEL)
+        self.txn_csv_path = build_csv_path(EDGE_LABEL)
 
     def generate_admin_load_bash_command(self) -> str:
         """Generate a shell command to be run on the Neo4j container"""

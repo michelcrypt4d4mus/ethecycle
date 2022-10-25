@@ -21,8 +21,8 @@ NEO4J_DB = 'neo4j'
 ADMIN_LOADER_CMD = f"/var/lib/neo4j/bin/neo4j-admin database import full "
 
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
-NODE_LABEL = 'wallet'
-EDGE_LABEL = 'txn'
+NODE_LABEL = 'WALLET'
+EDGE_LABEL = 'TXN'
 
 WALLET_CSV_HEADER = [
     'address:ID',

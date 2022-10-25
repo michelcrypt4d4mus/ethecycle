@@ -26,7 +26,7 @@ RETURN txns LIMIT 25
 ```
 
 ```
-MATCH paths = ()-[txns:TXN*3]-()
+MATCH paths = ()-[txns:TXN*3]->()
 WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
   AND txns[0].token_address = txns[1].token_address = txns[2].token_address
 RETURN paths LIMIT 10
@@ -34,7 +34,7 @@ RETURN paths LIMIT 10
 
 # See all the txions in sequence
 ```
-MATCH paths = ()-[txns:TXN*3]-()
+MATCH paths = ()-[txns:TXN*3]->()
 WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
   AND txns[0].token_address = txns[1].token_address = txns[2].token_address
 UNWIND txns AS t
@@ -54,7 +54,7 @@ SET (users[pos]).number = pos
 
 # paths that obey arrow of time along with the
 ```
-MATCH paths = ()-[txns:TXN*3]-()
+MATCH paths = ()-[txns:TXN*3]->()
 WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
   AND txns[0].token_address = txns[1].token_address = txns[2].token_address
 UNWIND range(0, size(txns) - 1) AS step_number

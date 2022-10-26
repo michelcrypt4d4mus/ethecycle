@@ -119,23 +119,7 @@ LIMIT 1
 ```
 
 
-
-MATCH path = (w0)-[txns:TXN *2..4]->(w1)
-WHERE w0.address = '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'
-  AND ALL(
-        i in range(0, size(txns) - 2)
-    WHERE txns[i].block_number < txns[i + 1].block_number
-      AND txns[i + 1].block_number < txns[i].block_number + 7000
-      AND txns[i].END.address <> w0.address
-      AND txns[i].START.address <> txns[i + 1].END.address
-  )
-  AND ALL(txn in txns WHERE txn.num_tokens > 1.0)
-RETURN size(txns) AS path_length, path
-LIMIT 1
-
-
-
-# celsius
+// celsius
 ```
 MATCH path = (w0)-[txns:TXN *2..4]->(w1)
 WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
@@ -153,7 +137,7 @@ LIMIT 25
 ```
 
 
-# Get paths out from possible celsius wallet
+// Get paths out from possible celsius wallet
 ```
 MATCH path = (w0)-[txns:TXN *5..6]->(w1)
 WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
@@ -252,10 +236,10 @@ RETURN address, txs, num_tokens
 LIMIT 10
 
 
-// Find wallets with between 2 and 7 txns
-// Among those find combinations of 2 or 3 txns that
-//    a. happened within 7000 blocks of each other
-//    b. added up to between 98 and 102 eth
+// Find wallets with between 2 and 20 outbound txns, then among those:
+//    Find combinations of 2 to 4 txns that
+//       a. happened within 70 blocks of each other
+//       b. added up to between 99 and 101 eth
 MATCH (w)-[txn]->()
 WHERE txn.num_tokens > 10
   AND txn.block_number >= 3800000
@@ -265,7 +249,7 @@ WHERE txn.num_tokens > 10
 WHERE 20 > c > 1
 
 WITH address AS address,
-     apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS permutations
+     apoc.coll.combinations(txns, 2, CASE size(txns) > 4 WHEN true THEN 4 ELSE size(txns) END) AS permutations
 UNWIND permutations AS permutation
 
 WITH address AS address,
@@ -279,3 +263,42 @@ WHERE 101 > num_tokens > 99
 RETURN address, txns, num_tokens
 ORDER BY txns[0][1]
 LIMIT 25
+
+
+//Celsius (Mike Burgersburg)
+MATCH path = (w0)-[txns:TXN * 2]->(w1)
+WHERE w1.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
+  AND ALL(
+        i in range(0, size(txns) - 2)
+    WHERE txns[i].block_number < txns[i + 1].block_number
+      AND txns[i + 1].block_number < txns[i].block_number + 70
+  )
+  AND ALL(txn in txns WHERE txn.num_tokens >= 1.0)
+
+WITH txns AS txns,
+     path AS path,
+     apoc.coll.combinations(txns, 2, CASE size(txns) > 4 WHEN true THEN 4 ELSE size(txns) END) AS permutations
+RETURN path
+LIMIT 1
+
+
+// Celsius questions from Mike: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
+MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
+WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
+  AND ALL(txn in [tx1, tx2] WHERE txn.num_tokens >= 1.0)
+  AND (tx2.block_number - 10000) < tx1.block_number < tx2.block_number
+
+WITH collect(tx1) AS txns
+WITH apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS txn_groups
+UNWIND txn_groups AS txn_group
+
+WITH txn_group AS txn_group, reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
+WHERE 1002 > num_tokens > 998
+  AND ALL(
+        i IN range(0, size(txn_group) - 2)
+    // Ensure the txn_group all occurred within 50 blocks
+    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
+  )
+RETURN STARTNODE(txn_group[0]).address AS start_wallet,
+      [t in txn_group | [t.num_tokens, ENDNODE(t).address]],
+      num_tokens AS total_tokens

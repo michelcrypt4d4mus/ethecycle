@@ -74,11 +74,19 @@ Cannot guarantee these steps work but they probably will work.
 1. Get shell on the Neo4j server: `scripts/docker/neo4j_shell.sh`
 
 
-
 # Neo4j
+**IMPORTANT:** The community edition only allows you to have one database per server and it must be called `neo4j`.
+
 After starting you can browse to [http://localhost:7474/browser/](http://localhost:7474/browser/) to run queries.
 
-**IMPORTANT:** The community edition only allows you to have one database per server and it must be called `neo4j`.
+Alternatively (and more 'performantly') Neo4j makes a desktop application.
+
+### Running Queries
+* Addresses start with `0x` (same as etherscan)
+* All addresses in the DB are lowercased.  (You can use `toLower()` on an address of mixed/upper case.)
+
+
+### Other Resources
 
 * [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
 * [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
@@ -89,6 +97,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [Neo4J operations manual](https://neo4j.com/docs/operations-manual/current/)
 * [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
 * [Neo4j admin tools/config](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/)
+* [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
@@ -112,7 +121,6 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo by running: `scripts/demo_data/load_air_routes_demo_data.py`
 
 ### Other Technologies
-* Neo4j is the clearly market dominant play.
   * [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
 * [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
 * [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
@@ -121,5 +129,5 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * TigerGraph comes up sometimes
 
 ### Other Resources
-* [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
+
 

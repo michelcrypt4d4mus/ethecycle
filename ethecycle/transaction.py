@@ -26,7 +26,7 @@ class Txn():
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
         chain_info = get_chain_info(self.blockchain)
         self.token = chain_info.token_symbol(self.token_address)
-        self.num_tokens = float(self.csv_value) / 10 ** 18
+        self.num_tokens = float(self.csv_value) / 10 ** chain_info.token_decimals(self.token_address)
         self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
 

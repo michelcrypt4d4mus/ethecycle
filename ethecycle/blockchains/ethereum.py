@@ -21,8 +21,10 @@ class Ethereum(ChainInfo):
         token_address=ETH_ADDRESS,
         symbol=ETH,
         name=ETHEREUM,
-        decimals=18  # TODO: is this right?
+        decimals=0  # TODO: is this right?
     )
+
+    log.warning("Number of decimals for eth set to 0 but for some data sets it may be 18.")
 
     @classmethod
     def add_hardcoded_tokens(cls) -> None:

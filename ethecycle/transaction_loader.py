@@ -41,7 +41,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
         console.print(f"   Extracted data from source CSV in {extract_duration:02.2f} seconds...", style='benchmark')
 
         neo4j_csvs.append(generate_neo4j_csvs(txns, blockchain))
-        generation_duration = time.perf_counter() - extract_duration -  start_time
+        generation_duration = time.perf_counter() - extract_duration -  start_file_time
         console.print(f"   Generated CSV for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
 
     generation_duration = time.perf_counter() - start_time

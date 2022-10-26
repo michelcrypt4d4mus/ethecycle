@@ -51,6 +51,14 @@ class ChainInfo(ABC):
             return None
 
     @classmethod
+    def token_decimals(cls, token_address: str) -> int:
+        """Reverse lookup - takes an address, returns a symbol"""
+        if token_address in cls.tokens():
+            return cls.tokens()[token_address].decimals or 0
+        else:
+            return 0
+
+    @classmethod
     def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
         if len(cls._tokens) > 0:

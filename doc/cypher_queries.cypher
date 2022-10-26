@@ -326,25 +326,25 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 MATCH path = ()-[txns:TXN * 3]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
-        t in txns
+        t IN txns
     WHERE t.num_tokens >= $min_txn_size  // Over min size
       AND (txns[-1].block_number - $blocks_to_check) <= t.block_number <= txns[-1].block_number // in block range
   )
   AND ALL(
-        i in range(0, size(txns) - 2)
+        i IN range(0, size(txns) - 2)
     WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here...
       AND txns[i + 1].block_number < txns[i].block_number + $max_blocks_between_cascades
   )
 UNWIND range(0, size(txns) - 1) AS i
 WITH collect(DISTINCT txns[i]) AS nth_step_txns
-RETURN collect(nth_step_txns)
 
+WITH collect(nth_step_txns) AS step_txns,
+     collect(
+        CASE size(nth_step_txns) > $max_txns_in_cascade
+            WHEN true THEN $max_txns_in_cascade
+            ELSE size(nth_step_txns) END
+    ) AS unique_step_txn_count
 
-RETURN collect(collect(DISTINCT txns[i])
-
-WITH collect(DISTINCT txns[0]) AS txns_1,
-     collect(DISTINCT txns[1]) AS txns_2,
-     collect(DISTINCT txns[2]) AS txns_3
 
 // Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
 WITH *,
@@ -365,3 +365,23 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
        [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
        num_tokens AS total_tokens,
        final_txns
+
+
+
+/////// Collect by place in list...
+MATCH ()-[txns:TXN * 3]->(celsius_wallet)
+WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
+  AND ALL(
+        t in txns
+    WHERE t.num_tokens >= $min_txn_size  // Over min size
+      AND (txns[-1].block_number - $blocks_to_check) <= t.block_number <= txns[-1].block_number // in block range
+  )
+  AND ALL(
+        i IN range(0, size(txns) - 2)
+    WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here...
+      AND txns[i + 1].block_number < txns[i].block_number + $max_blocks_between_cascades
+  )
+UNWIND range(0, size(txns) - 1) AS i
+WITH collect([i, txns[i]]) AS nth_tagged
+UNWIND nth_tagged AS list_element
+RETURN DISTINCT list_element[0] AS i, collect(DISTINCT list_element[1]) AS txns

@@ -291,6 +291,7 @@ LIMIT 1
 :param min_txn_size => 1; // Don't look at txns for less tokens than this number
 :param address_length => 9; // Just for printing
 :param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
+:param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
@@ -323,13 +324,17 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 // Attempt to generalize previous query
 MATCH path = ()-[txns:TXN * 2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
-  AND (tx2.block_number - $blocks_to_check) < tx1.block_number < tx2.block_number
+  AND ALL(
+        t in txns
+    WHERE t.num_tokens >= $min_txn_size  // Over min size
+      AND (txns[-1].block_number - $blocks_to_check) <= t.block_number <= txns[-1].block_number // in block range
+  )
   AND ALL(
         i in range(0, size(txns) - 2)
-    WHERE txns[i].block_number < txns[i + 1].block_number
-      AND txns[i + 1].block_number < txns[i].block_number + 70
+    WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here... 
+      AND txns[i + 1].block_number < txns[i].block_number + $max_blocks_between_cascades
   )
-WITH collect(DISTINCT tx1) AS txns, collect(DISTINCT tx2) AS final_txns
+WITH collect(DISTINCT txns[0]) AS txns, collect(DISTINCT txns[1]) AS final_txns
 
 // Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
 WITH txns AS txns,

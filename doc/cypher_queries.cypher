@@ -1,10 +1,10 @@
 w0 assigned a path var
-```
+
 MATCH w0=()-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
-```
+
 
 w0 assigned a wallet
-```
+
 MATCH (w0)-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
 ```
 
@@ -88,7 +88,7 @@ RETURN size(txns) AS path_length, path
 LIMIT 1
 ```
 
-## There's around 7000 blocks per day, so this is cycles within a day
+Around 7000 blocks per day, so this is cycles within a day
 ```
 MATCH path = (w0)-[txns:TXN *2..4]->(w1)
 WHERE ALL(
@@ -176,6 +176,45 @@ LIMIT 25
 ```
 
 
+// Query paths from celsius
+MATCH path = (w0)-[txns:TXN *3..6]->(w1)<-[other_txns:TXN *3..6]-(w0)
+WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
+  AND ALL(
+        i IN range(0, size(txns) - 2)
+    WHERE txns[i].block_number < txns[i + 1].block_number
+      AND txns[i + 1].block_number < txns[i].block_number + $num_blocks_between_hops
+  )
+  AND ALL(
+        i IN range(0, size(other_txns) - 2, 2)  // Just make sure every other step is different
+    WHERE other_txns[i].block_number < other_txns[i + 1].block_number
+      AND other_txns[i + 1].block_number < other_txns[i].block_number + $num_blocks_between_hops
+      // Only compare if the path is long enough
+      AND CASE i < size(txns)
+            WHEN true THEN txns[i] <> other_txns[i]
+            ELSE true END
+  )
+  AND ALL(txn IN txns WHERE txn.num_tokens > 10.0)
+  AND ALL(txn IN other_txns WHERE txn.num_tokens > 10.0)
+UNWIND range(0, size(txns) - 1) AS i
+RETURN collect(
+    [
+      i,
+      substring(nodes(path)[i].address, 0, 8) + '..',
+      round(relationships(path)[i].num_tokens, 3)
+    ]
+  ) AS the_path,
+  nodes(path)[-1].address AS final_destination,
+  size(other_txns) AS length_of_other_path
+LIMIT 1
+
+
+// Find wallets with < 10 total outbound txns
+MATCH (w)-[txn]->()
+WITH w.address as address, count(*) as c
+WHERE c < 10
+RETURN address, c
+LIMIT 10
+
 
 # Index
 ```
@@ -183,3 +222,15 @@ CREATE INDEX idx_block_number_num_tokens IF NOT EXISTS
 FOR ()-[r:TXN]-()
 ON (r.block_number, r.num_tokens)
 ```
+
+
+// Permutations of size 2 or 3
+MATCH (w)-[txn]->()
+WHERE txn.num_tokens > 10
+WITH w.address AS address, collect([txn.transactionID, txn.block_number, txn.num_tokens]) AS txns, count(*) AS c
+WHERE c < 6
+  AND c > 1
+RETURN
+  address,
+  apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END)
+LIMIT 10 

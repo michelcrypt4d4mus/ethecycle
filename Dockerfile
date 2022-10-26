@@ -1,5 +1,6 @@
-FROM python:3
+FROM python:3.10
 
+# Get some bash tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
         wget \
         git

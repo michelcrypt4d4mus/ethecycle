@@ -1,4 +1,13 @@
 FROM neo4j:5.1.0-community
+ARG GRAPH_DATA_SCIENCE_VERSION=neo4j-graph-data-science-2.2.2
+ARG GRAPH_DATA_SCIENCE_ZIP=${GRAPH_DATA_SCIENCE_VERSION}.zip
 
 # Install apoc queries
 RUN cp /var/lib/neo4j/labs/apoc-5.1.0-core.jar /var/lib/neo4j/plugins/
+
+# Install graph data science library
+RUN apt-get update && apt-get install -y --no-install-recommends unzip
+RUN wget https://graphdatascience.ninja/${GRAPH_DATA_SCIENCE_ZIP}
+RUN unzip ${GRAPH_DATA_SCIENCE_ZIP}
+RUN mv ${GRAPH_DATA_SCIENCE_VERSION}.jar ${NEO4J_HOME}/plugins/
+RUN rm ${GRAPH_DATA_SCIENCE_ZIP}

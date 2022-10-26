@@ -57,10 +57,11 @@ LOADER_CLI_ARGS = {
     'skip-duplicate-nodes': 'true'
 }
 
-LOAD_INSTRUCTIONS = Text(f"\nTo load the CSV into Neo4j launch a shell on the Neo4j container run and copy paste the command below.") + \
-        Text(f"To get such a shell on the Neo4j container, run this script from the OS (not from a docker container):\n\n") + \
+LOAD_INSTRUCTIONS = Text(f"\nTo load the CSV into Neo4j get a shell on the neo4j container ") + \
+        Text("then copy paste the command below.\n") + \
+        Text(f"To get such a shell on the Neo4j container run this script from the OS bash shell:\n\n") + \
         Text(f"{INDENT}scripts/docker/neo4j_shell.sh\n\n", style='bright_cyan') + \
-        Text(f"The command to copy/paste is below.", style='color(183) underline')
+        Text(f"neo4j-admin command to copy/paste:")
 
 INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='magenta bold') + \
     Text(f"You must stop the server to run incremental import:\n") + \

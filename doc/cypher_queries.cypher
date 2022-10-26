@@ -345,7 +345,6 @@ WITH collect(nth_step_txns) AS step_txns,
             ELSE size(nth_step_txns) END
     ) AS unique_step_txn_count
 
-
 // Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
 WITH *,
      CASE size(txns_1) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
@@ -359,7 +358,7 @@ WITH txn_group AS txn_group,
 WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
   AND ALL(
         i IN range(0, size(txn_group) - 2)
-    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
+    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < $cascade_block_distance
   )
 RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
        [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
@@ -383,5 +382,29 @@ WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e
   )
 UNWIND range(0, size(txns) - 1) AS i
 WITH collect([i, txns[i]]) AS nth_tagged
+
 UNWIND nth_tagged AS list_element
-RETURN DISTINCT list_element[0] AS i, collect(DISTINCT list_element[1]) AS txns
+WITH DISTINCT list_element[0] AS i, collect(DISTINCT list_element[1]) AS txns
+
+WITH *,
+     size(txns) AS txn_count,
+     CASE size(txns) > $max_txns_in_cascade
+        WHEN true THEN $max_txns_in_cascade
+        ELSE size(txns) END AS max_txns
+
+WITH i AS i, apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
+UNWIND txn_groups AS txn_group
+
+WITH i AS i,
+     txn_group AS txn_group,
+     reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
+WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
+  AND ALL(
+        i IN range(0, size(txn_group) - 2)
+    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
+  )
+RETURN i,
+       SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
+       [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
+       num_tokens AS total_tokens
+

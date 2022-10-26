@@ -286,6 +286,8 @@ LIMIT 1
 :param blocks_to_check => 10000;  // How many blocks before the final txns will we search
 :param txn_size => 1000;  // Aggregate size of 'cascaded' txions
 :param tolerance => 2;  // how much distance +/- from txn_size will we consider part of the cascade
+:param min_txns_in_cascade => 1;
+:param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
 
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
@@ -294,7 +296,9 @@ WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e
   AND (tx2.block_number - $blocks_to_check) < tx1.block_number < tx2.block_number
 
 WITH collect(tx1) AS txns
-WITH apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS txn_groups
+// If you call apoc.combo fxn with too high a max you get nulls
+WITH txns AS txns, CASE size(txns) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
+WITH apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
 UNWIND txn_groups AS txn_group
 
 WITH txn_group AS txn_group, reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
@@ -304,3 +308,9 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
   )
 RETURN STARTNODE(txn_group[0]).address AS from_wallet, [t in txn_group | t.num_tokens], num_tokens AS total_tokens
+
+
+
+WITH [1,2,3,4] AS txns
+WITH apoc.coll.combinations(txns, 1, 2) AS permutations
+RETURN permutations

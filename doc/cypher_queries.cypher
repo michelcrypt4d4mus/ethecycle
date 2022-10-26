@@ -320,9 +320,10 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
        num_tokens AS total_tokens,
        final_txns
 
-
+////////////
 // Attempt to generalize previous query
-MATCH path = ()-[txns:TXN * 2]->(celsius_wallet)
+////////////
+MATCH path = ()-[txns:TXN * 3]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
         t in txns
@@ -331,15 +332,23 @@ WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e
   )
   AND ALL(
         i in range(0, size(txns) - 2)
-    WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here... 
+    WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here...
       AND txns[i + 1].block_number < txns[i].block_number + $max_blocks_between_cascades
   )
-WITH collect(DISTINCT txns[0]) AS txns, collect(DISTINCT txns[1]) AS final_txns
+UNWIND range(0, size(txns) - 1) AS i
+WITH collect(DISTINCT txns[i]) AS nth_step_txns
+RETURN collect(nth_step_txns)
+
+
+RETURN collect(collect(DISTINCT txns[i])
+
+WITH collect(DISTINCT txns[0]) AS txns_1,
+     collect(DISTINCT txns[1]) AS txns_2,
+     collect(DISTINCT txns[2]) AS txns_3
 
 // Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
-WITH txns AS txns,
-     final_txns AS final_txns,
-     CASE size(txns) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
+WITH *,
+     CASE size(txns_1) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
 WITH apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups,
      final_txns AS final_txns
 UNWIND txn_groups AS txn_group

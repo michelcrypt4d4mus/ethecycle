@@ -288,21 +288,26 @@ LIMIT 1
 :param tolerance => 2;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
 :param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
-:param address_length => 9
-
+:param min_txn_size => 1; // Don't look at txns for less tokens than this number
+:param address_length => 9; // Just for printing
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
-  AND ALL(txn in [tx1, tx2] WHERE txn.num_tokens >= 1.0)
+  AND ALL(txn in [tx1, tx2] WHERE txn.num_tokens >= $min_txn_size)
   AND (tx2.block_number - $blocks_to_check) < tx1.block_number < tx2.block_number
+WITH collect(DISTINCT tx1) AS txns, collect(DISTINCT tx2) AS final_txns
 
-WITH collect(tx1) AS txns
-// If you call apoc.combo fxn with too high a max you get nulls
-WITH txns AS txns, CASE size(txns) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
-WITH apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
+// Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
+WITH txns AS txns,
+     final_txns AS final_txns,
+     CASE size(txns) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
+WITH apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups,
+     final_txns AS final_txns
 UNWIND txn_groups AS txn_group
 
-WITH txn_group AS txn_group, reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
+WITH txn_group AS txn_group,
+     reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens,
+     final_txns AS final_txns
 WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
   AND ALL(
         i IN range(0, size(txn_group) - 2)
@@ -310,10 +315,34 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
   )
 RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
        [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
-       num_tokens AS total_tokens
+       num_tokens AS total_tokens,
+       final_txns
 
 
+// Attempt to generalize previous query
+MATCH path = ()-[txns:TXN * 2]->(celsius_wallet)
+WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
+  AND ALL(t in txns WHERE t.num_tokens >= 1.0)
+  AND (tx2.block_number - $blocks_to_check) < tx1.block_number < tx2.block_number
+WITH collect(DISTINCT tx1) AS txns, collect(DISTINCT tx2) AS final_txns
 
-WITH [1,2,3,4] AS txns
-WITH apoc.coll.combinations(txns, 1, 2) AS permutations
-RETURN permutations
+// Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
+WITH txns AS txns,
+     final_txns AS final_txns,
+     CASE size(txns) > $max_txns_in_cascade WHEN true THEN $max_txns_in_cascade ELSE size(txns) END AS max_txns
+WITH apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups,
+     final_txns AS final_txns
+UNWIND txn_groups AS txn_group
+
+WITH txn_group AS txn_group,
+     reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens,
+     final_txns AS final_txns
+WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
+  AND ALL(
+        i IN range(0, size(txn_group) - 2)
+    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
+  )
+RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
+       [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
+       num_tokens AS total_tokens,
+       final_txns

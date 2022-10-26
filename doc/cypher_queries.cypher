@@ -368,7 +368,7 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 
 
 /////// Collect by place in list...
-MATCH ()-[txns:TXN * 3]->(celsius_wallet)
+MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
         t in txns
@@ -404,7 +404,15 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
   )
 RETURN i AS step,
-       [SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length), '=>'] +
-            [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]] AS path,
+        [
+            t in txn_group |
+            [
+                SUBSTRING(STARTNODE(t).address, 0, $address_length),
+                '=>',
+                ROUND(t.num_tokens, 2),
+                '=>',
+                SUBSTRING(ENDNODE(t).address, 0, $address_length)
+            ]
+        ] AS possibile_sources,
        num_tokens AS total_tokens
 

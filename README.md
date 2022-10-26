@@ -54,6 +54,7 @@ How to run it:
 ```
 
 Example output:
+
 ![](doc/loader_output.png)
 
 

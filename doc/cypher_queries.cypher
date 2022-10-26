@@ -283,22 +283,24 @@ LIMIT 1
 
 
 // Celsius questions from Mike: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
+:param blocks_to_check => 10000;  // How many blocks before the final txns will we search
+:param txn_size => 1000;  // Aggregate size of 'cascaded' txions
+:param tolerance => 2;  // how much distance +/- from txn_size will we consider part of the cascade
+
+
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(txn in [tx1, tx2] WHERE txn.num_tokens >= 1.0)
-  AND (tx2.block_number - 10000) < tx1.block_number < tx2.block_number
+  AND (tx2.block_number - $blocks_to_check) < tx1.block_number < tx2.block_number
 
 WITH collect(tx1) AS txns
 WITH apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS txn_groups
 UNWIND txn_groups AS txn_group
 
 WITH txn_group AS txn_group, reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
-WHERE 1002 > num_tokens > 998
+WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
   AND ALL(
         i IN range(0, size(txn_group) - 2)
-    // Ensure the txn_group all occurred within 50 blocks
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
   )
-RETURN STARTNODE(txn_group[0]).address AS start_wallet,
-      [t in txn_group | [t.num_tokens, ENDNODE(t).address]],
-      num_tokens AS total_tokens
+RETURN STARTNODE(txn_group[0]).address AS from_wallet, [t in txn_group | t.num_tokens], num_tokens AS total_tokens

@@ -144,14 +144,36 @@ WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
     WHERE txns[i].block_number < txns[i + 1].block_number
       AND txns[i + 1].block_number < txns[i].block_number + 7000
   )
-  AND ALL(txn in txns WHERE txn.num_tokens > 1.0)
-UNWIND range(0, size(txns) - 2, 2) AS i
-RETURN i, txns[i], CASE i+1 > size(txns) - 1
-                             WHEN true THEN 'END'
-                             ELSE txns[i+1].num_tokens END AS tokens
+  AND ALL(txn IN txns WHERE txn.num_tokens > 1.0)
+UNWIND range(0, size(txns) - 1) AS i
+CALL apoc.refactor.extractNode(txns[i], ['Wallet'], 'input', 'output')
+YIELD input, output
+RETURN i AS step, input, output
 LIMIT 25
 ```
 
+
+# Get paths out from possible celsius wallet
+```
+MATCH path = (w0)-[txns:TXN *5..6]->(w1)
+WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
+  AND ALL(
+        i IN range(0, size(txns) - 2)
+    WHERE txns[i].block_number < txns[i + 1].block_number
+      AND txns[i + 1].block_number < txns[i].block_number + 7000
+  )
+  AND ALL(txn IN txns WHERE txn.num_tokens > 1.0)
+UNWIND range(0, size(txns) - 1) AS i
+RETURN collect(
+    [
+      i,
+      substring(nodes(path)[i].address, 0, 8) + '..',
+      round(relationships(path)[i].num_tokens, 3)
+    ]
+  ) AS the_path,
+  nodes(path)[-1].address AS final_destination
+LIMIT 25
+```
 
 
 

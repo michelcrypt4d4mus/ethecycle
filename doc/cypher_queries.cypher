@@ -290,7 +290,7 @@ LIMIT 1
 :param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
 :param min_txn_size => 1; // Don't look at txns for less tokens than this number
 :param address_length => 9; // Just for printing
-:param cascade_block_distance => 70  // Txns must be within this many blocks of each to be considered part of cascade
+:param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')

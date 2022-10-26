@@ -23,5 +23,5 @@ services:
       - neo4j
     volumes:
       - .:/ethecycle
-      - ${TXION_DATA_DIR}:/trondata
+      - ${TXION_DATA_DIR}:/blockchain_data
     working_dir: /ethecycle

@@ -49,8 +49,8 @@ How to run it:
 # You can also run it against an entire directory of CSVs:
 ./load_transaction_csv.py /path/to/transactions/ --drop
 
-# Load only USDT txions from CSV file /trondata/output_100000_lines.csv
-./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT --drop
+# Load only USDT txions
+./load_transaction_csv.py /path/to/transactions.csv --token USDT --drop
 ```
 
 Example output:

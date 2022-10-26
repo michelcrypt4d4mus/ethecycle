@@ -60,13 +60,11 @@ Example output:
 
 
 ### Running From Outside Of Docker Container
-Bulk loading through CSV/GraphML/whatever entails a lot of writing to disk. Given the fact that reading/writing to the system disk is seriously crippled when done from inside a Docker container it can be faster to run the loader from the real OS.  To do so:
+Cannot guarantee these steps work but they probably will work.
 
-1. Rebuild the docker image: `docker-compose build shell` (this actually has no bearing on running the loader from outside the OS but is required for stuff to work in the container given the changes made to support this way of doing things).
 1. Create a virtual env in the project dir: `python -m venv .venv`
 1. Activate the venv: `. .venv/bin/activate`
-1. Bring up the Neo4j container if it's not up. `docker-compose up tinkerpop` should do it (maybe try with `-d` for daemon if there's an issue).
-1. You need to checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
+1. Checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
 1. When running the loader script, you need to specify the parent dir of the token data repo with the `TOKEN_DATA_REPO_PARENT_DIR` environment variable. Example:
    ```bash
    TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv

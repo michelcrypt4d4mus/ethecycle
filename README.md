@@ -27,24 +27,34 @@ cp .env.example .env
 # Use vi or whatever editor you prefer
 vi .env
 
-# docker-compose should build everything and leave you in a bash shell, at which time you can run 'bpython'
+# When you run this command docker-compose should build everything and leave you in a
+# bash shell, at which point you can run 'bpython' to get a python REPL etc.
 scripts/docker/python_repl_shell.sh
 ```
 
-Once you are in the container shell, to load CSV (optionally filtered for a single token's txions):
+### Loading Data
+Once you are in the container shell the `./load_transaction_csv.py` script will prep files for bulk load.
 
-```
+The loader takes a directory of CSVS (or a single CSV), processes them to add some columns (e.g. `token_symbol` and `blockchain`), does decimal conversion where it can, etc., and writes 2 output CSVs for each input CSV (wallets, txns, and headers for each) to the `output/` directory along with 2 one row CSVs for the wallet and transaction headers. When the preprocessing is complete it will print a shell command to the screen that you can run in the `neo4j` docker container.
+
+How to run it:
+```bash
 # Show help:
 ./load_transaction_csv.py --help
 
 # First time you must run with --drop to overwrite the database called 'neo4j'. (Community edition
 # only allows one database and it must be called 'neo4j'.)
-./load_transaction_csv.py transactions.csv --drop
+./load_transaction_csv.py /path/to/transactions.csv --drop
+
+# You can also run it against an entire directory of CSVs:
+./load_transaction_csv.py /path/to/transactions/ --drop
 
 # Load only USDT txions from CSV file /trondata/output_100000_lines.csv
 ./load_transaction_csv.py /trondata/output_100000_lines.csv --token USDT --drop
-
 ```
+
+Example output:
+![](doc/loader_output.png)
 
 
 

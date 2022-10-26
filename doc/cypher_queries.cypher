@@ -258,9 +258,11 @@ LIMIT 10
 //    b. added up to between 98 and 102 eth
 MATCH (w)-[txn]->()
 WHERE txn.num_tokens > 10
-WITH w.address AS address,
-     collect([txn.transactionID, txn.block_number, txn.num_tokens]) AS txns, count(*) AS c
-WHERE 8 > c > 1
+  AND txn.block_number >= 3800000
+ WITH w.address AS address,
+      collect([txn.transactionID, txn.block_number, txn.num_tokens]) AS txns,
+      count(*) AS c
+WHERE 20 > c > 1
 
 WITH address AS address,
      apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS permutations
@@ -275,4 +277,5 @@ WHERE 101 > num_tokens > 99
     WHERE abs(txns[i][1] - txns[-1][1]) < 70
   )
 RETURN address, txns, num_tokens
-LIMIT 10
+ORDER BY txns[0][1]
+LIMIT 25

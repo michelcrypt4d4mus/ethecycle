@@ -288,6 +288,7 @@ LIMIT 1
 :param tolerance => 2;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
 :param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
+:param address_length => 9
 
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
@@ -307,7 +308,9 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
         i IN range(0, size(txn_group) - 2)
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) < 50
   )
-RETURN STARTNODE(txn_group[0]).address AS from_wallet, [t in txn_group | t.num_tokens], num_tokens AS total_tokens
+RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
+       [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
+       num_tokens AS total_tokens
 
 
 

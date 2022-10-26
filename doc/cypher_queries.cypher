@@ -233,4 +233,46 @@ WHERE c < 6
 RETURN
   address,
   apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END)
-LIMIT 10 
+LIMIT 10
+
+
+// Find permutations of txions that sum to a range
+MATCH (w)-[txn]->()
+WHERE txn.num_tokens > 10
+WITH w.address AS address, collect([txn.transactionID, txn.block_number, txn.num_tokens]) AS txns, count(*) AS c
+WHERE 8 > c > 1
+
+WITH address AS address,
+     apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS permutations
+UNWIND permutations AS permutation
+
+WITH address AS address, permutation AS txs, reduce(tokens = 0, t in permutation | tokens + t[2]) AS num_tokens
+WHERE 100 > num_tokens > 50
+RETURN address, txs, num_tokens
+LIMIT 10
+
+
+// Find wallets with between 2 and 7 txns
+// Among those find combinations of 2 or 3 txns that
+//    a. happened within 7000 blocks of each other
+//    b. added up to between 98 and 102 eth
+MATCH (w)-[txn]->()
+WHERE txn.num_tokens > 10
+WITH w.address AS address,
+     collect([txn.transactionID, txn.block_number, txn.num_tokens]) AS txns, count(*) AS c
+WHERE 8 > c > 1
+
+WITH address AS address,
+     apoc.coll.combinations(txns, 2, CASE size(txns) > 3 WHEN true THEN 3 ELSE size(txns) END) AS permutations
+UNWIND permutations AS permutation
+
+WITH address AS address,
+     permutation AS txns,
+     reduce(tokens = 0, t in permutation | tokens + t[2]) AS num_tokens
+WHERE 101 > num_tokens > 99
+  AND ALL(
+        i IN range(0, size(txns) - 2)
+    WHERE abs(txns[i][1] - txns[-1][1]) < 70
+  )
+RETURN address, txns, num_tokens
+LIMIT 10

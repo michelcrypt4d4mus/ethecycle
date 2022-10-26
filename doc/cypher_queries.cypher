@@ -403,8 +403,8 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
         i IN range(0, size(txn_group) - 2)
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
   )
-RETURN i,
-       SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wallet,
-       [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]],
+RETURN i AS step,
+       [SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length), '=>'] +
+            [t in txn_group | [SUBSTRING(ENDNODE(t).address, 0, $address_length), '=>', ROUND(t.num_tokens, 2)]] AS path,
        num_tokens AS total_tokens
 

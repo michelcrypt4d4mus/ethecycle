@@ -6,6 +6,7 @@ from rich.pretty import pprint
 from rich.text import Text
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.export.neo4j import MISSING_ADDRESS
 
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
 
@@ -29,6 +30,11 @@ class Txn():
         self.num_tokens = float(self.csv_value) / 10 ** chain_info.token_decimals(self.token_address)
         self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
+
+        if len(self.from_address or '') == 0:
+            self.from_address = MISSING_ADDRESS
+        if len(self.to_address or '') == 0:
+            self.to_address = MISSING_ADDRESS
 
         self.scanner_url = chain_info.scanner_url(self.transaction_hash)
 

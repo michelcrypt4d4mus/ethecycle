@@ -89,6 +89,7 @@ Alternatively (and more 'performantly') Neo4j makes a desktop application.
 ### Other Resources
 
 * [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
+* [Cypher query style guide](https://s3.amazonaws.com/artifacts.opencypher.org/M20/docs/style-guide.pdf)
 * [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
 * [Neo4j ETL Tool](https://neo4j.com/developer/neo4j-etl/) Claims to be able to connect to an RDBMS and port data quickly.
 * [Neo4j Desktop](https://neo4j.com/developer/neo4j-desktop/)

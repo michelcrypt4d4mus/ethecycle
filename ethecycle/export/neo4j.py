@@ -28,7 +28,7 @@ STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
 START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
-NODE_LABEL = 'WALLET'
+NODE_LABEL = 'Wallet'
 EDGE_LABEL = 'TXN'
 MISSING_ADDRESS = 'no_address'
 INDENT = '      '

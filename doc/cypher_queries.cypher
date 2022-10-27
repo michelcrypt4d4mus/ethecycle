@@ -1,60 +1,69 @@
-w0 assigned a path var
+// Cypher query style guide: https://s3.amazonaws.com/artifacts.opencypher.org/M20/docs/style-guide.pdf
 
+// w0 assigned a path var
 MATCH w0=()-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
 
 
-w0 assigned a wallet
-
+// w0 assigned a wallet
 MATCH (w0)-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
-```
 
-Arrow of time query (All txions within 10 block_numbers of matched t0)
-```
+
+// Arrow of time query (All txions within 10 block_numbers of matched t0)
 MATCH p=(w0)-[t0:TXN]->(w1)-[t1:TXN]->(w2)
 WHERE t0.block_number < t1.block_number < t0.block_number +10
 RETURN p limit 25
-```
 
-Create index (maybe create index on wallet creation date?)
-```
-CREATE INDEX example_index_1 FOR (a:Actor) ON (a.name)
-```
 
-```
-MATCH txns = ()-[tanx:*3]-()
-RETURN txns LIMIT 25
-```
+// Create index (not sure this is the right one)
+// TODO: maybe create an index on wallet creation date and/or first txion block_number?
+// TODO: needs more research but seems like two separate indexes will work better than one composite:
+//       https://neo4j.com/docs/cypher-manual/5/indexes-for-search-performance/#administration-indexes-single-vs-composite-index
+// TODO: run this when docker setup happens?
+CREATE RANGE INDEX idx_txn_block_number IF NOT EXISTS
+FOR ()-[r:TXN]-()
+ON (r.block_number)
 
-```
-MATCH paths = ()-[txns:TXN*3]->()
-WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
-  AND txns[0].token_address = txns[1].token_address = txns[2].token_address
-RETURN paths LIMIT 10
-```
+CREATE RANGE INDEX idx_txn_num_tokens IF NOT EXISTS
+FOR ()-[r:TXN]-()
+ON (r.num_tokens)
 
-# See all the txions in sequence
-```
+
+// Arrow of time query for all 3 hop paths for eth
+MATCH path = ()-[txns:TXN * 3]->()
+WHERE ALL(t IN txns WHERE t.token_address = '0x0') // All txns in path are eth txns
+  AND ALL(i in range(0, size(txns) - 2) WHERE txns[i].block_number < txns[i + 1].block_number) // Time
+RETURN path LIMIT 10
+
+
+// Same as previous but show each hop individually instead of path
+MATCH path = ()-[txns:TXN * 3]->()
+WHERE ALL(t IN txns WHERE t.token_address = '0x0') // All txns in path are eth txns
+  AND ALL(i in range(0, size(txns) - 2) WHERE txns[i].block_number < txns[i + 1].block_number) // Time
+UNWIND range(0, size(txns) - 1) AS step_number
+RETURN step_number, txns[step_number].token, txns[step_number].block_number,  txns[step_number].num_tokens
+LIMIT 25
+
+
+// See all the txions in sequence
 MATCH paths = ()-[txns:TXN*3]->()
 WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
   AND txns[0].token_address = txns[1].token_address = txns[2].token_address
 UNWIND txns AS t
 RETURN t LIMIT 25
-```
 
 
-# Row number query (maybe)
-```
+// Row number query (maybe?)
 MATCH (n:User)
 WITH n
 ORDER BY n.created_at
 WITH collect(n) as users
 UNWIND range(0, size(users)-1) as pos
 SET (users[pos]).number = pos
-```
 
-# paths that obey arrow of time along with the
+
+// 4 hop paths that obey arrow of time along with the
 ```
-MATCH paths = (w0)-[txns:TXN*4]->(w1)
+MATCH paths = (w0)-[txns:TXN * 4]->(w1)
 WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
   AND txns[0].token_address = txns[1].token_address = txns[2].token_address
 UNWIND range(0, size(txns) - 1) AS step_number
@@ -75,8 +84,7 @@ LIMIT 5
 ```
 
 
-## Cycle detection query - cycles of length at most 5, with txns made up of at least 10.0 tokens
-```cypher
+// Cycle detection query - cycles of length at most 5, with txns made up of at least 10.0 tokens
 MATCH path = (w0)-[txns:TXN * 2..5]->(w1)
 WHERE w0.address = w1.address
   AND ALL(txn in txns WHERE txn.num_tokens > 0.1)
@@ -86,10 +94,9 @@ WHERE w0.address = w1.address
   )
 RETURN size(txns) AS path_length, path
 LIMIT 1
-```
 
-Around 7000 blocks per day, so this is cycles within a day
-```
+
+// Around 7000 blocks per day, so this is cycles within a day
 MATCH path = (w0)-[txns:TXN *2..4]->(w1)
 WHERE ALL(
         i in range(0, size(txns) - 2)
@@ -100,10 +107,9 @@ WHERE ALL(
   AND w0.address = w1.address
 RETURN size(txns) AS path_length, path
 LIMIT 1
-```
 
-## Cycles with txns in 24 hours increments, with no crossovers
-```
+
+// Cycles with txns in 24 hours increments, with no crossovers
 MATCH path = (w0)-[txns:TXN *2..4]->(w1)
 WHERE ALL(
         i in range(0, size(txns) - 2)
@@ -116,29 +122,9 @@ WHERE ALL(
   AND w0.address = w1.address
 RETURN size(txns) AS path_length, path
 LIMIT 1
-```
-
-
-// celsius
-```
-MATCH path = (w0)-[txns:TXN *2..4]->(w1)
-WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
-  AND ALL(
-        i IN range(0, size(txns) - 2)
-    WHERE txns[i].block_number < txns[i + 1].block_number
-      AND txns[i + 1].block_number < txns[i].block_number + 7000
-  )
-  AND ALL(txn IN txns WHERE txn.num_tokens > 1.0)
-UNWIND range(0, size(txns) - 1) AS i
-CALL apoc.refactor.extractNode(txns[i], ['Wallet'], 'input', 'output')
-YIELD input, output
-RETURN i AS step, input, output
-LIMIT 25
-```
 
 
 // Get paths out from possible celsius wallet
-```
 MATCH path = (w0)-[txns:TXN *5..6]->(w1)
 WHERE w0.address = '0xfa65be15f2f6c97b14adfcf1a2085c13d42c098d'
   AND ALL(
@@ -157,7 +143,6 @@ RETURN collect(
   ) AS the_path,
   nodes(path)[-1].address AS final_destination
 LIMIT 25
-```
 
 
 // Query paths from celsius
@@ -200,12 +185,6 @@ RETURN address, c
 LIMIT 10
 
 
-# Index
-```
-CREATE INDEX idx_block_number_num_tokens IF NOT EXISTS
-FOR ()-[r:TXN]-()
-ON (r.block_number, r.num_tokens)
-```
 
 
 // Permutations of size 2 or 3

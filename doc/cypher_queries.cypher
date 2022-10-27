@@ -368,7 +368,7 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 
 
 /////// Collect by place in list...
-MATCH ()-[txns:TXN * ..8]->(celsius_wallet)
+MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
         t in txns
@@ -400,9 +400,8 @@ WITH i AS i,
      reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
 WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)
   AND ALL(
-        j IN range(0, size(txn_group) - 2)
-    WHERE abs(txn_group[j].block_number - txn_group[-1].block_number) <= $cascade_block_distance
-      AND (i <> 0 OR txn_group[j].from_wallet = txn_group[-1].from_wallet) // We want to find paths starting from one wallet
+        i IN range(0, size(txn_group) - 2)
+    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
   )
 RETURN i AS step,
         [

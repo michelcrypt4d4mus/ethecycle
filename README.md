@@ -68,7 +68,10 @@ Cannot guarantee these steps work but they probably will work.
    TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
    ```
 
-## Indexes
+## Queries
+Some queries can be found in the [`queries/`](queries/) folder.
+
+#### Indexes
 Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
 
 ## Other Useful Commands

@@ -61,27 +61,15 @@ UNWIND range(0, size(users)-1) as pos
 SET (users[pos]).number = pos
 
 
-// 4 hop paths that obey arrow of time along with the
-```
-MATCH paths = (w0)-[txns:TXN * 4]->(w1)
-WHERE txns[0].block_number < txns[1].block_number < txns[2].block_number
-  AND txns[0].token_address = txns[1].token_address = txns[2].token_address
-UNWIND range(0, size(txns) - 1) AS step_number
-RETURN step_number, txns[step_number].token, txns[step_number].block_number,  txns[step_number].num_tokens
-LIMIT 25
-```
-
-# https://neo4j.com/developer/kb/comparing-relationship-properties-within-a-path/
-```
+// https://neo4j.com/developer/kb/comparing-relationship-properties-within-a-path/
 MATCH path = (w0)-[txns:TXN * 10]->(w1)
 WHERE w0.address = w1.address
   AND ALL(
     i in range(0, size(txns) - 2)
     WHERE txns[i].block_number < txns[i + 1].block_number
   )
-RETURN size(txns) AS path_length #, path,
+RETURN size(txns) AS path_length, path
 LIMIT 5
-```
 
 
 // Cycle detection query - cycles of length at most 5, with txns made up of at least 10.0 tokens
@@ -89,7 +77,7 @@ MATCH path = (w0)-[txns:TXN * 2..5]->(w1)
 WHERE w0.address = w1.address
   AND ALL(txn in txns WHERE txn.num_tokens > 0.1)
   AND ALL(
-    i in range(0, size(txns) - 2)
+        i in range(0, size(txns) - 2)
     WHERE txns[i].block_number < txns[i + 1].block_number
   )
 RETURN size(txns) AS path_length, path
@@ -264,7 +252,7 @@ LIMIT 1
 // Celsius questions from Mike: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
 :param blocks_to_check => 10000;  // How many blocks before the final txns will we search
 :param txn_size => 1000;  // Aggregate size of 'cascaded' txions
-:param tolerance => 2;  // how much distance +/- from txn_size will we consider part of the cascade
+:param tolerance => 0.5;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
 :param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
 :param min_txn_size => 1; // Don't look at txns for less tokens than this number
@@ -346,7 +334,8 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 
 
 
-/////// Collect by place in list...
+// Generalized query to find similar time txions adding up to a certain amount of a given size
+// ending in a particular wallet.  Uses :params from above.
 MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(

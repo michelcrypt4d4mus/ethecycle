@@ -3,14 +3,13 @@
 //////////////////////////////////////////////////////////////
 
 // Find similar time txions adding up to a certain $txn_size that could have ended in a particular wallet.
-:param start_block => 4000001; // 3990001;
-:param end_block   => 4010001; // 4110000;
-:param min_txn_size => 50; // Don't look at txns for less tokens than this number
-:param flow_size => 10000;  // Aggregate size of 'cascaded' txions
-:param tolerance => 1000;  // how much distance +/- from txn_size will we consider part of the cascade
-:param max_txns_in_flow_step => 3;  // Query run time will get more expensive with higher values
+:param start_block => 4109360; // 3990001;
+:param end_block   => 4109392; // 4110000;
+:param min_txn_size => 1; // Don't look at txns for less tokens than this number
+:param flow_size => 1000;  // Aggregate size of 'cascaded' txions
+:param tolerance => 10;  // how much distance +/- from txn_size will we consider part of the cascade
 :param address_length => 9; // Just for printing
-:param flow_window_blocks => 7;  // In and out txns must be within this many blocks
+:param flow_window_blocks => 40;  // In and out txns must be within this many blocks
 
 
 MATCH ()-[in_txn]->(w)-[out_txn]->()

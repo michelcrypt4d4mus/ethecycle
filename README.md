@@ -57,7 +57,7 @@ Example output:
 
 ![](doc/loader_output.png)
 
-#### Running From Outside Of Docker Container
+### Running From Outside Of Docker Container
 Cannot guarantee these steps work but they probably will work.
 
 1. Create a virtual env in the project dir: `python -m venv .venv`
@@ -71,7 +71,7 @@ Cannot guarantee these steps work but they probably will work.
 ## Queries
 Some queries can be found in the [`queries/`](queries/) folder.
 
-#### Indexes
+#### Index Creation Queries
 Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
 
 ## Other Useful Commands

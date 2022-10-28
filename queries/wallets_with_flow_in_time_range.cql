@@ -45,18 +45,10 @@ RETURN w.address,
 
        [
             t in in_txns |
-            [
-                SUBSTRING(STARTNODE(t).address, 0, $address_length),
-                '=>',
-                ROUND(t.num_tokens, 2)
-            ]
+            SUBSTRING(STARTNODE(t).address, 0, $address_length) + '.. => ' + ROUND(t.num_tokens, 2)
        ] AS in_txns_info,
 
        [
             t in out_txns |
-            [
-                ROUND(t.num_tokens, 2),
-                '=>',
-                SUBSTRING(ENDNODE(t).address, 0, $address_length)
-            ]
+            '' + ROUND(t.num_tokens, 2) + ' => ' + SUBSTRING(ENDNODE(t).address, 0, $address_length) + '..'
        ] AS out_txns_info

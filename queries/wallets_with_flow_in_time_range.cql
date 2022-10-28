@@ -13,24 +13,50 @@
 
 
 MATCH ()-[in_txn]->(w)-[out_txn]->()
-WHERE $start_block <= in_txn.block_number <= $end_block // In block range
+WHERE $start_block <= in_txn.block_number <= $end_block  // In block range
   AND $start_block <= out_txn.block_number <= $end_block // In block range
-  AND in_txn.num_tokens >= $min_txn_size // Over min size txn
+  AND in_txn.num_tokens >= $min_txn_size  // Over min size txn
   AND out_txn.num_tokens >= $min_txn_size // Over min size txn
-  AND 0 < (out_txn.block_number - in_txn.block_number) <= $flow_window_blocks // out_txn after in_txn by no more than $flow_window_blocks
+  AND 0 < (out_txn.block_number - in_txn.block_number) <= $flow_window_blocks // out_txn after in_txn by <= $flow_window_blocks
 
 // Create lists of distinct in and out txns
 WITH collect(DISTINCT in_txn) AS in_txns,
      w AS w,
      collect(DISTINCT out_txn) AS out_txns
 
+// Use reduce() to sum the inflow and outflow tokens
 WITH reduce(tokens = 0, t in in_txns | tokens + t.num_tokens) AS in_tokens,
      size(in_txns) AS in_txn_count,
+     in_txns,
      w AS w,
      reduce(tokens = 0, t in out_txns | tokens + t.num_tokens) AS out_tokens,
-     size(out_txns) AS out_txn_count
+     size(out_txns) AS out_txn_count,
+     out_txns
 
+// Filter for wallets with inflow and outflow within $tolerance of $flow_size
 WHERE (in_tokens - $tolerance) <= $flow_size <= (in_tokens + $tolerance)
   AND (out_tokens - $tolerance) <= $flow_size <= (out_tokens + $tolerance)
 
-RETURN in_tokens, in_txn_count, w.address, out_tokens, out_txn_count
+RETURN w.address,
+       ROUND(in_tokens, 3) AS in_tokens,
+       ROUND(out_tokens, 3) AS out_tokens,
+       in_txn_count,
+       out_txn_count,
+
+       [
+            t in in_txns |
+            [
+                SUBSTRING(STARTNODE(t).address, 0, $address_length),
+                '=>',
+                ROUND(t.num_tokens, 2)
+            ]
+       ] AS in_txns_info,
+
+       [
+            t in out_txns |
+            [
+                ROUND(t.num_tokens, 2),
+                '=>',
+                SUBSTRING(ENDNODE(t).address, 0, $address_length)
+            ]
+       ] AS out_txns_info

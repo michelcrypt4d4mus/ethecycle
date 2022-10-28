@@ -252,13 +252,14 @@ LIMIT 1
 // Celsius questions from Mike: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
 :param blocks_to_check => 10000;  // How many blocks before the final txns will we search
 :param txn_size => 1000;  // Aggregate size of 'cascaded' txions
-:param tolerance => 0.5;  // how much distance +/- from txn_size will we consider part of the cascade
+:param tolerance => 2.0;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
 :param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
 :param min_txn_size => 1; // Don't look at txns for less tokens than this number
 :param address_length => 9; // Just for printing
 :param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
 :param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
+
 
 MATCH path = ()-[tx1]->()-[tx2]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
@@ -299,7 +300,7 @@ WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e
   )
   AND ALL(
         i IN range(0, size(txns) - 2)
-    WHERE txns[i].block_number <= txns[i + 1].block_number // Use <= here...
+    WHERE txns[i].block_number <= txns[i + 1].block_number // TODO Use < or <= here for time?
       AND txns[i + 1].block_number < txns[i].block_number + $max_blocks_between_cascades
   )
 UNWIND range(0, size(txns) - 1) AS i
@@ -310,7 +311,7 @@ WITH collect(nth_step_txns) AS step_txns,
         CASE size(nth_step_txns) > $max_txns_in_cascade
             WHEN true THEN $max_txns_in_cascade
             ELSE size(nth_step_txns) END
-    ) AS unique_step_txn_count
+     ) AS unique_step_txn_count
 
 // Set max_txns bc if you call apoc.combo fxn with too high a max you get nulls
 WITH *,
@@ -334,8 +335,20 @@ RETURN SUBSTRING(STARTNODE(txn_group[0]).address, 0, $address_length) AS from_wa
 
 
 
+// Celsius questions from Mike: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
 // Generalized query to find similar time txions adding up to a certain amount of a given size
-// ending in a particular wallet.  Uses :params from above.
+// ending in a particular wallet.
+:param blocks_to_check => 10000;  // How many blocks before the final txns will we search
+:param txn_size => 1000;  // Aggregate size of 'cascaded' txions
+:param tolerance => 1.5;  // how much distance +/- from txn_size will we consider part of the cascade
+:param min_txns_in_cascade => 1;
+:param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
+:param min_txn_size => 1; // Don't look at txns for less tokens than this number
+:param address_length => 9; // Just for printing
+:param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
+:param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
+
+// Celsius
 MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
@@ -360,7 +373,8 @@ WITH *,
         WHEN true THEN $max_txns_in_cascade
         ELSE size(txns) END AS max_txns
 
-WITH i AS i, apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
+WITH i AS i,
+     apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
 UNWIND txn_groups AS txn_group
 
 WITH i AS i,

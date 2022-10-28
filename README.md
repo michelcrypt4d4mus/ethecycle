@@ -32,7 +32,7 @@ vi .env
 scripts/docker/python_repl_shell.sh
 ```
 
-### Loading Data
+## Loading Data
 Once you are in the container shell the `./load_transaction_csv.py` script will prep files for bulk load. This approach uses the `neo4j-admin database import` tooling ([documentation](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)) which is theoretically significantly faster than `LOAD CSV` at getting data from the disk and into Neo4j.
 
 The loader takes a directory of CSVS (or a single CSV), processes them to add some columns (e.g. `token_symbol` and `blockchain`), does decimal conversion where it can, etc., and writes 2 output CSVs for each input CSV (wallets, txns, and headers for each) to the `output/` directory along with 2 one row CSVs for the wallet and transaction headers. When the preprocessing is complete it will print a shell command to the screen that you can run in the `neo4j` docker container.
@@ -57,9 +57,7 @@ Example output:
 
 ![](doc/loader_output.png)
 
-
-
-### Running From Outside Of Docker Container
+#### Running From Outside Of Docker Container
 Cannot guarantee these steps work but they probably will work.
 
 1. Create a virtual env in the project dir: `python -m venv .venv`
@@ -70,7 +68,10 @@ Cannot guarantee these steps work but they probably will work.
    TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
    ```
 
-### Other Useful Commands
+## Indexes
+Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
+
+## Other Useful Commands
 1. Get shell on the Neo4j server: `scripts/docker/neo4j_shell.sh`
 
 

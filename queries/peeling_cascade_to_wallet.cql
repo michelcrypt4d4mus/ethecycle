@@ -22,7 +22,6 @@ LIMIT 1
 // Generalized version of previous query re: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
 // Find similar time txions adding up to a certain $txn_size that could have ended in a particular wallet.
 :param blocks_to_check => 10000;  // How many blocks before the final txns will we search
-:param max_hops_to_check => 5;  // H
 :param txn_size => 1000;  // Aggregate size of 'cascaded' txions
 :param tolerance => 1.5;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
@@ -32,7 +31,8 @@ LIMIT 1
 :param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
 :param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
 
-MATCH ()-[txns:TXN * $max_hops_to_check]->(celsius_wallet)
+// Note that the maximum length of paths to look for (set to 5 here) must be hardcoded
+MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
         t in txns

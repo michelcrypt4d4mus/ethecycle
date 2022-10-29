@@ -40,11 +40,12 @@ WHERE (in_tokens - $tolerance) <= $flow_size <= (in_tokens + $tolerance)
 RETURN w.address,
        ROUND(in_tokens, 3) AS in_tokens,
        ROUND(out_tokens, 3) AS out_tokens,
+
        in_txn_count,
        out_txn_count,
+
        apoc.coll.min([t in in_txns | t.block_number]) AS first_block_in,
        apoc.coll.max([t in in_txns | t.block_number]) AS last_block_in,
-
        apoc.coll.min([t in out_txns | t.block_number]) AS first_block_out,
        apoc.coll.max([t in out_txns | t.block_number]) AS last_block_out,
 

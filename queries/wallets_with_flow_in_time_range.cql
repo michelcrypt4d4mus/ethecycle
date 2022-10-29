@@ -49,6 +49,7 @@ RETURN w.address,
        apoc.coll.min([t in out_txns | t.block_number]) AS first_block_out,
        apoc.coll.max([t in out_txns | t.block_number]) AS last_block_out,
 
+       // List of strings showing from address, amount, and blocknumber of each in_txn
        [
             t in in_txns |
             'received ' + ROUND(t.num_tokens, 3) +
@@ -56,9 +57,10 @@ RETURN w.address,
                 ' in block ' + t.block_number
        ] AS in_txns_info,
 
+       // List of strings showing to address, amount, and blocknumber of each out_txn
        [
             t in out_txns |
             'sent ' + ROUND(t.num_tokens, 3) +
-                ' to ' + SUBSTRING(STARTNODE(t).address, 0, $address_length) +
+                ' to ' + SUBSTRING(ENDNODE(t).address, 0, $address_length) +
                 ' in block ' + t.block_number
        ] AS out_txns_info

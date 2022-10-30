@@ -90,6 +90,8 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_g
 // Add from_addresses to identify common source wallets only after we've identified valid txn_groups
 // to avoid unnecessary calls to apoc.coll.toSet()
 WITH *, apoc.coll.toSet([t in txn_group | STARTNODE(t).address ]) AS unique_from_addresses
+// Optionally filter for only unique sources (drastically less output)
+//WHERE size(unique_from_addresses) = 1
 
 RETURN i AS step
        ,num_tokens AS tokens

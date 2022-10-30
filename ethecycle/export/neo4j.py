@@ -91,7 +91,7 @@ class Neo4jCsvs:
         txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
 
         if Config.drop_database:
-            msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!\n"
+            msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!"
             console.print(msg, style='red blink bold', justify='center')
             LOADER_CLI_ARGS['overwrite-destination'] = 'true'
             subcommand = 'full'
@@ -121,7 +121,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for wallet in Wallet.extract_wallets_from_transactions(txns, chain_info):
             csv_writer.writerow(wallet.to_neo4j_csv_row() + [extracted_at])
 
-    duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2, style='color(101) dim')
+    duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2)
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
@@ -130,7 +130,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for txn in txns:
             csv_writer.writerow(txn.to_neo4j_csv_row() + [extracted_at])
 
-    print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2, style='color(101) dim')
+    print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
     return neo4j_csvs
 
 

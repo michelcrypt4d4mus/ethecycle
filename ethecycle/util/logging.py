@@ -48,7 +48,8 @@ COLOR_THEME_DICT = {
     'grey.light': 'color(248)',
     'off_white': 'color(245)',
     # data types
-    'benchmark': BYTES,
+    'benchmark': 'color(180) dim',
+    'benchmark.indent': BYTES,
     'number': 'cyan',
     'purple_grey': "color(60) dim italic",
     # bytes
@@ -83,5 +84,6 @@ def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:st
     """Print benchmark message and return duration since 'start_time' argument."""
     duration = time.perf_counter() - start_time
     indent = ' ' * 4 * indent_level
+    style = style if indent_level < 2 else 'benchmark.indent'
     console.print(f"{indent}{msg} in {duration:02.2f} seconds...", style=style)
     return duration

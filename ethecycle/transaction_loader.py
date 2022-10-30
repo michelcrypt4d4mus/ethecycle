@@ -45,7 +45,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
         neo4j_csvs.append(generate_neo4j_csvs(txns, blockchain))
         print_benchmark(f"Generated CSVs for {path.dirname(csv_file)}", start_file_time + duration)
 
-    print_benchmark('\nGenerated import CSVs', start_time, indent_level=0, style='yellow')
+    print_benchmark(f"\nProcessed {len(csv_files)} CSVs", start_time, indent_level=0, style='yellow')
     bulk_load_shell_command = Neo4jCsvs.admin_load_bash_command(neo4j_csvs)
 
     if Config.extract_only:

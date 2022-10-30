@@ -2,6 +2,7 @@
 Logging and printing, for now.
 """
 import logging
+import time
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -76,3 +77,11 @@ def print_headline(headline: str) -> None:
     console.line(2)
     console.print(Panel(headline, style='reverse', width=60))
     console.line()
+
+
+def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:str = 'benchmark') -> float:
+    """Print benchmark message and return duration since 'start_time' argument."""
+    duration = time.perf_counter() - start_time
+    indent = ' ' * 4 * indent_level
+    console.print(f"{indent}{msg} in {duration:02.2f} seconds...", style=style)
+    return duration

@@ -15,12 +15,12 @@ from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
-from ethecycle.blockchains import chain_info, get_chain_info
+from ethecycle.blockchains import get_chain_info
 
 from ethecycle.config import Config
 from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
-from ethecycle.util.logging import console
+from ethecycle.util.logging import console, print_benchmark
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.wallet import Wallet
 
@@ -28,7 +28,7 @@ from ethecycle.wallet import Wallet
 NEO4J_DB = 'neo4j'
 NEO4J_ADMIN_EXECUTABLE = '/var/lib/neo4j/bin/neo4j-admin'
 NEO4J_SSH = f"ssh root@neo4j -o StrictHostKeyChecking=accept-new "
-CSV_IMPORT_CMD = f"{NEO4J_ADMIN_EXECUTABLE} database import "
+CSV_IMPORT_CMD = f"{NEO4J_ADMIN_EXECUTABLE} database import"
 STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
 START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 
@@ -131,8 +131,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for wallet in Wallet.extract_wallets_from_transactions(txns, chain_info):
             csv_writer.writerow(wallet.to_neo4j_csv_row() + [extracted_at])
 
-    wallet_csv_duration = time.perf_counter() - start_time
-    console.print(f"     Wrote wallet CSV in {wallet_csv_duration:02.2f} seconds...", style='benchmark')
+    duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2)
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
@@ -141,8 +140,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for txn in txns:
             csv_writer.writerow(txn.to_neo4j_csv_row() + [extracted_at])
 
-    txn_csv_duration = time.perf_counter() - wallet_csv_duration - start_time
-    console.print(f"     Wrote txn CSV in {txn_csv_duration:02.2f} seconds...", style='benchmark')
+    print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
     return neo4j_csvs
 
 

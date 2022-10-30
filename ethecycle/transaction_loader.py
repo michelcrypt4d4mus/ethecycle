@@ -13,7 +13,7 @@ from ethecycle.config import Config
 from ethecycle.transaction import Txn
 from ethecycle.export.neo4j import INDENT, Neo4jCsvs, generate_neo4j_csvs
 from ethecycle.util.filesystem_helper import (file_size_string, files_in_dir)
-from ethecycle.util.logging import console
+from ethecycle.util.logging import console, print_benchmark
 
 time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address
@@ -40,19 +40,15 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
     for csv_file in csv_files:
         start_file_time = time.perf_counter()
         txns = load_txion_csv(csv_file, blockchain, token)
-        extract_duration = time.perf_counter() - start_file_time
-        console.print(f"   Extracted data from source CSV in {extract_duration:02.2f} seconds...", style='benchmark')
-
+        duration = print_benchmark('Extracted data from source CSV', start_file_time)
         neo4j_csvs.append(generate_neo4j_csvs(txns, blockchain))
-        generation_duration = time.perf_counter() - extract_duration -  start_file_time
-        console.print(f"   Generated CSVs for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
+        print_benchmark(f"Generated CSVs for {path.dirname(csv_file)}", start_file_time + duration)
 
-    generation_duration = time.perf_counter() - start_time
-    console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='yellow')
+    print_benchmark('\nGenerated import CSVs', start_time, indent_level=0, style='yellow')
 
     if Config.extract_only:
-        console.print("\n" + Neo4jCsvs.admin_load_bash_command(neo4j_csvs), style='yellow')
-        console.print("\n--transform-only flag is set so not executing load but command above can be run manually.", style='red')
+        print("\n" + Neo4jCsvs.admin_load_bash_command(neo4j_csvs))
+        console.print("\n     --extract-only is on so not executing load. Above command can be run manually.", style='red bold')
     else:
         Neo4jCsvs.load_to_db(neo4j_csvs)
 

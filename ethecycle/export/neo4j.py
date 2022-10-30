@@ -11,7 +11,6 @@ import csv
 import time
 from datetime import datetime
 from os import path
-from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
@@ -107,15 +106,6 @@ class Neo4jCsvs:
         load_args.append(f"--relationships={EDGE_LABEL}={','.join(txn_csvs)}")
         return f"{CSV_IMPORT_CMD} {subcommand} {' '.join(load_args)} {NEO4J_DB}"
 
-    @staticmethod
-    def load_to_db(neo4j_csvs: List['Neo4jCsvs']) -> None:
-        """Load into the Neo4J database via bulk load."""
-        ssh_cmd = f"{NEO4J_SSH} {Neo4jCsvs.admin_load_bash_command(neo4j_csvs)}"
-        console.print("About to actually execute:\n", style='bright_red')
-        console.print(ssh_cmd, style='yellow')
-        ssh_result = check_output(ssh_cmd.split(' ')).decode()
-        console.print(f"\nRESULT:\n{ssh_result}")
-
 
 def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsvs:
     """Break out wallets and txions into two CSV files for nodes and edges."""
@@ -131,7 +121,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for wallet in Wallet.extract_wallets_from_transactions(txns, chain_info):
             csv_writer.writerow(wallet.to_neo4j_csv_row() + [extracted_at])
 
-    duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2)
+    duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2, style='color(101) dim')
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
@@ -140,7 +130,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         for txn in txns:
             csv_writer.writerow(txn.to_neo4j_csv_row() + [extracted_at])
 
-    print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
+    print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2, style='color(101) dim')
     return neo4j_csvs
 
 

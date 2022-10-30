@@ -67,7 +67,7 @@ class Wallet:
 
     @classmethod
     def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
-        """Extract wallet address from from/to addresses and add labels. Assumes all txns have same chain."""
+        """Extract wallet addresses from from and to addresses and add labels."""
         wallet_addresses = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
         wallet_addresses.remove('')
         wallet_addresses.add(MISSING_ADDRESS)

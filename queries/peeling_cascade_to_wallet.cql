@@ -36,7 +36,7 @@ LIMIT 1
 //
 // To get downstream, switch to:
 //     MATCH (celsius_wallet)-[txns:TXN * 5]->(end_wallet)
-MATCH ()-[txns:TXN * 5]->(celsius_wallet)
+MATCH ()-[txns:TXN * 7]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
         t in txns
@@ -67,10 +67,9 @@ WITH i AS i
        WHEN true THEN $max_txns_in_cascade
        ELSE size(txns) END AS max_txns
 
-// Use apoc combinations() method to find all permutations for each step of a certain
-// size. Our ultimate goal is to find sets of txns that happened at roughly the same time
-// (specifically within $cascade_block_distance blocks of each other) and whose total
-// number of tokens adds up to $txn_size.
+// Use apoc combinations() method to find all permutations for each step of a certain size. Our
+// ultimate goal is to find sets of txns that happened at roughly the same time (AKA within
+// $cascade_block_distance blocks of each other) and whose tokens add up to $txn_size.
 UNWIND apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_group
 
 // Total the num_tokens for each txn_group found by apoc.coll.combinations() and

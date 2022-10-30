@@ -1,13 +1,21 @@
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List
+from typing import List, Type
 
 from rich.pretty import pprint
 from rich.text import Text
 
 from ethecycle.util.string_constants import MISSING_ADDRESS
 
-COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
+COL_NAMES = [
+    'token_address',
+    'from_address',
+    'to_address',
+    'value',  # num_tokens
+    'transaction_hash',
+    'log_index',
+    'block_number'
+]
 
 
 @dataclass
@@ -20,7 +28,7 @@ class Txn():
     transaction_hash: str
     log_index: str
     block_number: int
-    chain_info: 'ChainInfo'
+    chain_info: Type
 
     def __post_init__(self):
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness

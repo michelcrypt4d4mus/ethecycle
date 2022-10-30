@@ -33,7 +33,7 @@ def generate_ethereum_labels_query():
 
 
 def show_address_labels():
-    for address, wallet in Ethereum.known_wallets().items():
+    for _address, wallet in Ethereum.known_wallets().items():
         console.print(wallet)
 
     formatted = comma_format(len(Ethereum.known_wallets().keys()))

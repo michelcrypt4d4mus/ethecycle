@@ -8,6 +8,24 @@ MATCH w0=()-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
 MATCH (w0)-[t0:TXN]->()-[t1:TXN]->() return w0,t0, t1 limit 25
 
 
+// Find wallets with < 10 total outbound txns
+MATCH (w)-[txn]->()
+WITH w.address as address, count(*) as c
+WHERE c < 10
+RETURN address, c
+LIMIT 10
+
+
+// Top 100 transacting wallets
+MATCH (w)-[txn]->()
+RETURN w.address,
+       count(txn) AS sent_txn_count,
+       ROUND(SUM(txn.num_tokens), 2) AS sent_tokens_total,
+       ROUND(SUM(txn.num_tokens) / count(txn), 3) AS avg_tokens_per_txn
+ORDER BY count(txn) DESC
+LIMIT 100
+
+
 // Arrow of time query (All txions within 10 block_numbers of matched t0)
 MATCH p=(w0)-[t0:TXN]->(w1)-[t1:TXN]->(w2)
 WHERE t0.block_number < t1.block_number < t0.block_number +10
@@ -59,14 +77,18 @@ LIMIT 5
 
 
 // Cycle detection query - cycles of length at most 5, with txns made up of at least 10.0 tokens
-MATCH path = (w0)-[txns:TXN * 2..5]->(w1)
-WHERE w0.address = w1.address
-  AND ALL(txn in txns WHERE txn.num_tokens > 0.1)
+MATCH p=(w1)-[txns:TXN * 3..4]->(w1)
+WHERE ALL(t in txns WHERE t.num_tokens > 100)
   AND ALL(
-        i in range(0, size(txns) - 2)
-    WHERE txns[i].block_number < txns[i + 1].block_number
+        i IN range(0, size(txns) - 2)
+    WHERE txns[i].block_number < txns[i + 1].block_number // Arrow of time
   )
-RETURN size(txns) AS path_length, path
+
+WITH p AS p,
+     txns AS txns,
+     apoc.coll.duplicates([n IN nodes(p) | n.address]) AS duplicate_wallets
+WHERE size(duplicate_wallets) = 0
+RETURN p
 LIMIT 1
 
 
@@ -149,16 +171,6 @@ RETURN collect(
   nodes(path)[-1].address AS final_destination,
   size(other_txns) AS length_of_other_path
 LIMIT 1
-
-
-// Find wallets with < 10 total outbound txns
-MATCH (w)-[txn]->()
-WITH w.address as address, count(*) as c
-WHERE c < 10
-RETURN address, c
-LIMIT 10
-
-
 
 
 // Permutations of size 2 or 3

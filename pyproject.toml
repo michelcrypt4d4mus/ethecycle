@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "ethecycle"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "All Rights Reserved"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+bpython = "^0.23"
+Pympler = "^1.0.1"
+rich = "^12.6.0"
+rich_argparse_plus = "^0.3.1.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+
+[tool.poetry.scripts]
+dune_query = 'ethecycle.blockchains.scripts.label_update_query:generate_ethereum_labels_query'
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

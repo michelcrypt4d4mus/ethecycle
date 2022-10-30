@@ -22,6 +22,7 @@ wallet_sorter = lambda txn: txn.from_address
 
 
 def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optional[str] = None) -> None:
+    """Loads CSVs into Neo4j. TODO: rename to load_neo4j_csvs"""
     if not Config.drop_database:
         console.print("\nYou selected incremental import which probably doesn't work. Did you forget the --drop option?", style='bright_red')
         input("    Ctrl-C to stop this train, any other key to continue: ")
@@ -31,7 +32,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
         csv_files = [txn_csv_path]
     elif path.isdir(txn_csv_path):
         console.print('Directory detected...', style='grey')
-        csv_files = [f for f in files_in_dir(txn_csv_path)] # if f.lower().endswith('.csv')]
+        csv_files = files_in_dir(txn_csv_path)
     else:
         raise ValueError(f"'{txn_csv_path}' is not a filesystem path")
 
@@ -52,16 +53,6 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
     console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='yellow')
     Neo4jCsvs.load_to_db(neo4j_csvs)
     console.line(2)
-
-
-def get_wallets_txions(file_path: str, blockchain: str, token: Optional[str] = None) -> WalletTxns:
-    """Get all txns for a given token"""
-    txns = sorted(load_txion_csv(file_path, blockchain, token), key=wallet_sorter)
-
-    return {
-        from_address: sorted(list(txns), key=time_sorter)
-        for from_address, txns in groupby(txns, wallet_sorter)
-    }
 
 
 def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None) -> List[Txn]:

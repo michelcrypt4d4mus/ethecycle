@@ -13,6 +13,7 @@ class Ethereum(ChainInfo):
     SCANNER_BASE_URI = 'https://etherscan.io/'
     ETH_ADDRESS = '0x0'  # Synthetic address because eth itself is not a token
     ETH = 'eth'
+    WALLET_LABEL_CATEGORIES = ['cex', 'multisig', 'bridge', 'funds', 'mev', 'hackers']
 
     # eth is not actually a token so this is a synthetic 'token'
     ETH_TOKEN = Token(

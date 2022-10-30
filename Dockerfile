@@ -2,6 +2,7 @@ FROM python:3.10
 
 # Get some bash tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
         git \
         openssh-client \
         wget
@@ -13,12 +14,16 @@ RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
 WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
 RUN git clone https://github.com/ethereum-lists/tokens.git
 
-# Install python requirements
+# Install poetry
 WORKDIR /usr/src/app
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH "$PATH:/root/.local/bin"
+
+# Install python requirements
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Setup ssh
+# Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
 ARG SSH_DIR=/root/.ssh
 RUN mkdir $SSH_DIR
 RUN chmod 700 $SSH_DIR

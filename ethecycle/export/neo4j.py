@@ -39,6 +39,7 @@ WALLET_CSV_HEADER = [
     'address:ID',
     'blockchain',
     'label',
+    'category',
     'extracted_at:datetime',
 ]
 
@@ -122,7 +123,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
         csv_writer = csv.writer(csvfile)
 
         for w in Wallet.extract_wallets_from_transactions(txns):
-            csv_writer.writerow([w.address, w.blockchain, w.label, extracted_at])
+            csv_writer.writerow([w.address, w.blockchain, w.label, w.category, extracted_at])
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:

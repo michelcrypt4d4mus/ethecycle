@@ -5,6 +5,7 @@ Should be implemented for each chain with the appropriate overrides of the abstr
 import gzip
 import json
 from abc import ABC, abstractmethod
+from collections import namedtuple
 from os import listdir, path
 from typing import Dict, Optional
 
@@ -12,15 +13,19 @@ from ethecycle.blockchains.token import Token
 from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR, WALLET_LABELS_DIR
 from ethecycle.util.logging import log
 
+WalletInfo = namedtuple('WalletInfo', ['label', 'category'])
+
 ADDRESS_PREFIX = '0x'
 WALLET_FILE_EXTENSION = '.txt.gz'
 
 
 class ChainInfo(ABC):
+    WALLET_LABEL_CATEGORIES = []
+
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
     _tokens: Dict[str, Token] = {}
     _tokens_by_address: Dict[str, Token] = {}
-    _wallet_labels: Dict[str, str] = {}
+    _wallet_labels: Dict[str, WalletInfo] = {}
 
     @classmethod
     @abstractmethod
@@ -102,7 +107,21 @@ class ChainInfo(ABC):
         if len(cls._wallet_labels) == 0:
             cls._load_wallet_label_file_contents()
 
-        return cls._wallet_labels.get(wallet_address)
+        if wallet_address in cls._wallet_labels:
+            return cls._wallet_labels[wallet_address].label
+        else:
+            return None
+
+    @classmethod
+    def wallet_category(cls, wallet_address: str) -> Optional[str]:
+        """Lazy loaded wallet label categories."""
+        if len(cls._wallet_labels) == 0:
+            cls._load_wallet_label_file_contents()
+
+        if wallet_address in cls._wallet_labels:
+            return cls._wallet_labels[wallet_address].category
+        else:
+            return None
 
     @classmethod
     def _load_wallet_label_file_contents(cls) -> None:
@@ -114,18 +133,17 @@ class ChainInfo(ABC):
             return
 
         with gzip.open(label_file, 'rb') as file:
-            wallet_file_lines = [line.decode().rstrip() for line in file if not line.decode().startswith('#')]
+            wallet_file_lines = [line.decode().rstrip() for line in file if not line.startswith(b'#')]
 
-        for i in range(0, len(wallet_file_lines) - 1, 2):
+        for i in range(0, len(wallet_file_lines) - 1, 3):
             address = wallet_file_lines[i]
 
             if not address.startswith(ADDRESS_PREFIX):
                 raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
             elif address in cls._wallet_labels:
                 log.warning(f"{address} already labeled as {cls._wallet_labels[address]}, appending {wallet_file_lines[i + 1]}...")
-                cls._wallet_labels[address] += f", {wallet_file_lines[i + 1]}"
             else:
-                cls._wallet_labels[address] = wallet_file_lines[i + 1]
+                cls._wallet_labels[address] = WalletInfo(wallet_file_lines[i + 1], wallet_file_lines[i + 2])
 
     @classmethod
     def _chain_str(cls) -> str:

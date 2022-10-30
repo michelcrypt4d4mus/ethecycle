@@ -17,9 +17,9 @@ rich_argparse_plus = "^0.3.1.4"
 pytest = "^7.2.0"
 
 [tool.poetry.scripts]
-dune_query = 'ethecycle.blockchains.scripts.label_update_query:generate_ethereum_labels_query'
-wallet_labels = 'ethecycle.blockchains.scripts.label_update_query:show_address_labels'
-
+dune_query = 'ethecycle.util.data_helper:generate_ethereum_labels_query'
+wallet_labels = 'ethecycle.util.data_helper:show_address_labels'
+#python -c 'from ethecycle.util.data_helper import show_address_labels; show_address_labels()'
 
 [build-system]
 requires = ["poetry-core"]

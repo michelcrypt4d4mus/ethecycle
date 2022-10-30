@@ -83,8 +83,11 @@ Some queries can be found in the [`queries/`](queries/) folder.
 Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
 
 ## Other Useful Commands
-1. Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
-1. Get shell on the Neo4j server: `scripts/docker/neo4j/shell.sh`
+* Get shell on the Python ETL container: `scripts/docker/python_etl/shell.sh`
+* Get shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
+* Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
+* Display the wallet tags: `scripts/show_wallet_labels.sh`
+* Print a query that can be run on Dune to find new wallet tags: `scripts/dune_update_query.sh`
 
 
 # Neo4j

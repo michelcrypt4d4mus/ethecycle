@@ -22,16 +22,20 @@ LIMIT 1
 // Generalized version of previous query re: Who funded '0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27'?
 // Find similar time txions adding up to a certain $txn_size that could have ended in a particular wallet.
 :param blocks_to_check => 10000;  // How many blocks before the final txns will we search
-:param txn_size => 1000;  // Aggregate size of 'cascaded' txions
-:param tolerance => 1.5;  // how much distance +/- from txn_size will we consider part of the cascade
+:param txn_size => 1001;  // Aggregate size of 'cascaded' txions
+:param tolerance => 0.9;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
-:param max_txns_in_cascade => 3;  // Query run time will get more expensive with higher values
+:param max_txns_in_cascade => 4;  // Query run time will get more expensive with higher values
 :param min_txn_size => 1; // Don't look at txns for less tokens than this number
 :param address_length => 9; // Just for printing
 :param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
 :param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
 
 // Note that the maximum length of paths to look for (set to 5 here) must be hardcoded
+// To get upstream txions:
+//
+// To get downstream, switch to:
+//     MATCH (celsius_wallet)-[txns:TXN * 5]->(end_wallet)
 MATCH ()-[txns:TXN * 5]->(celsius_wallet)
 WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e27')
   AND ALL(
@@ -47,17 +51,17 @@ WHERE celsius_wallet.address = toLower('0x4Eb3Dd12ff56f13a9092bF77FC72C6EE77Ae9e
 
 // What follows is a sort of pivot operation, where we want to build a list of lists
 // with size(txns) elements. Each element is a list containing all the possible txns that
-// could have happened at that step.
+// could have happened at that step of the path.
 UNWIND range(0, size(txns) - 1) AS i  // "i" is the step number from here on out
 // Create a list of 2-tuples: (step_number, list_of_possible_txns_at_step_number)
-WITH collect([i, txns[i]]) AS step_n_possibilities
+WITH DISTINCT collect([i, txns[i]]) AS step_n_possibilities
 
-// Perform a DISTINCT call to strip out duplicates and lower computation complexity
-// TODO: possible to do this in the previous step?
 UNWIND step_n_possibilities AS step_n_possibility
 WITH DISTINCT step_n_possibility[0] AS i,
      collect(DISTINCT step_n_possibility[1]) AS txns
-WITH *,
+
+WITH i AS i,
+     txns AS txns,
      size(txns) AS txn_count,
      CASE size(txns) > $max_txns_in_cascade
         WHEN true THEN $max_txns_in_cascade

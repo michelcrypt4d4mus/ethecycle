@@ -122,7 +122,7 @@ class ChainInfo(ABC):
             if not address.startswith(ADDRESS_PREFIX):
                 raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
             elif address in cls._wallet_labels:
-                log.warning(f"{address} already in wallet labels as {cls._wallet_labels[address]}, appending...")
+                log.warning(f"{address} already labeled as {cls._wallet_labels[address]}, appending {wallet_file_lines[i + 1]}...")
                 cls._wallet_labels[address] += f", {wallet_file_lines[i + 1]}"
             else:
                 cls._wallet_labels[address] = wallet_file_lines[i + 1]

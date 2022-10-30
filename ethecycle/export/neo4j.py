@@ -19,6 +19,7 @@ from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import ETHEREUM
+from ethecycle.wallet import MISSING_ADDRESS, Wallet
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'
@@ -30,12 +31,12 @@ START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
 NODE_LABEL = 'Wallet'
 EDGE_LABEL = 'TXN'
-MISSING_ADDRESS = 'no_address'
 INDENT = '      '
 
 WALLET_CSV_HEADER = [
     'address:ID',
     'blockchain',
+    'label',
     'extracted_at:datetime',
 ]
 
@@ -69,10 +70,11 @@ INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NE
     Text(f"Afterwards restart with:\n") + \
     Text(f"      {START_SERVER_CMD}\n\n", style='bright_cyan') + \
     Text(
-        f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead",
+        f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead\n",
         style='bright_yellow bold blink reverse',
         justify='center'
-    )
+    ) + \
+    Text(f"(If you messed up and forgot the --drop option, replace command with:\n   {CSV_IMPORT_CMD} full --id-type=string --skip-duplicate-nodes=true --overwrite-destination=true", style='dim')
 
 
 class Neo4jCsvs:
@@ -115,11 +117,9 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
     # Wallet nodes
     with open(neo4j_csvs.wallet_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
-        wallets = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
-        wallets.add(MISSING_ADDRESS)
 
-        for wallet_address in wallets:
-            csv_writer.writerow([wallet_address, blockchain, extracted_at])
+        for w in Wallet.extract_wallets_from_transactions(txns):
+            csv_writer.writerow([w.address, w.blockchain, w.label, extracted_at])
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
@@ -131,16 +131,19 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
     return neo4j_csvs
 
 
+# NOTE: Had bizarre issues with this on macOS... removed WALLET_header.csv but could not write to
+#       Wallet_header.csv until I did a `touch /ethecycle/Wallet_header.csv`.
+#       I assume it has something to do w/macOS's lack of case sensitivity.
 def write_header_csvs() -> Neo4jCsvs:
-    """One row CSV with header info"""
+    """Write single row CSVs with header info for nodes and edges."""
     header_csvs = Neo4jCsvs('header')
 
     with open(header_csvs.txn_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(TXN_CSV_HEADER)
 
-    with open(header_csvs.wallet_csv_path, 'w') as csvfile:
-        csv_writer = csv.writer(csvfile)
+    with open(header_csvs.wallet_csv_path, 'w') as file:
+        csv_writer = csv.writer(file)
         csv_writer.writerow(WALLET_CSV_HEADER)
 
     return header_csvs

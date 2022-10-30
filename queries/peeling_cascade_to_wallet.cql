@@ -87,12 +87,9 @@ RETURN i AS step,
         // List of abbreviations of wallet addresses and num_tokens. For readability more than anything.
         [
             t in txn_group |
-            [
-                SUBSTRING(STARTNODE(t).address, 0, $address_length),
-                '=>',
-                ROUND(t.num_tokens, 2),
-                '=>',
-                SUBSTRING(ENDNODE(t).address, 0, $address_length)
-            ]
+            SUBSTRING(STARTNODE(t).address, 0, $address_length) +
+                ' sent ' + ROUND(t.num_tokens, 3) +
+                ' to ' + SUBSTRING(ENDNODE(t).address, 0, $address_length) +
+                ' in block ' + t.block_number
         ] AS possibile_sources,
        num_tokens AS total_tokens

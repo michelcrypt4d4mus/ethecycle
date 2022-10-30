@@ -5,23 +5,26 @@ services:
     build:
       dockerfile: Dockerfile-neo4j
       context: .
+    env_file:
+      - .env.neo4j
+      # - .env
     ports:
-       - 7474:7474
-       - 7687:7687
+      - 7474:7474
+      - 7687:7687
     volumes:
-       - ${NEO4J_DATA_DIR}/data:/data
-       - ${NEO4J_DATA_DIR}/logs:/logs
-       - .:/ethecycle
+      - ${NEO4J_DATA_DIR}/data:/data
+      - ${NEO4J_DATA_DIR}/logs:/logs
+      - .:/ethecycle
   shell:
     build:
       context: .
     env_file:
       - .env
-    links:   # Should be unnecessary https://docs.docker.com/compose/networking/#multi-host-networking
+    links:   # Should be unnecessary: https://docs.docker.com/compose/networking/#multi-host-networking
       - neo4j
     depends_on:
       - neo4j
     volumes:
       - .:/ethecycle
-      - ${TXION_DATA_DIR}:/blockchain_data
+      - ${TXION_DATA_DIR}:${TXION_DATA_MOUNT_DIR}
     working_dir: /ethecycle

@@ -131,6 +131,7 @@ dmypy.json
 # Project
 .DS_Store
 .env
+.env.neo4j
 /graphml_lep/
 /output/
 /data/

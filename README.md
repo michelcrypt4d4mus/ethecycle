@@ -24,12 +24,17 @@ cd ethecycle
 
 # Edit local copy of .env to set TXION_DATA_DIR as the location of some txion CSVs
 cp .env.example .env
-# Use vi or whatever editor you prefer
+cp .env.neo4j.example .env.neo4j
+# Use vi or whatever editor you prefer to set variables in .env
 vi .env
 
 # When you run this command docker-compose should build everything and leave you in a
 # bash shell, at which point you can run 'bpython' to get a python REPL etc.
 scripts/docker/python_repl_shell.sh
+
+# Once you have configured docker's memory allocation for Neo4j, you may want to regenerate
+# the .env.neo4j file with this script:
+scripts/docker/neo4j/generate_.neo4j.env_file.sh
 ```
 
 ## Loading Data
@@ -75,7 +80,8 @@ Some queries can be found in the [`queries/`](queries/) folder.
 Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
 
 ## Other Useful Commands
-1. Get shell on the Neo4j server: `scripts/docker/neo4j_shell.sh`
+1. Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
+1. Get shell on the Neo4j server: `scripts/docker/neo4j/shell.sh`
 
 
 # Neo4j

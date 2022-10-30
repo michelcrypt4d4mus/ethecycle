@@ -3,7 +3,6 @@ Load transactions from CSV as python lists and/or directly into the graph databa
 """
 import csv
 import time
-from itertools import groupby
 from os import path
 from typing import List, Optional
 
@@ -15,7 +14,6 @@ from ethecycle.transaction import Txn
 from ethecycle.export.neo4j import INDENT, Neo4jCsvs, generate_neo4j_csvs
 from ethecycle.util.filesystem_helper import (file_size_string, files_in_dir)
 from ethecycle.util.logging import console
-from ethecycle.util.types import WalletTxns
 
 time_sorter = lambda txn: txn.block_number
 wallet_sorter = lambda txn: txn.from_address
@@ -80,7 +78,7 @@ def load_txion_csv(file_path: str, blockchain: str, token: Optional[str] = None)
 
     with open(file_path, newline='') as csvfile:
         txns = [
-            Txn(*([blockchain] + row)) for row in csv.reader(csvfile, delimiter=',')
+            Txn(*([blockchain] + row + [chain_info])) for row in csv.reader(csvfile, delimiter=',')
             if row[0] != 'token_address' and (token is None or row[0] == token_address)
         ]
 

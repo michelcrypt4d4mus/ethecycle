@@ -86,17 +86,3 @@ if args.token and args.token not in CONFIGURED_TOKENS:
 
 # Actual loading happens here
 create_neo4j_bulk_load_csvs(args.csv_path, args.blockchain, args.token)
-
-# if args.debug:
-#     print_headline(f"Sample of {args.debug} Wallets in Graph")
-
-#     for node in g.V().limit(args.debug).elementMap().toList():
-#         console.print(node)
-
-#     print_headline(f"Sample of {args.debug} Transactions in Graph")
-
-#     for edge in g.E().limit(args.debug).elementMap().toList():
-#         console.print(edge)
-
-# print_obj_counts()
-# console.line()

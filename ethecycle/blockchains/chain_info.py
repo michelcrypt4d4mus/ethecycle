@@ -5,16 +5,14 @@ Should be implemented for each chain with the appropriate overrides of the abstr
 import gzip
 import json
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from os import listdir, path
 from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
+from ethecycle.wallet import Wallet
 from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR, WALLET_LABELS_DIR
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import TOKEN
-
-WalletInfo = namedtuple('WalletInfo', ['label', 'category'])
 
 ADDRESS_PREFIX = '0x'
 WALLET_FILE_EXTENSION = '.txt.gz'
@@ -27,7 +25,7 @@ class ChainInfo(ABC):
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
     _tokens: Dict[str, Token] = {}
     _tokens_by_address: Dict[str, Token] = {}
-    _wallet_labels: Dict[str, WalletInfo] = {}
+    _wallet_labels: Dict[str, Wallet] = {}
 
     @classmethod
     @abstractmethod
@@ -106,22 +104,22 @@ class ChainInfo(ABC):
     @classmethod
     def wallet_label(cls, wallet_address: str) -> Optional[str]:
         """Lazy loaded wallet address labels."""
-        if wallet_address in cls.wallet_labels():
-            return cls.wallet_labels()[wallet_address].label
+        if wallet_address in cls.known_wallets():
+            return cls.known_wallets()[wallet_address].label
         else:
             return None
 
     @classmethod
     def wallet_category(cls, wallet_address: str) -> Optional[str]:
         """Lazy loaded wallet label categories."""
-        if wallet_address in cls.wallet_labels():
-            return cls.wallet_labels()[wallet_address].category
+        if wallet_address in cls.known_wallets():
+            return cls.known_wallets()[wallet_address].category
         else:
             return None
 
     @classmethod
-    def wallet_labels(cls) -> Dict[str, WalletInfo]:
-        """Lazy loaded wallet label categories."""
+    def known_wallets(cls) -> Dict[str, Wallet]:
+        """Lazy loaded wallet label, categories, etc."""
         if len(cls._wallet_labels) == 0:
             cls._load_wallet_label_file_contents()
 
@@ -129,32 +127,36 @@ class ChainInfo(ABC):
 
     @classmethod
     def _load_wallet_label_file_contents(cls) -> None:
-        """Load file matching blockchain name in wallet files dir"""
+        """Load file matching blockchain name in wallet files dir and merge with token address info."""
+        # Label the addresses we know are token addresses
+        for symbol, token in cls.tokens().items():
+            cls._wallet_labels[token.token_address] = Wallet(token.token_address, cls._chain_str(), cls, symbol, TOKEN)
+
+        # Load the rest of the wallet tags from the data/wallet_info/ file
         label_file = WALLET_LABELS_DIR.joinpath(cls._chain_str() + WALLET_FILE_EXTENSION)
 
         if not path.isfile(label_file):
-            log.warning(f"{label_file} is not a file - no labels loaded for {cls._chain_str()}")
+            log.warning(f"{label_file} is not a file - only token addresses loaded for {cls._chain_str()}")
             return
 
         with gzip.open(label_file, 'rb') as file:
-            wallet_file_lines = [line.decode().rstrip() for line in file if not line.startswith(b'#')]
+            lines = [line.decode().rstrip() for line in file if not line.startswith(b'#')]
 
-        for i in range(0, len(wallet_file_lines) - 1, 3):
-            address = wallet_file_lines[i]
+        for i in range(0, len(lines) - 1, 3):
+            address = lines[i]
 
             if not address.startswith(ADDRESS_PREFIX):
                 raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
             elif address in cls._wallet_labels:
-                log.warning(f"{address} already labeled as {cls._wallet_labels[address]}, appending {wallet_file_lines[i + 1]}...")
+                log.warning(f"{address} already labeled '{cls._wallet_labels[address]}', discarding {lines[i + 1]}...")
             else:
-                cls._wallet_labels[address] = WalletInfo(wallet_file_lines[i + 1], wallet_file_lines[i + 2])
-
-        # Add token addresses
-        for symbol, token in cls.tokens().items():
-            if token.token_address in cls._wallet_labels:
-                log.warning(f"{token.token_address} already labeled as {cls._wallet_labels[token.token_address]}, appending {token.token_address}...")
-            else:
-                cls._wallet_labels[token.token_address] = WalletInfo(symbol, TOKEN)
+                cls._wallet_labels[address] = Wallet(
+                    address,
+                    cls._chain_str(),
+                    cls,
+                    lines[i + 1],
+                    lines[i + 2]
+                )
 
     @classmethod
     def _chain_str(cls) -> str:

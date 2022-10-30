@@ -15,6 +15,7 @@ from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
+from ethecycle.blockchains import chain_info, get_chain_info
 
 from ethecycle.config import Config
 from ethecycle.transaction import Txn
@@ -119,6 +120,7 @@ class Neo4jCsvs:
 def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsvs:
     """Break out wallets and txions into two CSV files for nodes and edges."""
     extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
+    chain_info = get_chain_info(blockchain)
     neo4j_csvs = Neo4jCsvs()
     start_time = time.perf_counter()
 
@@ -126,7 +128,7 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
     with open(neo4j_csvs.wallet_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
 
-        for wallet in Wallet.extract_wallets_from_transactions(txns):
+        for wallet in Wallet.extract_wallets_from_transactions(txns, chain_info):
             csv_writer.writerow(wallet.to_neo4j_csv_row() + [extracted_at])
 
     wallet_csv_duration = time.perf_counter() - start_time

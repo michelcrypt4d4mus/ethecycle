@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from pympler.asizeof import asizeof
 
@@ -32,3 +32,10 @@ def memsize_string(obj: Any):
 
 def is_even(number: int) -> bool:
     return divmod(number, 2)[1] == 0
+
+
+def comma_format(number: Union[int, float]) -> str:
+    if isinstance(number, float):
+        return "{:,.2f}".format(number)
+    else:
+        return "{:,d}".format(number)

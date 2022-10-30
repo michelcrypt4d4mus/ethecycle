@@ -18,6 +18,7 @@ pytest = "^7.2.0"
 
 [tool.poetry.scripts]
 dune_query = 'ethecycle.blockchains.scripts.label_update_query:generate_ethereum_labels_query'
+wallet_labels = 'ethecycle.blockchains.scripts.label_update_query:show_address_labels'
 
 
 [build-system]

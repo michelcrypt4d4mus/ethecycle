@@ -30,3 +30,9 @@ def generate_ethereum_labels_query():
     )
 
     print(query)
+
+
+def show_address_labels():
+    for address, wallet_info in Ethereum.wallet_labels().items():
+        pprint(address)
+        pprint(wallet_info)

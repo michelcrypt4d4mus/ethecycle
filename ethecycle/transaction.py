@@ -6,6 +6,7 @@ from rich.pretty import pprint
 from rich.text import Text
 
 from ethecycle.blockchains import get_chain_info
+from ethecycle.util.string_constants import MISSING_ADDRESS
 
 COL_NAMES = ['token_address', 'from_address', 'to_address', 'value', 'transaction_hash', 'log_index', 'block_number']
 
@@ -31,6 +32,19 @@ class Txn():
         self.block_number = int(self.block_number)
 
         self.scanner_url = chain_info.scanner_url(self.transaction_hash)
+
+    def to_neo4j_csv_row(self):
+        """Generate Neo4J bulk load CSV row."""
+        return [
+            self.transaction_id,
+            self.blockchain,
+            self.token_address,
+            self.token,
+            self.from_address or MISSING_ADDRESS,
+            self.to_address or MISSING_ADDRESS,
+            self.num_tokens,
+            self.block_number
+        ]
 
     def __rich__(self) -> Text:
         txt = Text('<').append(self.transaction_hash[:8], style='magenta')

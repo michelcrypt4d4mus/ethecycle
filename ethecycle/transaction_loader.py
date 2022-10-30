@@ -47,11 +47,17 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
 
         neo4j_csvs.append(generate_neo4j_csvs(txns, blockchain))
         generation_duration = time.perf_counter() - extract_duration -  start_file_time
-        console.print(f"   Generated CSV for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
+        console.print(f"   Generated CSVs for {path.dirname(csv_file)} in {generation_duration:02.2f} seconds...", style='benchmark')
 
     generation_duration = time.perf_counter() - start_time
     console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='yellow')
-    Neo4jCsvs.load_to_db(neo4j_csvs)
+
+    if Config.extract_only:
+        console.print("\n" + Neo4jCsvs.admin_load_bash_command(neo4j_csvs), style='yellow')
+        console.print("\n--transform-only flag is set so not executing load but command above can be run manually.", style='red')
+    else:
+        Neo4jCsvs.load_to_db(neo4j_csvs)
+
     console.line(2)
 
 

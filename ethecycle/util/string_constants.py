@@ -2,6 +2,8 @@ ADDRESS = 'address'
 TXN = 'transaction'
 WALLET = 'wallet'
 
+MISSING_ADDRESS = 'no_address'
+
 USDT = 'USDT'
 WETH = 'WETH'
 

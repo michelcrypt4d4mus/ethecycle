@@ -8,10 +8,11 @@ Data types: int, long, float, double, boolean, byte, short, char, string, point,
             localtime, time, localdatetime, datetime, duration
 """
 import csv
+import time
 from datetime import datetime
-from os import environ, path
+from os import path
 from subprocess import check_output
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from rich.text import Text
 
@@ -20,7 +21,7 @@ from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import ETHEREUM
-from ethecycle.wallet import MISSING_ADDRESS, Wallet
+from ethecycle.wallet import Wallet
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'
@@ -84,6 +85,7 @@ class Neo4jCsvs:
 
     @staticmethod
     def admin_load_bash_command(neo4j_csvs: List['Neo4jCsvs']) -> str:
+        """Generate shell command to bulk load a set of CSVs."""
         neo4j_csvs = [write_header_csvs()] + neo4j_csvs
         wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
         txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
@@ -106,6 +108,7 @@ class Neo4jCsvs:
 
     @staticmethod
     def load_to_db(neo4j_csvs: List['Neo4jCsvs']) -> None:
+        """Load into the Neo4J database via bulk load."""
         ssh_cmd = f"{NEO4J_SSH} {Neo4jCsvs.admin_load_bash_command(neo4j_csvs)}"
         console.print("About to actually execute:\n", style='bright_red')
         console.print(ssh_cmd, style='yellow')
@@ -117,21 +120,27 @@ def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsv
     """Break out wallets and txions into two CSV files for nodes and edges."""
     extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
     neo4j_csvs = Neo4jCsvs()
+    start_time = time.perf_counter()
 
     # Wallet nodes
     with open(neo4j_csvs.wallet_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
 
-        for w in Wallet.extract_wallets_from_transactions(txns):
-            csv_writer.writerow([w.address, w.blockchain, w.label, w.category, extracted_at])
+        for wallet in Wallet.extract_wallets_from_transactions(txns):
+            csv_writer.writerow(wallet.to_neo4j_csv_row() + [extracted_at])
+
+    wallet_csv_duration = time.perf_counter() - start_time
+    console.print(f"     Wrote wallet CSV in {wallet_csv_duration:02.2f} seconds...", style='benchmark')
 
     # Transaction edges
     with open(neo4j_csvs.txn_csv_path, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
 
         for txn in txns:
-            csv_writer.writerow(_neo4j_csv_row(txn) + [extracted_at])
+            csv_writer.writerow(txn.to_neo4j_csv_row() + [extracted_at])
 
+    txn_csv_duration = time.perf_counter() - wallet_csv_duration - start_time
+    console.print(f"     Wrote txn CSV in {txn_csv_duration:02.2f} seconds...", style='benchmark')
     return neo4j_csvs
 
 
@@ -151,17 +160,3 @@ def write_header_csvs() -> Neo4jCsvs:
         csv_writer.writerow(WALLET_CSV_HEADER)
 
     return header_csvs
-
-
-def _neo4j_csv_row(txn: Txn) -> List[Any]:
-    """Generate row from Txn class."""
-    return [
-        txn.transaction_id,
-        txn.blockchain,
-        txn.token_address,
-        txn.token,
-        txn.from_address or MISSING_ADDRESS,
-        txn.to_address or MISSING_ADDRESS,
-        txn.num_tokens,
-        txn.block_number
-    ]

@@ -47,6 +47,9 @@ parser.add_argument('-t', '--token',
 parser.add_argument('-d', '--drop', action='store_true',
                     help="drop and recreate the database")
 
+parser.add_argument('-e', '--extract-only', action='store_true',
+                    help="extract and transform but do not load (will display a command that can load)")
+
 parser.add_argument('-D', '--debug',
                     help='debug output: shows full XML and optionally indicated number of elements in final graph',
                     nargs='?',
@@ -74,6 +77,9 @@ if args.debug:
 
 if args.drop:
     Config.drop_database = True
+
+if args.extract_only:
+    Config.extract_only = True
 
 if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")

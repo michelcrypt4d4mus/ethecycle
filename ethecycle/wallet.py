@@ -5,8 +5,7 @@ from typing import List
 
 from ethecycle.blockchains import get_chain_info
 from ethecycle.transaction import Txn
-
-MISSING_ADDRESS = 'no_address'
+from ethecycle.util.string_constants import MISSING_ADDRESS
 
 
 @dataclass
@@ -19,6 +18,15 @@ class Wallet:
         chain_info = get_chain_info(self.blockchain)
         self.label = chain_info.wallet_label(self.address)
         self.category = chain_info.wallet_category(self.address)
+
+    def to_neo4j_csv_row(self):
+        """Generate Neo4J bulk load CSV row."""
+        return [
+            self.address,
+            self.blockchain,
+            self.label,
+            self.category
+        ]
 
     @classmethod
     def extract_wallets_from_transactions(cls, txns: List[Txn]) -> List['Wallet']:

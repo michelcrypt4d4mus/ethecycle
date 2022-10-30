@@ -14,8 +14,9 @@ services:
     volumes:
       - ${NEO4J_DATA_DIR}/data:/data
       - ${NEO4J_DATA_DIR}/logs:/logs
+      - ${TXION_DATA_DIR}:${TXION_DATA_MOUNT_DIR}
       - .:/ethecycle
-  shell:
+  python_etl:
     build:
       context: .
     env_file:

@@ -26,7 +26,7 @@ LIMIT 1
 :param tolerance => 0.9;  // how much distance +/- from txn_size will we consider part of the cascade
 :param min_txns_in_cascade => 1;
 :param max_txns_in_cascade => 4;  // Query run time will get more expensive with higher values
-:param min_txn_size => 1; // Don't look at txns for less tokens than this number
+:param min_txn_size => 0.95; // Don't look at txns for less tokens than this number
 :param address_length => 9; // Just for printing
 :param cascade_block_distance => 70;  // Txns must be within this many blocks of each to be considered part of cascade
 :param max_blocks_between_cascades => 100;  // Max blocks between steps of the cascade
@@ -92,6 +92,8 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_g
 WITH *, apoc.coll.toSet([t in txn_group | STARTNODE(t).address ]) AS unique_from_addresses
 
 RETURN i AS step
+       ,num_tokens AS tokens
+
         // List of abbreviations of wallet addresses and num_tokens. For readability more than anything.
        ,[
             t in txn_group |
@@ -99,8 +101,7 @@ RETURN i AS step
                 ' sent ' + ROUND(t.num_tokens, 3) +
                 ' to ' + SUBSTRING(ENDNODE(t).address, 0, $address_length) +
                 ' in block ' + t.block_number
-        ] AS possibile_sources
-       ,num_tokens AS total_tokens
+        ] AS possible_sources
 
        // If all txns came from same wallet then put etherscan link, else just number of unique addresses
        ,CASE size(unique_from_addresses)

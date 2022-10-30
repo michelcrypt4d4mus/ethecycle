@@ -71,21 +71,22 @@ WITH i AS i
 // size. Our ultimate goal is to find sets of txns that happened at roughly the same time
 // (specifically within $cascade_block_distance blocks of each other) and whose total
 // number of tokens adds up to $txn_size.
-WITH i AS i,
-     apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_groups
-UNWIND txn_groups AS txn_group
+UNWIND apoc.coll.combinations(txns, $min_txns_in_cascade, max_txns) AS txn_group
 
 // Total the num_tokens for each txn_group found by apoc.coll.combinations() and
 // check the group happened within $cascade_block_distance blocks of each other
 WITH i AS i
      ,txn_group AS txn_group
      ,reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
+     ,[t in txn_group | t.block_number] AS txn_block_numbers
 WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_group tokens add up to $txn_size
-  AND ALL(
-        i IN range(0, size(txn_group) - 2)
-    // All txions being within N blocks of txn_group[-1] means they are within 2*N blocks of each other
-    WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
-  )
+  AND txn_block_numbers[-1] - txn_block_numbers[0] <= $cascade_block_distance
+// Less memory intensive (but less accurate - doubles the distance) way of doing the same block range clause:
+//   AND ALL(
+//         i IN range(0, size(txn_group) - 2)
+//     // All txions being within N blocks of txn_group[-1] means they are within 2*N blocks of each other
+//     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
+//   )
 
 // Add from_addresses to identify common source wallets only after we've identified valid txn_groups
 // to avoid unnecessary calls to apoc.coll.toSet()

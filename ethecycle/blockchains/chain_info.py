@@ -21,6 +21,7 @@ WALLET_FILE_EXTENSION = '.txt.gz'
 
 
 class ChainInfo(ABC):
+    # Should be populated with the categories that have been pulled for this blockchain
     WALLET_LABEL_CATEGORIES = []
 
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.

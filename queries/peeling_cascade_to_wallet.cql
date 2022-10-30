@@ -57,15 +57,15 @@ UNWIND range(0, size(txns) - 1) AS i  // "i" is the step number from here on out
 WITH DISTINCT collect([i, txns[i]]) AS step_n_possibilities
 
 UNWIND step_n_possibilities AS step_n_possibility
-WITH DISTINCT step_n_possibility[0] AS i,
-     collect(DISTINCT step_n_possibility[1]) AS txns
+WITH DISTINCT step_n_possibility[0] AS i
+    ,collect(DISTINCT step_n_possibility[1]) AS txns
 
-WITH i AS i,
-     txns AS txns,
-     size(txns) AS txn_count,
-     CASE size(txns) > $max_txns_in_cascade
-        WHEN true THEN $max_txns_in_cascade
-        ELSE size(txns) END AS max_txns
+WITH i AS i
+    ,txns AS txns
+    ,size(txns) AS txn_count
+    ,CASE size(txns) > $max_txns_in_cascade
+       WHEN true THEN $max_txns_in_cascade
+       ELSE size(txns) END AS max_txns
 
 // Use apoc combinations() method to find all permutations for each step of a certain
 // size. Our ultimate goal is to find sets of txns that happened at roughly the same time
@@ -77,9 +77,9 @@ UNWIND txn_groups AS txn_group
 
 // Total the num_tokens for each txn_group found by apoc.coll.combinations() and
 // check the group happened within $cascade_block_distance blocks of each other
-WITH i AS i,
-     txn_group AS txn_group,
-     reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
+WITH i AS i
+     ,txn_group AS txn_group
+     ,reduce(tokens = 0, t in txn_group | tokens + t.num_tokens) AS num_tokens
 WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_group tokens add up to $txn_size
   AND ALL(
         i IN range(0, size(txn_group) - 2)
@@ -87,25 +87,25 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_g
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
   )
 
-// Add from_addresses to identify common source wallets
+// Add from_addresses to identify common source wallets only after we've identified valid txn_groups
+// to avoid unnecessary calls to apoc.coll.toSet()
 WITH *, apoc.coll.toSet([t in txn_group | STARTNODE(t).address ]) AS unique_from_addresses
 
-RETURN i AS step,
-        [t in txn_group | STARTNODE(t).address ] AS from_addresses,
+RETURN i AS step
         // List of abbreviations of wallet addresses and num_tokens. For readability more than anything.
-        [
+       ,[
             t in txn_group |
             SUBSTRING(STARTNODE(t).address, 0, $address_length) +
                 ' sent ' + ROUND(t.num_tokens, 3) +
                 ' to ' + SUBSTRING(ENDNODE(t).address, 0, $address_length) +
                 ' in block ' + t.block_number
-        ] AS possibile_sources,
-       num_tokens AS total_tokens
-       // Display a
-       ,
- // See if the first step's txns all came from the same node
-       CASE size(unique_from_addresses)
-         WHEN 1 THEN 'https://etherscan.io/address/' + unique_from_addresses[0]
-         ELSE '' + size(unique_from_addresses) + ' unique sources' END AS etherscan_link_for_single_sources
+        ] AS possibile_sources
+       ,num_tokens AS total_tokens
 
+       // If all txns came from same wallet then put etherscan link, else just number of unique addresses
+       ,CASE size(unique_from_addresses)
+          WHEN 1 THEN 'https://etherscan.io/address/' + unique_from_addresses[0]
+          ELSE '' + size(unique_from_addresses) + ' unique sources' END AS etherscan_link_for_single_sources
+
+// Order by step first, then from least unique_from_addresses to most
 ORDER BY step, size(unique_from_addresses)

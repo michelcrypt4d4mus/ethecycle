@@ -93,58 +93,43 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 # Neo4j
 **IMPORTANT:** The community edition only allows you to have one database per server and it must be called `neo4j`.
 
-After starting you can browse to [http://localhost:7474/browser/](http://localhost:7474/browser/) to run queries.
+After starting you can browse to [http://localhost:7474/browser/](http://localhost:7474/browser/) to run queries. Alternatively (and more 'performantly') Neo4j makes a [desktop application](https://neo4j.com/download/).
 
-Alternatively (and more 'performantly') Neo4j makes a desktop application.
-
-### Running Queries
+## Running Queries
 * Addresses start with `0x` (same as etherscan)
-* All addresses in the DB are lowercased.  (You can use `toLower()` on an address of mixed/upper case.)
+* All addresses in the DB are lowercased, so make sure to use `toLower()` on an address of mixed/upper case.
 
 
-### Other Resources
-
+## Other Neo4J Resources
 * [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
 * [Cypher query style guide](https://s3.amazonaws.com/artifacts.opencypher.org/M20/docs/style-guide.pdf)
 * [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
-* [Neo4j ETL Tool](https://neo4j.com/developer/neo4j-etl/) Claims to be able to connect to an RDBMS and port data quickly.
-* [Neo4j Desktop](https://neo4j.com/developer/neo4j-desktop/)
-* [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
-* [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
+* [Neo4j Desktop app](https://neo4j.com/developer/neo4j-desktop/)
+* [Curated list of apps and plugins for Neo4j](https://install.graphapp.io)
 * [Neo4J operations manual](https://neo4j.com/docs/operations-manual/current/)
-* [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
 * [Neo4j admin tools/config](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/)
 * [Article on supernodes and Neo4j](https://medium.com/neo4j/graph-modeling-all-about-super-nodes-d6ad7e11015b)
+
+#### ETL Related Resources
+* [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
+* [CSV header format docs](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format)
+* [Neo4j ETL Tool](https://neo4j.com/developer/neo4j-etl/) Claims to be able to connect to an RDBMS and port data quickly.
+* [Neo4j LOAD CSV example](https://neo4j.com/blog/neo4j-call-detail-records-analytics/) that creates nodes from a single relatonships file.
+* [5 Tricks for Batch Updates](https://medium.com/neo4j/5-tips-tricks-for-fast-batched-updates-of-graph-structures-with-neo4j-and-cypher-73c7f693c8cc)
+
 
 # Questions
 1. IIRC you said the txion amounts were already correctly adjusted for decimals?  (AKA divided by `10^18` for most tokens)
 1. Current unique ID for edge is `transaction_id = f"{self.transaction_hash}-{self.log_index}"`. Does that make sense?
 1. Do you have a rough estimate as far as blocks per hour and/or blocks per day?
-1. Are there lists of tokens with their contract addresses available somewhere for each blockchain? (Esp. any blockchains we may care about)
 
-# Potential Queries
+
+# Potential Queries / TODO
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
 
-# (DEPRECATED) Gremlin Resources
-* [Gremlin Query Cheat Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/101.html), [Advanced Cheet Sheet](https://dkuppitz.github.io/gremlin-cheat-sheet/102.html) (includes `cyclicPath()` element)
-* [Gremlin query book by Kelvin Lawrence](https://kelvinlawrence.net/book/Gremlin-Graph-Guide.html). Best resource I have found. Note these are not in python so the code may be slightly different than shown.
-* [Tinkerpop Gremlin official documentation](https://tinkerpop.apache.org/docs/current/reference/#_tinkerpop_documentation)
-* [Gremlin traversal steps documentation](https://tinkerpop.apache.org/docs/current/reference/#general-steps)
-* [Domain Specific Language Writing](https://tinkerpop.apache.org/docs/current/reference/#gremlin-python-dsl)
-* [Gremlin Python common imports](https://tinkerpop.apache.org/docs/current/reference/#python-imports)
-* [Gremlin algorithm development](https://recolabs.dev/post/gremlin-python-algorithm-development-from-the-ground-up)
-* [More Gremlin examples](https://www.doanduyhai.com/blog/?p=13374)
-* [Tuning Gremlin queries](https://docs.aws.amazon.com/neptune/latest/userguide/gremlin-traversal-tuning.html)
-* [Air routes `graphml`](https://raw.githubusercontent.com/krlawrence/graph/master/sample-data/air-routes-small-latest.graphml) Useful data to learn with. Can be loaded with script in repo by running: `scripts/demo_data/load_air_routes_demo_data.py`
-
-### Other Technologies
-  * [Bulk load data into Neo4j](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)
+# Other Technologies
 * [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.
 * [Apache AGE](https://age.apache.org) - Postgres extension. No Tinkerpop support, only OpenCypher.
 * [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
 * [MemGraph](https://memgraph.com) - In memory graph DB.
 * TigerGraph comes up sometimes
-
-### Other Resources
-
-

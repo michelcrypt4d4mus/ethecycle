@@ -1,6 +1,7 @@
 #!/bin/bash
 # Ask neo4j-admin for recommended JVM memory settings.
-# See https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec
+# See: https://neo4j.com/docs/operations-manual/5/tools/neo4j-admin/neo4j-admin-memrec/
+#      https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec
 
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 ETHECYCLE_PATH=$(readlink -f -- "$SCRIPT_PATH/../../..")
@@ -16,7 +17,7 @@ Generate a .neo4j.env file with recommended Java memory settings for running neo
 
         -h, --help      show this usage message
 
-See https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec for more info.
+See https://neo4j.com/docs/operations-manual/5/tools/neo4j-admin/neo4j-admin-memrec/ for more info.
 
 EOF
 }
@@ -35,7 +36,7 @@ if [[ -z $1 ]]; then
 elif [[ $1 == -h ]]; then
     show_help
     exit
-elif [[ ! $1 =~ ^[0-9.]+[gmGM]$ ]]; then
+elif [[ ! $1 =~ ^[0-9.]+[gkmGKM]$ ]]; then
     echo "'$1' is an invalid value for MEMORY_STRING"
     show_help
     exit 1

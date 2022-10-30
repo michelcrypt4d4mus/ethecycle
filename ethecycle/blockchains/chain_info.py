@@ -2,20 +2,25 @@
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
 Should be implemented for each chain with the appropriate overrides of the abstract methods.
 """
+import gzip
 import json
 from abc import ABC, abstractmethod
 from os import listdir, path
 from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
-from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
+from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR, WALLET_LABELS_DIR
 from ethecycle.util.logging import log
+
+ADDRESS_PREFIX = '0x'
+WALLET_FILE_EXTENSION = '.txt.gz'
 
 
 class ChainInfo(ABC):
-    # Lazy load; should only be access through cls.tokens()
+    # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
     _tokens: Dict[str, Token] = {}
     _tokens_by_address: Dict[str, Token] = {}
+    _wallet_labels: Dict[str, str] = {}
 
     @classmethod
     @abstractmethod
@@ -76,7 +81,7 @@ class ChainInfo(ABC):
                 address = token_info['address'].lower()
 
                 token = Token(
-                    blockchain=str(cls).lower(),
+                    blockchain=cls._chain_str(),
                     token_type=token_info.get('type'),  # Not always provided
                     token_address=address,
                     symbol=symbol,
@@ -90,3 +95,39 @@ class ChainInfo(ABC):
                 log.warning(f"Error parsing '{token_info_json_file}': {e}")
 
         return cls._tokens
+
+    @classmethod
+    def wallet_label(cls, wallet_address: str) -> Optional[str]:
+        """Lazy loaded wallet address labels."""
+        if len(cls._wallet_labels) == 0:
+            cls._load_wallet_label_file_contents()
+
+        return cls._wallet_labels.get(wallet_address)
+
+    @classmethod
+    def _load_wallet_label_file_contents(cls) -> None:
+        """Load file matching blockchain name in wallet files dir"""
+        label_file = WALLET_LABELS_DIR.joinpath(cls._chain_str() + WALLET_FILE_EXTENSION)
+
+        if not path.isfile(label_file):
+            log.warning(f"{label_file} is not a file - no labels loaded for {cls._chain_str()}")
+            return
+
+        with gzip.open(label_file, 'rb') as file:
+            wallet_file_lines = [line.decode().rstrip() for line in file if not line.decode().startswith('#')]
+
+        for i in range(0, len(wallet_file_lines) - 1, 2):
+            address = wallet_file_lines[i]
+
+            if not address.startswith(ADDRESS_PREFIX):
+                raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
+            elif address in cls._wallet_labels:
+                log.warning(f"{address} already in wallet labels as {cls._wallet_labels[address]}, appending...")
+                cls._wallet_labels[address] += f", {wallet_file_lines[i + 1]}"
+            else:
+                cls._wallet_labels[address] = wallet_file_lines[i + 1]
+
+    @classmethod
+    def _chain_str(cls) -> str:
+        """Returns lowercased version of class name (which should be the name of the blockchain)."""
+        return cls.__name__.lower()

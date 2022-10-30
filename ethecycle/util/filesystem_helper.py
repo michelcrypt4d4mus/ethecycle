@@ -14,6 +14,7 @@ from ethecycle.util.logging import console
 PROJECT_ROOT_DIR: PosixPath = importlib.resources.files('ethecycle').joinpath(os.pardir).resolve()
 OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
 DATA_DIR = PROJECT_ROOT_DIR.joinpath('data')
+WALLET_LABELS_DIR = DATA_DIR.joinpath('wallet_labels')
 
 # If files are really big we automatically split them up for loading
 SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')

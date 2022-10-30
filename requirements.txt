@@ -1,3 +1,4 @@
+#### Actual List of Required Packages
 # beautifulsoup4
 # bpython
 # gremlinpython
@@ -7,7 +8,7 @@
 # rich
 # rich_argparse_plus
 
-# pip freeze
+#### pip freeze output
 aenum==3.1.11
 aiohttp==3.8.1
 aiosignal==1.2.0

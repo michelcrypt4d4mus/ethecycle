@@ -130,7 +130,7 @@ class ChainInfo(ABC):
         """Load file matching blockchain name in wallet files dir and merge with token address info."""
         # Label the addresses we know are token addresses
         for symbol, token in cls.tokens().items():
-            cls._wallet_labels[token.token_address] = Wallet(token.token_address, cls._chain_str(), cls, symbol, TOKEN)
+            cls._wallet_labels[token.token_address] = Wallet(token.token_address, cls, symbol, TOKEN)
 
         # Load the rest of the wallet tags from the data/wallet_info/ file
         label_file = WALLET_LABELS_DIR.joinpath(cls._chain_str() + WALLET_FILE_EXTENSION)
@@ -152,10 +152,9 @@ class ChainInfo(ABC):
             else:
                 cls._wallet_labels[address] = Wallet(
                     address,
-                    cls._chain_str(),
                     cls,
                     lines[i + 1],
-                    lines[i + 2]
+                    lines[i + 2].lower()
                 )
 
     @classmethod

@@ -41,24 +41,26 @@ scripts/docker/neo4j/generate_.neo4j.env_file.sh  # Add -h for help
 ```
 
 ## Loading Data
-Once you are in the container shell the `./load_transaction_csv.py` script will prep files for bulk load. This approach uses the `neo4j-admin database import` tooling ([documentation](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)) which is theoretically significantly faster than `LOAD CSV` at getting data from the disk and into Neo4j.
+Once you are in the container shell the `./load_transaction_csv.py` script will prep CSVs for Neo4j's bulk loader and then load them (unless you specify `--extract-only`). This approach uses the `neo4j-admin database import` tooling ([documentation](https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/)) which is theoretically significantly faster than `LOAD CSV` at getting data from the disk and into Neo4j.
 
-The loader takes a directory of CSVS (or a single CSV), processes them to add some columns (e.g. `token_symbol` and `blockchain`), does decimal conversion where it can, etc., and writes 2 output CSVs for each input CSV (wallets, txns, and headers for each) to the `output/` directory along with 2 one row CSVs for the wallet and transaction headers. When the preprocessing is complete it will print a shell command to the screen that you can run in the `neo4j` docker container.
+`load_transaction_csv.py` takes a directory of CSVS or a single CSV, processes them to add some columns (e.g. `token_symbol` and `blockchain`), does decimal conversion where it can, etc., and writes 2 output CSVs for each input CSV (wallets, txns) `output/` directory along with two one line CSVs (one each for the wallet and transaction headers).
 
 How to run it:
 ```bash
 # Show help:
 ./load_transaction_csv.py --help
 
-# First time you must run with --drop to overwrite the database called 'neo4j'. (Community edition
-# only allows one database and it must be called 'neo4j'.)
+# First time you must run with --drop to overwrite the database called 'neo4j' (community edition limitation):
 ./load_transaction_csv.py /path/to/transactions.csv --drop
 
 # You can also run it against an entire directory of CSVs:
 ./load_transaction_csv.py /path/to/transactions/ --drop
 
-# Load only USDT txions
+# Load only USDT txions:
 ./load_transaction_csv.py /path/to/transactions.csv --token USDT --drop
+
+# Perform the extraction and transformation but display load command on screen rather than actually execute it:
+./load_transaction_csv.py /path/to/transactions.csv --drop --extract-only
 ```
 
 Example output:
@@ -126,6 +128,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 
 # Potential Queries / TODO
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
+
 
 # Other Technologies
 * [ArangoDB](https://www.arangodb.com/) - Second most commonly recommended after Neo4j.

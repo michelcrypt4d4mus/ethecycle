@@ -1,5 +1,7 @@
-# Simple class to hold wallet info
-# TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
+"""
+Simple class to hold wallet info.
+TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
+"""
 from dataclasses import dataclass
 from typing import List, Optional, Type
 
@@ -23,18 +25,15 @@ UNKNOWN = Text('UNKNOWN', style='grey dim')
 @dataclass
 class Wallet:
     address: str
-    blockchain: str
     chain_info: Type
     label: Optional[str] = None
     category: Optional[str] = None
 
     def __post_init__(self):
-        # Some txns have multiple internal transfers so append log_index to achieve uniqueness
-        if self.label and self.category:
-            return
-
-        self.label = self.chain_info.wallet_label(self.address)
-        self.category = self.chain_info.wallet_category(self.address)
+        """Look up label and category if they were not provided."""
+        self.blockchain = self.chain_info._chain_str()
+        self.label = self.label or self.chain_info.wallet_label(self.address)
+        self.category = self.category or self.chain_info.wallet_category(self.address)
 
     def to_neo4j_csv_row(self):
         """Generate Neo4J bulk load CSV row."""
@@ -72,4 +71,4 @@ class Wallet:
         wallet_addresses = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
         wallet_addresses.remove('')
         wallet_addresses.add(MISSING_ADDRESS)
-        return [Wallet(address, chain_info._chain_str(), chain_info) for address in wallet_addresses]
+        return [Wallet(address, chain_info) for address in wallet_addresses]

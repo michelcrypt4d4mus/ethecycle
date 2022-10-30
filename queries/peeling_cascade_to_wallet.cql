@@ -87,7 +87,11 @@ WHERE ($txn_size + $tolerance) > num_tokens > ($txn_size - $tolerance)  // txn_g
     WHERE abs(txn_group[i].block_number - txn_group[-1].block_number) <= $cascade_block_distance
   )
 
+// Add from_addresses to identify common source wallets
+WITH *, apoc.coll.toSet([t in txn_group | STARTNODE(t).address ]) AS unique_from_addresses
+
 RETURN i AS step,
+        [t in txn_group | STARTNODE(t).address ] AS from_addresses,
         // List of abbreviations of wallet addresses and num_tokens. For readability more than anything.
         [
             t in txn_group |
@@ -97,3 +101,11 @@ RETURN i AS step,
                 ' in block ' + t.block_number
         ] AS possibile_sources,
        num_tokens AS total_tokens
+       // Display a
+       ,
+ // See if the first step's txns all came from the same node
+       CASE size(unique_from_addresses)
+         WHEN 1 THEN 'https://etherscan.io/address/' + unique_from_addresses[0]
+         ELSE '' + size(unique_from_addresses) + ' unique sources' END AS etherscan_link_for_single_sources
+
+ORDER BY step, size(unique_from_addresses)

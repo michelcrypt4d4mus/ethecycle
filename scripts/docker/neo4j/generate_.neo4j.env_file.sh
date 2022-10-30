@@ -1,18 +1,22 @@
 #!/bin/bash
+# Ask neo4j-admin for recommended JVM memory settings.
+# See https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec
+
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
 ETHECYCLE_PATH=$(readlink -f -- "$SCRIPT_PATH/../../..")
 
-
 show_help() {
-cat << EOF
+    cat << EOF
 
 Usage: ${0##*/} [-h] [MEMORY_STRING]
 
 Generate a .neo4j.env file with recommended Java memory settings for running neo4j in a docker image.
-If MEMORY_STRING arg is provided it must be comprised of a number and a letter, e.g. '2g' or '512m'
-If MEMORY_STRING is not provided it defaults to the allocated memory for the 'neo4j' container as read from 'docker stats'.
+    If MEMORY_STRING arg is provided it must be comprised of a number and a letter, e.g. '2g' or '512m'
+    If MEMORY_STRING is not provided it defaults to the allocated memory for the 'neo4j' container as read from 'docker stats'.
 
-    -h, --help      show this usage message
+        -h, --help      show this usage message
+
+See https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec for more info.
 
 EOF
 }

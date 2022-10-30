@@ -29,12 +29,15 @@ cp .env.neo4j.example .env.neo4j
 # Use vi or whatever editor you prefer to set variables in .env
 vi .env
 
-# Run script to get JVM settings for neo4j once you have allocated docker memory:
-scripts/docker/neo4j/generate_.neo4j.env_file.sh  # Add -h for help
+# Generate an ssh key pair for your containers to use to talk to each other:
+ssh-keygen -f ./container_id_ed25519 -t ed25519 -C -q -N ""
 
 # When you run this command docker-compose should build everything and leave you in a
 # bash shell, at which point you can run 'bpython' to get a python REPL etc.
-scripts/docker/python_etl_shell.sh
+scripts/docker/python_etl/shell.sh
+
+# Run script to get updated JVM settings for neo4j once you have allocated docker memory:
+scripts/docker/neo4j/generate_.neo4j.env_file.sh  # Add -h for help
 ```
 
 ## Loading Data

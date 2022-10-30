@@ -10,6 +10,7 @@ Data types: int, long, float, double, boolean, byte, short, char, string, point,
 import csv
 from datetime import datetime
 from os import environ, path
+from subprocess import check_output
 from typing import Any, Dict, List, Optional
 
 from rich.text import Text
@@ -24,6 +25,7 @@ from ethecycle.wallet import MISSING_ADDRESS, Wallet
 # Path on the docker container
 NEO4J_DB = 'neo4j'
 NEO4J_ADMIN_EXECUTABLE = '/var/lib/neo4j/bin/neo4j-admin'
+NEO4J_SSH = f"ssh root@neo4j -o StrictHostKeyChecking=accept-new "
 CSV_IMPORT_CMD = f"{NEO4J_ADMIN_EXECUTABLE} database import "
 STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
 START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
@@ -58,12 +60,6 @@ LOADER_CLI_ARGS = {
     'skip-duplicate-nodes': 'true'
 }
 
-LOAD_INSTRUCTIONS = Text(f"\nTo load the CSV into Neo4j get a shell on the neo4j container ") + \
-        Text("then copy paste the command below.\n") + \
-        Text(f"To get such a shell on the Neo4j container run this script from the OS bash shell:\n\n") + \
-        Text(f"{INDENT}scripts/docker/neo4j_shell.sh\n\n", style='bright_cyan') + \
-        Text(f"neo4j-admin command to copy/paste:")
-
 INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='magenta bold') + \
     Text(f"You must stop the server to run incremental import:\n") + \
     Text(f"      {STOP_SERVER_CMD}\n", style='bright_cyan') + \
@@ -71,7 +67,7 @@ INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NE
     Text(f"      {START_SERVER_CMD}\n\n", style='bright_cyan') + \
     Text(
         f"Incremental load via neo4j-admin doesn't seem to work; use --drop options or LOAD CSV instead\n",
-        style='bright_yellow bold blink reverse',
+        style='bright_red bold blink reverse',
         justify='center'
     ) + \
     Text(f"(If you messed up and forgot the --drop option, replace command with:\n   {CSV_IMPORT_CMD} full --id-type=string --skip-duplicate-nodes=true --overwrite-destination=true", style='dim')
@@ -90,7 +86,6 @@ class Neo4jCsvs:
         neo4j_csvs = [write_header_csvs()] + neo4j_csvs
         wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
         txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
-        console.print(LOAD_INSTRUCTIONS)
 
         if Config.drop_database:
             msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!\n"
@@ -107,6 +102,14 @@ class Neo4jCsvs:
         load_args.append(f"--nodes={NODE_LABEL}={','.join(wallet_csvs)}")
         load_args.append(f"--relationships={EDGE_LABEL}={','.join(txn_csvs)}")
         return f"{CSV_IMPORT_CMD} {subcommand} {' '.join(load_args)} {NEO4J_DB}"
+
+    @staticmethod
+    def load_to_db(neo4j_csvs: List['Neo4jCsvs']) -> None:
+        ssh_cmd = f"{NEO4J_SSH} {Neo4jCsvs.admin_load_bash_command(neo4j_csvs)}"
+        console.print("About to actually execute:\n", style='bright_red')
+        console.print(ssh_cmd, style='yellow')
+        ssh_result = check_output(ssh_cmd.split(' ')).decode()
+        console.print(f"\nRESULT:\n{ssh_result}")
 
 
 def generate_neo4j_csvs(txns: List[Txn], blockchain: str = ETHEREUM) -> Neo4jCsvs:

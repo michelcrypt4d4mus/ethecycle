@@ -22,6 +22,10 @@ wallet_sorter = lambda txn: txn.from_address
 
 
 def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optional[str] = None) -> None:
+    if not Config.drop_database:
+        console.print("\nYou selected incremental import which probably doesn't work. Did you forget the --drop option?", style='bright_red')
+        input("    Ctrl-C to stop this train, any other key to continue: ")
+
     # Actual loading happens here
     if path.isfile(txn_csv_path):
         csv_files = [txn_csv_path]
@@ -46,9 +50,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
 
     generation_duration = time.perf_counter() - start_time
     console.print(f"Generated import CSVs in {generation_duration:02.2f} seconds...", style='yellow')
-    shell_command = Neo4jCsvs.admin_load_bash_command(neo4j_csvs)
-    print(shell_command)
-    #console.print(INDENT + shell_command, style='bright_red')
+    Neo4jCsvs.load_to_db(neo4j_csvs)
     console.line(2)
 
 

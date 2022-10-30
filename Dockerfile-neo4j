@@ -1,13 +1,39 @@
 FROM neo4j:5.1.0-community
+
 ARG GRAPH_DATA_SCIENCE_VERSION=neo4j-graph-data-science-2.2.2
 ARG GRAPH_DATA_SCIENCE_ZIP=${GRAPH_DATA_SCIENCE_VERSION}.zip
 
-# Install apoc queries
+# Install apoc queries plugin
 RUN cp /var/lib/neo4j/labs/apoc-5.1.0-core.jar /var/lib/neo4j/plugins/
 
-# Install graph data science library
-RUN apt-get update && apt-get install -y --no-install-recommends unzip
+# Install linux tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openssh-server \
+        unzip
+
+# Install graph data science plugin
 RUN wget https://graphdatascience.ninja/${GRAPH_DATA_SCIENCE_ZIP}
 RUN unzip ${GRAPH_DATA_SCIENCE_ZIP}
 RUN mv ${GRAPH_DATA_SCIENCE_VERSION}.jar ${NEO4J_HOME}/plugins/
 RUN rm ${GRAPH_DATA_SCIENCE_ZIP}
+
+# Setup ssh for docker-compose intranet
+RUN sed -ri 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/#PermitUserEnvironment no/PermitUserEnvironment yes/' /etc/ssh/sshd_config
+
+# Configure root intranet ssh environment by public key
+ARG SSH_DIR=/root/.ssh
+RUN mkdir -p ${SSH_DIR}
+RUN chmod 700 ${SSH_DIR}
+COPY ./container_id_ed25519.pub ${SSH_DIR}/authorized_keys
+RUN chmod 600 ${SSH_DIR}/authorized_keys
+
+# Make env available to ssh login; fix heap to recommended import level
+RUN env | egrep "JAVA|NEO4J|PATH" > ${SSH_DIR}/environment
+# TODO: trying to limit the import heap size this way doesn't seem to work...
+RUN echo "NEO4J_server_memory_heap_initial__size=1000m" >> ${SSH_DIR}/environment
+RUN echo "NEO4J_server_memory_heap_max__size=1024m" >> ${SSH_DIR}/environment
+
+# Extremely hacky way to launch the sshd server
+RUN sed -e 's/# Use su-exec to drop privileges to neo4j user/service start ssh --full-restart/' /startup/docker-entrypoint.sh -i
+

@@ -38,3 +38,4 @@ def show_address_labels():
 
     formatted = comma_format(len(Ethereum.known_wallets().keys()))
     console.print(f"\n\n    {formatted} wallet labels found for {Ethereum._chain_str()}.")
+    console.line(2)

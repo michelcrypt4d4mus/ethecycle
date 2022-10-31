@@ -52,6 +52,7 @@ COLOR_THEME_DICT = {
     'benchmark.indent': BYTES,
     'number': 'cyan',
     'purple_grey': "color(60) dim italic",
+    'cql': PEACH,
     # bytes
     'ascii': 'color(58)',
     'ascii_unprintable': 'color(131)',

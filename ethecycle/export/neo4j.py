@@ -9,8 +9,10 @@ Data types: int, long, float, double, boolean, byte, short, char, string, point,
 """
 import csv
 import time
+from contextlib import contextmanager
 from datetime import datetime
-from os import path
+from os import environ, path
+from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
@@ -19,17 +21,23 @@ from ethecycle.blockchains import get_chain_info
 from ethecycle.config import Config
 from ethecycle.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
-from ethecycle.util.logging import console, print_benchmark
+from ethecycle.util.logging import PEACH, console, print_benchmark
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.wallet import Wallet
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'
-NEO4J_ADMIN_EXECUTABLE = '/var/lib/neo4j/bin/neo4j-admin'
+NEO4J_BIN_DIR = '/var/lib/neo4j/bin'
+NEO4J_AUTH = environ.get('NEO4J_AUTH')
 NEO4J_SSH = f"ssh root@neo4j -o StrictHostKeyChecking=accept-new "
+NEO4J_ADMIN_EXECUTABLE = path.join(NEO4J_BIN_DIR, 'neo4j-admin')
 CSV_IMPORT_CMD = f"{NEO4J_ADMIN_EXECUTABLE} database import"
-STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
+CYPHER_EXECUTABLE = path.join(NEO4J_BIN_DIR, 'cypher-shell')
+
+START_DB_QUERY = f"STOP DATABASE {NEO4J_DB}"
+STOP_DB_QUERY = f"STOP DATABASE {NEO4J_DB}"
 START_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server start "
+STOP_SERVER_CMD = f"{NEO4J_ADMIN_EXECUTABLE} server stop "
 
 # TODO: could use the chain for labeling e.g. 'eth_wallet' and 'eth_txn'
 NODE_LABEL = 'Wallet'
@@ -59,7 +67,9 @@ TXN_CSV_HEADER = [
 # Keys will be prefixed with '--' in the final command
 LOADER_CLI_ARGS = {
     'id-type': 'string',
-    'skip-duplicate-nodes': 'true'
+    'report-file': OUTPUT_DIR.joinpath(f"import_{timestamp_for_filename()}.log"),
+    'skip-duplicate-nodes': 'true',
+    'trim-strings': 'true',
 }
 
 INCREMENTAL_INSTRUCTIONS = Text() + Text(f"Incremental import to current DB '{NEO4J_DB}'...\n\n", style='magenta bold') + \
@@ -97,8 +107,9 @@ class Neo4jCsvs:
             subcommand = 'full'
         else:
             console.print(INCREMENTAL_INSTRUCTIONS)
-            LOADER_CLI_ARGS['force'] = 'true'  # Apparently required for incremental load
-            #LOADER_CLI_ARGS['stage'] = 'build'
+            # '--force' is required for all incremental loads, which must be run when the DB is stopped
+            LOADER_CLI_ARGS['force'] = 'true'
+            LOADER_CLI_ARGS['stage'] = 'all'
             subcommand = 'incremental'
 
         load_args = [f"--{k}={v}" for k, v in LOADER_CLI_ARGS.items()]
@@ -150,3 +161,40 @@ def write_header_csvs() -> Neo4jCsvs:
         csv_writer.writerow(WALLET_CSV_HEADER)
 
     return header_csvs
+
+
+@contextmanager
+def stop_database():
+    """Start and stop the database in a context."""
+    execute_cypher_query(STOP_DB_QUERY)
+
+    try:
+        yield
+    except Exception as e:
+        console.print_exception()
+        raise e
+    finally:
+        execute_cypher_query(START_DB_QUERY)
+
+
+def execute_cypher_query(cql: str) -> None:
+    """Execute CQL query on the Neo4J container"""
+    console.print(Text("Executing CQL query: ").append(cql, style=PEACH))
+    user, password = _neo4j_user_and_pass()
+    cmd = f"echo '{cql}' | {CYPHER_EXECUTABLE} -u {user} -p {password}"
+    execute_shell_cmd_on_neo4j_container(cmd)
+
+
+def execute_shell_cmd_on_neo4j_container(cmd: str) -> None:
+    remote_cmd = f"{NEO4J_SSH} {cmd}"
+    print(f"Executing remote command:\n\n{remote_cmd}")
+    query_result = check_output(remote_cmd.split(' ')).decode()
+    console.print(f"\nRESULT:\n{query_result}\n")
+
+
+def _neo4j_user_and_pass() -> List[str]:
+    """Returns a 2-tuple, [username, password]."""
+    if '/' not in (NEO4J_AUTH or ''):
+        raise ValueError("NEO4J_AUTH env var is not set correctly")
+
+    return NEO4J_AUTH.split('/')

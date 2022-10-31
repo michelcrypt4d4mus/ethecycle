@@ -14,10 +14,11 @@ RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
 WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
 RUN git clone https://github.com/ethereum-lists/tokens.git
 
-# Install poetry
+# Install poetry. Lots of ideas: https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
 WORKDIR /usr/src/app
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH "$PATH:/root/.local/bin"
+RUN poetry config virtualenvs.create false
 
 # Install python requirements
 COPY requirements.txt ./
@@ -29,5 +30,10 @@ RUN mkdir $SSH_DIR
 RUN chmod 700 $SSH_DIR
 COPY ./container_id_ed25519 $SSH_DIR/id_ed25519
 COPY ./container_id_ed25519.pub $SSH_DIR/id_ed25519.pub
+
+RUN apt-get purge --auto-remove -y \
+        curl \
+        git \
+        wget
 
 CMD ["/bin/bash"]

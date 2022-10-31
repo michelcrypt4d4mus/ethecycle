@@ -11,9 +11,9 @@ from rich.text import Text
 
 from ethecycle.blockchains import get_chain_info
 from ethecycle.config import Config
+from ethecycle.export.neo4j import NEO4J_SSH, Neo4jCsvs, generate_neo4j_csvs, stop_database
 from ethecycle.transaction import Txn
-from ethecycle.export.neo4j import INDENT, NEO4J_SSH, Neo4jCsvs, generate_neo4j_csvs
-from ethecycle.util.filesystem_helper import (file_size_string, files_in_dir)
+from ethecycle.util.filesystem_helper import file_size_string, files_in_dir
 from ethecycle.util.logging import console, print_benchmark
 
 time_sorter = lambda txn: txn.block_number
@@ -51,8 +51,11 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
     if Config.extract_only:
         print("\n" + bulk_load_shell_command)
         console.print("\n     --extract-only mode; not executing load. Above command can be run manually.", style='red bold')
-    else:
+    elif Config.drop_database:
         import_to_neo4j(bulk_load_shell_command)
+    else:
+        with stop_database() as context:
+            import_to_neo4j(bulk_load_shell_command)
 
     console.line(2)
 

@@ -105,7 +105,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 ## Other Neo4J Resources
 * [Official Cypher Introduction](https://neo4j.com/docs/getting-started/current/cypher-intro/). Cypher is Neo4j's custom query language.
 * [Cypher query style guide](https://s3.amazonaws.com/artifacts.opencypher.org/M20/docs/style-guide.pdf)
-* [Official Neo4j on Docker documentation](https://neo4j.com/developer/docker-run-neo4j/)
+* [Official Neo4j on Docker operations manual](https://neo4j.com/docs/operations-manual/current/docker/) (There's also an overview of Neo4j on Docker [here](https://neo4j.com/developer/docker-run-neo4j/))
 * [Neo4j Desktop app](https://neo4j.com/developer/neo4j-desktop/)
 * [Curated list of apps and plugins for Neo4j](https://install.graphapp.io)
 * [Neo4J operations manual](https://neo4j.com/docs/operations-manual/current/)

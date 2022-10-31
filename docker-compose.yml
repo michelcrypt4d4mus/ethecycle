@@ -18,10 +18,10 @@ services:
   python_etl:
     build:
       context: .
+    tty: true
+    stdin_open: true
     env_file:
       - .env
-    links:   # Should be unnecessary: https://docs.docker.com/compose/networking/#multi-host-networking
-      - neo4j
     depends_on:
       - neo4j
     volumes:

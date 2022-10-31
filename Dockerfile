@@ -7,23 +7,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         openssh-client \
         wget
 
-# Pull a reasonably good token data source from github (GIT_REPO_DIR comes from .env)
-ARG GIT_REPO_DIR
-ENV TOKEN_DATA_REPO_PARENT_DIR=${GIT_REPO_DIR:-/token_data}
-RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
-WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
-RUN git clone https://github.com/ethereum-lists/tokens.git
-
-# Install poetry. Lots of ideas: https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
-WORKDIR /usr/src/app
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH "$PATH:/root/.local/bin"
-RUN poetry config virtualenvs.create false
-
-# Install python requirements
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
 # Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
 ARG SSH_DIR=/root/.ssh
 RUN mkdir $SSH_DIR
@@ -31,6 +14,62 @@ RUN chmod 700 $SSH_DIR
 COPY ./container_id_ed25519 $SSH_DIR/id_ed25519
 COPY ./container_id_ed25519.pub $SSH_DIR/id_ed25519.pub
 
+# Pull a reasonably good token data source from github (GIT_REPO_DIR comes from .env)
+ARG GIT_REPO_DIR
+ENV TOKEN_DATA_REPO_PARENT_DIR=${GIT_REPO_DIR:-/token_data}
+RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
+WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
+RUN git clone https://github.com/ethereum-lists/tokens.git
+
+# Ether scrapes
+RUN git clone https://github.com/brianleect/etherscan-labels.git
+RUN git clone https://github.com/W-McDonald/etherscan.git
+
+# Trustwallet assets
+RUN git clone https://github.com/trustwallet/assets trustwallet_assets
+
+# Pull Adamant vaults
+RUN git clone https://github.com/eepdev/vaults.git
+
+# Pull "hop airdrop" blacklists?  not sure what this is
+RUN git clone https://github.com/rchen8/hop-airdrop.git
+
+# More wallets
+RUN git clone https://github.com/Mmoouu/test-iotxview/
+RUN git clone https://github.com/hylsceptic/ethereum_parser.git
+RUN git clone https://github.com/yaocg/uniswap-arbitrage.git
+RUN git clone https://github.com/m-root/arb-trading.git
+RUN git clone https://github.com/Inka-Finance/assets.git
+RUN git clone https://github.com/aurafinance/aura-token-allocation.git
+RUN git clone https://github.com/kovart/forta-agents.git
+RUN git clone https://github.com/graphsense/graphsense-tagpacks.git
+
+# Dune?
+RUN git clone https://github.com/ltvm/spellbook.git
+
+# Coinmarket cap data?
+RUN git clone https://github.com/tttienthinh/CoinMarketCap.git
+
+# Tron wallets
+RUN git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git
+
+# Python env vars
+WORKDIR /python
+ENV ETHECYCLE_ENV=development
+ENV PIP_NO_CACHE_DIR=off
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on
+ENV PIP_DEFAULT_TIMEOUT=100
+ENV POETRY_HOME="/python/poetry"
+ENV POETRY_NO_INTERACTION=1
+
+# Install poetry. Lots of ideas as to how to approach this here: https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+RUN poetry config virtualenvs.create false
+COPY poetry.lock pyproject.toml ./
+RUN poetry install $(test "$ETHECYCLE_ENV" == production && echo "--no-dev")
+
+# Remove unnecessaries
 RUN apt-get purge --auto-remove -y \
         curl \
         git \

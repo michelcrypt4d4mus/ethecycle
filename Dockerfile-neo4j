@@ -37,3 +37,9 @@ RUN echo "NEO4J_server_memory_heap_max__size=1024m" >> ${SSH_DIR}/environment
 # Extremely hacky way to launch the sshd server
 RUN sed -e 's/# Use su-exec to drop privileges to neo4j user/service start ssh --full-restart/' /startup/docker-entrypoint.sh -i
 
+# TODO: actually change the DB name
+#ARG NEO4J_DATABASE_NAME=chainz
+#RUN sed -e 's/#initial.dbms.default_database=neo4j/initial.dbms.default_database=${NEO4J_DATABASE_NAME}'
+
+# Give admin privileges to the neo4j user
+RUN $NEO4J_HOME/bin/neo4j-admin dbms set-default-admin neo4j

@@ -48,7 +48,12 @@ class Ethereum(ChainInfo):
             return None
 
     @classmethod
+    def extract_address_from_scanner_url(cls, scanner_url: str) -> str:
+        return scanner_url.split('/')[-1]
+
+    @classmethod
     def token_info_dir(cls) -> str:
+        """Folder name in the ethereum-lists repo."""
         return cls.ETH
 
     @classmethod

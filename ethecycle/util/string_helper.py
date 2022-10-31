@@ -11,3 +11,4 @@ def quoted_join(_list: Iterable[Any], quote_char: str = "'", separator: str = ',
     """
     quoted_list = [f"{quote_char}{func(item)}{quote_char}" for item in _list]
     return separator.join(quoted_list)
+

@@ -22,7 +22,9 @@ DEFAULT_LINES_PER_FILE = 250000
 ETHECYCLE_DIR = '/ethecycle'
 
 # Token info repo is checked out as part of Dockerfile build process
-TOKEN_DATA_DIR = os.path.join(os.environ['TOKEN_DATA_REPO_PARENT_DIR'], 'tokens', 'tokens')
+# TODO: rename to TOKEN_AND_WALLET_REPOS_DIR
+TOKEN_DATA_REPO_PARENT_DIR = os.environ['TOKEN_DATA_REPO_PARENT_DIR']
+TOKEN_DATA_DIR = os.path.join(TOKEN_DATA_REPO_PARENT_DIR, 'tokens', 'tokens')
 
 
 def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:

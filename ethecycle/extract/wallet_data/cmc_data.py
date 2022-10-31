@@ -1,10 +1,10 @@
 """
 Extract tag data from https://github.com/tttienthinh/CoinMarketCap.git
 """
-import csv
 import json
 from datetime import datetime
-from os import path
+from os import environ, path
+from sqlite3.dbapi2 import IntegrityError
 from types import NoneType
 from typing import Any, Dict, List, Union
 
@@ -14,6 +14,8 @@ from rich.text import Text
 
 from ethecycle.blockchains.chain_info import ADDRESS_PREFIX
 from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.blockchains.wallet_info import tokens_table
+from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      WALLET_LABELS_DIR, files_in_dir)
 from ethecycle.util.logging import console, log
@@ -42,7 +44,7 @@ TABLE_COLS = """
 """.split()
 
 CSV_OUTPUT_COLUMNS = TABLE_COLS + """
-    id
+    coin_market_cap_id
     is_hidden
     is_audited
     had_an_ico
@@ -56,67 +58,75 @@ CSV_OUTPUT_COLUMNS = TABLE_COLS + """
 
 def extract_data(token_data: Dict[str, Any]) -> List[Dict[str, Union[str, int, float, NoneType]]]:
     """Turn a CMC data .json file into 1 or more result rows."""
-    info = {
+    row = {
         k: v
         for k, v in token_data.items()
-        if k in ['id', 'category', 'name', SYMBOL]
+        if k in ['category', 'name', SYMBOL]
     }
 
+    row['launched_at'] = token_data.get('dateLaunched')
+    row['coin_market_cap_id'] = token_data.get('id')
+    row['listed_on_coin_market_cap_at'] = token_data.get('dateAdded')
+    row['coin_market_cap_watchers'] = token_data.get('watchCount')
+    row['data_source'] = environ['COIN_MARKET_CAP_DATA_GITHUB_REPO']
+
+    # Boolean fields
     status = token_data.get(STATUS)
-    info['is_hidden'] = status == 'hidden'
-    info['is_audited'] = token_data.get('isAudited')
-    info['listed_on_coinmarketcap_at'] = token_data.get('dateAdded')
-    info['launched_at'] = token_data.get('dateLaunched')
-    info['cmc_watchers'] = token_data.get('watchCount')
-    info['had_an_ico'] = 'ico' in token_data
+    row['is_hidden'] = status == 'hidden'
+    row['is_audited'] = token_data.get('isAudited')
+    row['had_an_ico'] = 'ico' in token_data
 
     if status is None or status == 'untracked':
-        info[IS_ACTIVE] = None
+        row[IS_ACTIVE] = None
     elif token_data[STATUS] == 'active':
-        info[IS_ACTIVE] = True
+        row[IS_ACTIVE] = True
     else:
         if status != 'inactive':
             log.debug(f"{token_data.get(SYMBOL)} status is {status}; marking inactive")
 
-        info[IS_ACTIVE] = False
+        row[IS_ACTIVE] = False
 
     if URLS in token_data and CHAT in token_data[URLS] and token_data[URLS][CHAT]:
         chat_urls = token_data[URLS][CHAT]
-        info['url_telegram'] = next((u for u in chat_urls if '/t.me/' in u or 'telegram' in u), None)
-        info['url_discord'] = next((u for u in chat_urls if '/discord.' in u), None)
+        row['url_telegram'] = next((u for u in chat_urls if '/t.me/' in u or 'telegram' in u), None)
+        row['url_discord'] = next((u for u in chat_urls if '/discord.' in u), None)
 
         token_data[URLS][CHAT] = [
             c for c in token_data[URLS][CHAT]
-            if c not in [info['url_telegram'], info['url_discord']]
+            if c not in [row['url_telegram'], row['url_discord']]
         ]
 
     for url_type, urls in token_data.get(URLS, {}).items():
         if len(urls) == 0:
             continue
         elif len(urls) == 1:
-            info[f"url_{url_type}"] = urls[0]
+            row[f"url_{url_type}"] = urls[0]
         elif url_type == 'explorer':
             token_url = next((url for url in urls if TOKEN in url), None)
             token_url = token_url or next((url for url in urls if TOKEN in url), None)
 
             if token_url:
-                info[URL_EXPLORER] = token_url
+                row[URL_EXPLORER] = token_url
             else:
-                console.print(f"Found multiple explorer URLs, choosing first: {urls}", style='red dim')
-                info[URL_EXPLORER] = urls[0]
+                msg = f"Found multiple explorer URLs, choosing first: {urls}"
+                #console.print(msg, style='red dim')
+                log.debug(msg)
+                row[URL_EXPLORER] = urls[0]
         else:
-            console.print(f"Found multiple {url_type} URLs, choosing first: {urls}", style='bytes')
-            info[f"url_{url_type}"] = urls[0]
+            msg = f"Found multiple {url_type} URLs, choosing first: {urls}"
+            log.debug(msg)
+            #console.print(msg, style='bytes')
+            row[f"url_{url_type}"] = urls[0]
 
     # Short circuit if there's no chain (AKA 'platform') or address info
     if PLATFORMS not in token_data:
-        if info.get(URL_EXPLORER) and 'etherscan' in info[URL_EXPLORER]:
+        if row.get(URL_EXPLORER) and 'etherscan' in row[URL_EXPLORER]:
             # Parse the missing address from the URL if we possible
-            log.debug(f"Using address for {info[SYMBOL]} from {URL_EXPLORER}...")
-            info[ADDRESS] = Ethereum.extract_address_from_scanner_url(info[URL_EXPLORER])
+            log.debug(f"Using address for {row[SYMBOL]} from {URL_EXPLORER}...")
+            row[ADDRESS] = Ethereum.extract_address_from_scanner_url(row[URL_EXPLORER])
         else:
             # Print (almost) the whole JSON dict if there's no chain/address info
-            msg = Text("No platforms for '", 'bright_red').append(info.get(SYMBOL, ''), 'magenta')
+            msg = Text("No platforms for '", 'bright_red').append(row.get(SYMBOL, ''), 'magenta')
 
             # delete some of the longer elements so we only see a summary of unprintable coins
             for k in NON_DISPLAY_KEYS:
@@ -126,14 +136,14 @@ def extract_data(token_data: Dict[str, Any]) -> List[Dict[str, Union[str, int, f
             log.info(msg.append("'!").plain)
             log.debug(token_data)
 
-        return [info]
+        return [row]
 
     chains = token_data['platforms']
     log.debug(f"Token exists on {len(chains)} different chains...")
     tokens_with_chain_data = []
 
     for chain in chains:
-        token_with_chain = info.copy()
+        token_with_chain = row.copy()
 
         token_with_chain.update({
             BLOCKCHAIN: chain['contractPlatform'].lower(),
@@ -165,40 +175,37 @@ def extract_cmc_data_from_repo() -> List[Dict[str, Any]]:
     return sorted(table_rows, key=lambda r: [r.get(SYMBOL, 'zzzzzz'), r.get(BLOCKCHAIN, 'zzzzzz')])
 
 
-def extract_coin_market_cap_data_to_csv() -> None:
+def extract_coin_market_cap_data_to_db() -> None:
     """Print rich.Table and some summary stats then write a CSV."""
-    table = Table(*TABLE_COLS)
     rows = extract_cmc_data_from_repo()
-    other_cols = set()
+    extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
 
-    for row in rows:
-        style = 'reverse' if ADDRESS not in row else ''
-        table.add_row(*[str(row.get(col, '')) for col in TABLE_COLS], style=style)
+    # Print table and some summary stats in debug mode
+    if Config.debug:
+        table = Table(*TABLE_COLS)
 
-        for key in [k for k in row.keys() if k not in CSV_OUTPUT_COLUMNS]:
-            other_cols.add(key)
+        for row in rows:
+            style = 'reverse' if ADDRESS not in row else ''
+            table.add_row(*[str(row.get(col, '')) for col in TABLE_COLS], style=style)
 
-    # Print table and some summary stats
-    console.print(table)
-    _count_by_col(rows, BLOCKCHAIN)
-    console.line(2)
-    _count_by_col(rows, 'category')
+        console.print(table)
+        _count_by_col(rows, BLOCKCHAIN)
+        console.line(2)
+        _count_by_col(rows, 'category')
 
-    # Write CSV data
-    console.print(f"Writing CSV data to '{CMC_CSV_PATH}...")
-    columns = CSV_OUTPUT_COLUMNS + sorted(list(other_cols)) + ['extracted_at']
-
-    with open(CMC_CSV_PATH, 'w') as csvfile:
-        extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
-        csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(columns)
-
+    # Write to tokens table in SQLite
+    with tokens_table() as table:
         for row in rows:
             if all(row.get(col) is None for col in TABLE_COLS):
                 continue
 
             row['extracted_at'] = extracted_at
-            csv_writer.writerow([str(row.get(c, '')) for c in columns])
+
+            try:
+                table.insert(**row)
+            except IntegrityError as e:
+                console.print(f"Integrity violation inserting row {row}... logging and continuing")
+                console.print_exception()
 
     console.print("Finished.")
 

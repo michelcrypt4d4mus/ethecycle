@@ -135,5 +135,5 @@ dmypy.json
 container_id*
 /graphml_lep/
 /output/
-/data/
-/tests/fixture_files/air-routes-small-latest.xml
+/data/ethereum_transaction_data/
+/data/neo4j/

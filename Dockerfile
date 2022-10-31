@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
 ARG SSH_DIR=/root/.ssh
-RUN mkdir $SSH_DIR
-RUN chmod 700 $SSH_DIR
+RUN mkdir $SSH_DIR && chmod 700 $SSH_DIR
 COPY ./container_id_ed25519 $SSH_DIR/id_ed25519
 COPY ./container_id_ed25519.pub $SSH_DIR/id_ed25519.pub
 
@@ -27,8 +26,7 @@ RUN git clone https://github.com/W-McDonald/etherscan.git
 
 # Trustwallet assets
 RUN git clone https://github.com/trustwallet/assets trustwallet_assets
-RUN rm -fr trustwallet_assets/.git
-RUN find trustwallet_assets/ -name '*.png' -delete
+RUN rm -fr trustwallet_assets/.git && find trustwallet_assets/ -name '*.png' -delete
 
 # Pull Adamant vaults
 RUN git clone https://github.com/eepdev/vaults.git
@@ -38,15 +36,13 @@ RUN git clone https://github.com/rchen8/hop-airdrop.git
 
 # More wallets
 RUN git clone https://github.com/Mmoouu/test-iotxview/
-RUN rm -fr test-iotxview/.git
-RUN find test-iotxview/ -name '*.png' -delete
+RUN rm -fr test-iotxview/.git && find test-iotxview/ -name '*.png' -delete
 
 RUN git clone https://github.com/hylsceptic/ethereum_parser.git
 RUN git clone https://github.com/yaocg/uniswap-arbitrage.git
 RUN git clone https://github.com/m-root/arb-trading.git
 RUN git clone https://github.com/Inka-Finance/assets.git
-RUN rm -fr assets/.git
-RUN find assets/ -name '*.png' -delete
+RUN rm -fr assets/.git && find assets/ -name '*.png' -delete
 RUN git clone https://github.com/aurafinance/aura-token-allocation.git
 RUN git clone https://github.com/kovart/forta-agents.git
 RUN git clone https://github.com/graphsense/graphsense-tagpacks.git
@@ -66,12 +62,12 @@ RUN rm -fr TronStreaming/.git
 
 # Python env vars
 WORKDIR /python
-ENV ETHECYCLE_ENV=development
-ENV PIP_NO_CACHE_DIR=off
-ENV PIP_DISABLE_PIP_VERSION_CHECK=on
-ENV PIP_DEFAULT_TIMEOUT=100
-ENV POETRY_HOME="/python/poetry"
-ENV POETRY_NO_INTERACTION=1
+ENV ETHECYCLE_ENV=development \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    POETRY_HOME="/python/poetry" \
+    POETRY_NO_INTERACTION=1
 
 # Install poetry. Lots of ideas as to how to approach this here: https://stackoverflow.com/questions/53835198/integrating-python-poetry-with-docker
 RUN curl -sSL https://install.python-poetry.org | python3 -

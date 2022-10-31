@@ -27,6 +27,8 @@ RUN git clone https://github.com/W-McDonald/etherscan.git
 
 # Trustwallet assets
 RUN git clone https://github.com/trustwallet/assets trustwallet_assets
+RUN rm -fr trustwallet_assets/.git
+RUN find trustwallet_assets/ -name '*.png' -delete
 
 # Pull Adamant vaults
 RUN git clone https://github.com/eepdev/vaults.git
@@ -36,22 +38,31 @@ RUN git clone https://github.com/rchen8/hop-airdrop.git
 
 # More wallets
 RUN git clone https://github.com/Mmoouu/test-iotxview/
+RUN rm -fr test-iotxview/.git
+RUN find test-iotxview/ -name '*.png' -delete
+
 RUN git clone https://github.com/hylsceptic/ethereum_parser.git
 RUN git clone https://github.com/yaocg/uniswap-arbitrage.git
 RUN git clone https://github.com/m-root/arb-trading.git
 RUN git clone https://github.com/Inka-Finance/assets.git
+RUN rm -fr assets/.git
+RUN find assets/ -name '*.png' -delete
 RUN git clone https://github.com/aurafinance/aura-token-allocation.git
 RUN git clone https://github.com/kovart/forta-agents.git
 RUN git clone https://github.com/graphsense/graphsense-tagpacks.git
 
-# Dune?
+# Dune deprecated
 RUN git clone https://github.com/ltvm/spellbook.git
+RUN rm -fr spellbook/.git
 
 # Coinmarket cap data?
 RUN git clone https://github.com/tttienthinh/CoinMarketCap.git
+# But delete useless charts & csvs
+RUN rm -fr CoinMarketCap/Download/chart CoinMarketCap/Download/csv CoinMarketCap/Download/summary.csv CoinMarketCap/Download/summaryOnlyTrue.csv CoinMarketCap/WhitePaper CoinMarketCap/.git
 
 # Tron wallets
 RUN git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git
+RUN rm -fr TronStreaming/.git
 
 # Python env vars
 WORKDIR /python

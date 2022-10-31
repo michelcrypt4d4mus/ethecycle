@@ -18,8 +18,8 @@ services:
   python_etl:
     build:
       context: .
-    # tty: true
-    # stdin_open: true
+    tty: true
+    stdin_open: true
     env_file:
       - .env
     depends_on:

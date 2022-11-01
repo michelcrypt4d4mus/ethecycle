@@ -9,8 +9,8 @@ from pathlib import Path, PosixPath
 from subprocess import check_call
 from typing import List, Optional, Union
 
-from ethecycle.util.num_helper import size_string
 from ethecycle.util.logging import console
+from ethecycle.util.num_helper import size_string
 
 PACKAGE_DIR = importlib.resources.files('ethecycle')
 PROJECT_ROOT_DIR: PosixPath = PACKAGE_DIR.joinpath(os.pardir).resolve()

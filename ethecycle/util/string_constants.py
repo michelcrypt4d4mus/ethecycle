@@ -27,6 +27,10 @@ TOKEN = 'token'
 TRANSACTION_HASH = 'transaction_hash'
 EXTRACTED_AT = 'extracted_at'
 
+# Column names
+DATA_SOURCE = 'data_source'
+SYMBOL = 'symbol'
+
 # Misc
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'

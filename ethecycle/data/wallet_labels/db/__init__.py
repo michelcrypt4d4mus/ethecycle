@@ -1,13 +1,25 @@
-from typing import Optional
+from typing import List, Optional
 
 import sqllex as sx
 
 from ethecycle.util.filesystem_helper import DB_DIR
 from ethecycle.util.logging import console
+from ethecycle.util.string_constants import *
 
-WALLET_TABLE_NAME = 'wallets'
+WALLET_DB_PATH = str(DB_DIR.joinpath('addresses.db'))
+WALLETS_TABLE_NAME = 'wallets'
 TOKENS_TABLE_NAME = 'tokens'
-WALLET_DB_PATH = str(DB_DIR.joinpath('wallets.db'))
+ALL_TABLES = [WALLETS_TABLE_NAME, TOKENS_TABLE_NAME]
+
+UNIQUE_INDEXES = {
+    WALLETS_TABLE_NAME: [
+        [DATA_SOURCE, BLOCKCHAIN, ADDRESS]
+    ],
+    TOKENS_TABLE_NAME: [
+        [DATA_SOURCE, BLOCKCHAIN, ADDRESS],
+        [DATA_SOURCE, BLOCKCHAIN, SYMBOL]
+    ]
+}
 
 # Not for direct use. Access the DB through methods in wallet_db.py
 _db: Optional[sx.SQLite3x] = None
@@ -51,12 +63,15 @@ def _create_tokens_table(db: sx.SQLite3x) -> None:
         IF_NOT_EXIST=True
     )
 
+    for index_cols in UNIQUE_INDEXES[TOKENS_TABLE_NAME]:
+        _create_index(TOKENS_TABLE_NAME, index_cols)
+
 
 def _create_wallets_table(db: sx.SQLite3x) -> None:
-    console.print(f"Creating {WALLET_TABLE_NAME} in {WALLET_DB_PATH}")
+    console.print(f"Creating {WALLETS_TABLE_NAME} in {WALLET_DB_PATH}")
 
     db.create_table(
-        WALLET_TABLE_NAME,
+        WALLETS_TABLE_NAME,
         {
             'address': sx.TEXT,
             'blockchain': sx.TEXT,
@@ -67,3 +82,14 @@ def _create_wallets_table(db: sx.SQLite3x) -> None:
         },
         IF_NOT_EXIST=True
     )
+
+    for index_cols in UNIQUE_INDEXES[WALLETS_TABLE_NAME]:
+        _create_index(WALLETS_TABLE_NAME, index_cols)
+
+
+def _create_index(table_name: str, columns: List[str], is_unique: bool = False) -> None:
+    """Add (optionally unique) index on columns to table_name."""
+    idx_name = '_'.join(['idx', table_name] + columns)
+    sql = f"CREATE {'UNIQUE' if is_unique else ''} INDEX {idx_name} ON {table_name}({','.join(columns)})"
+    console.print(f"  Index SQL: {sql}", style='dim')
+    _db.execute(script=sql)

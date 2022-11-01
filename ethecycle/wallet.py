@@ -9,7 +9,6 @@ from rich.text import Text
 
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import MISSING_ADDRESS
-from ethecycle.util.time_helper import current_timestamp_iso8601_str
 
 WALLET_LABEL_COLORS = {
     'bridge': 55,
@@ -33,6 +32,7 @@ class Wallet:
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""
+        self.address = self.address.lower()
         self.blockchain = self.chain_info._chain_str()
         self.label = self.label or self.chain_info.wallet_label(self.address)
         self.category = self.category or self.chain_info.wallet_category(self.address)
@@ -73,7 +73,7 @@ class Wallet:
     @classmethod
     def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
         """Extract wallet addresses from from and to addresses and add labels."""
-        wallet_addresses = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
+        wallet_addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
         wallet_addresses.remove('')
         wallet_addresses.add(MISSING_ADDRESS)
         return [Wallet(address, chain_info) for address in wallet_addresses]

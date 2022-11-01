@@ -19,7 +19,7 @@ class Ethereum(ChainInfo):
     ETH_TOKEN = Token(
         blockchain=ETHEREUM,
         token_type=None,
-        token_address=ETH_ADDRESS,
+        address=ETH_ADDRESS,
         symbol=ETH,
         name=ETHEREUM,
         decimals=0  # TODO: is this right?

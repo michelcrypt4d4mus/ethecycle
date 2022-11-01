@@ -7,7 +7,7 @@ from os import path
 from typing import Dict, List
 
 from ethecycle.blockchains import get_chain_info
-from ethecycle.data.wallet_labels.db import WALLET_TABLE_NAME
+from ethecycle.data.wallet_labels.db import WALLETS_TABLE_NAME
 from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log
@@ -25,7 +25,7 @@ def import_wallets_from_dune() -> None:
     for file in [f for f in files_in_dir(RAW_DATA_DIR) if f.endswith(WALLETS_FROM_DUNE_SUFFIX)]:
         wallets.extend(extract_wallets_from_file(file))
 
-    delete_rows_for_data_source(WALLET_TABLE_NAME, DATA_SOURCE)
+    delete_rows_for_data_source(WALLETS_TABLE_NAME, DATA_SOURCE)
     insert_wallets(wallets)
 
 

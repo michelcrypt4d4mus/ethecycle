@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 import sqllex as sx
 from rich.pretty import pprint
 
-from ethecycle.blockchains.token import Token
+# from ethecycle.blockchains.token import Token  # Circular import!
 from ethecycle.data.wallet_labels import db
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import EXTRACTED_AT
@@ -35,7 +35,7 @@ def table_connection(table_name):
 @contextmanager
 def wallets_table():
     """Returns connection to wallets data table."""
-    with table_connection(db.WALLET_TABLE_NAME) as wallets_table:
+    with table_connection(db.WALLETS_TABLE_NAME) as wallets_table:
         yield wallets_table
 
 
@@ -69,10 +69,10 @@ def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
 
 
 def insert_wallets(wallets: List[Wallet]) -> None:
-    insert_rows(db.WALLET_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
+    insert_rows(db.WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
-def insert_tokens(tokens: List[Token]) -> None:
+def insert_tokens(tokens: List['Token']) -> None:
     insert_rows(db.TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 
@@ -92,6 +92,25 @@ def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
         console.print("Deleted!", style='bright_red')
 
 
+def is_table_in_database(table_name: str) -> bool:
+    try:
+        db._db.get_table(table_name)
+        return True
+    except KeyError:
+        return False
+
+
+def drop_and_recreate_tables() -> None:
+    _db = get_db_connection()
+
+    for table_name in db.ALL_TABLES:
+        console.print(f"Dropping '{table_name}'...", style='bright_red')
+        _db.drop(TABLE=table_name, IF_EXIST=True)
+
+    db._create_tokens_table(db._db)
+    db._create_wallets_table(db._db)
+
+
 def get_db_connection() -> sx.SQLite3x:
     """Make sure db._db is built / connected and that the tables h`ave been created."""
     if db._db is None:
@@ -102,18 +121,10 @@ def get_db_connection() -> sx.SQLite3x:
 
     if not is_table_in_database(db.TOKENS_TABLE_NAME):
         db._create_tokens_table(db._db)
-    if not is_table_in_database(db.WALLET_TABLE_NAME):
+    if not is_table_in_database(db.WALLETS_TABLE_NAME):
         db._create_wallets_table(db._db)
 
     return db._db
-
-
-def is_table_in_database(table_name: str) -> bool:
-    try:
-        db._db.get_table(table_name)
-        return True
-    except KeyError:
-        return False
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database

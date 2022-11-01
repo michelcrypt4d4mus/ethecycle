@@ -85,7 +85,7 @@ class ChainInfo(ABC):
                 token = Token(
                     blockchain=cls._chain_str(),
                     token_type=token_info.get('type'),  # Not always provided
-                    token_address=address,
+                    address=address,
                     symbol=symbol,
                     name=token_info['name'],
                     decimals=token_info['decimals']

@@ -47,6 +47,7 @@ def tokens_table():
 
 
 def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
+    """Insert 'rows' into table named 'table_name'"""
     extracted_at = current_timestamp_iso8601_str()
     rows_written = 0
     failed_writes = 0
@@ -93,6 +94,7 @@ def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
 
 
 def is_table_in_database(table_name: str) -> bool:
+    """Returns true if a table named 'table_name' exists in the DB."""
     try:
         db._db.get_table(table_name)
         return True
@@ -101,14 +103,15 @@ def is_table_in_database(table_name: str) -> bool:
 
 
 def drop_and_recreate_tables() -> None:
+    """Drop and recreate all tables and them (only recreates schema; does not re-import rows)"""
     _db = get_db_connection()
 
     for table_name in db.ALL_TABLES:
         console.print(f"Dropping '{table_name}'...", style='bright_red')
         _db.drop(TABLE=table_name, IF_EXIST=True)
 
-    db._create_tokens_table(db._db)
-    db._create_wallets_table(db._db)
+    db._create_tokens_table()
+    db._create_wallets_table()
 
 
 def get_db_connection() -> sx.SQLite3x:
@@ -119,10 +122,11 @@ def get_db_connection() -> sx.SQLite3x:
     if not _is_connected_to_db_file():
         db._db.connect()
 
+    # Create tables if they don't exist
     if not is_table_in_database(db.TOKENS_TABLE_NAME):
-        db._create_tokens_table(db._db)
+        db._create_tokens_table()
     if not is_table_in_database(db.WALLETS_TABLE_NAME):
-        db._create_wallets_table(db._db)
+        db._create_wallets_table()
 
     return db._db
 

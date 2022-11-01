@@ -25,10 +25,10 @@ UNIQUE_INDEXES = {
 _db: Optional[sx.SQLite3x] = None
 
 
-def _create_tokens_table(db: sx.SQLite3x) -> None:
+def _create_tokens_table() -> None:
     console.print(f"Creating {TOKENS_TABLE_NAME} in {WALLET_DB_PATH}")
 
-    db.create_table(
+    _db.create_table(
         TOKENS_TABLE_NAME,
         {
             'symbol': [sx.TEXT, sx.NOT_NULL],
@@ -64,13 +64,13 @@ def _create_tokens_table(db: sx.SQLite3x) -> None:
     )
 
     for index_cols in UNIQUE_INDEXES[TOKENS_TABLE_NAME]:
-        _create_index(TOKENS_TABLE_NAME, index_cols)
+        _create_index(TOKENS_TABLE_NAME, index_cols, is_unique=True)
 
 
-def _create_wallets_table(db: sx.SQLite3x) -> None:
+def _create_wallets_table() -> None:
     console.print(f"Creating {WALLETS_TABLE_NAME} in {WALLET_DB_PATH}")
 
-    db.create_table(
+    _db.create_table(
         WALLETS_TABLE_NAME,
         {
             'address': sx.TEXT,
@@ -84,7 +84,7 @@ def _create_wallets_table(db: sx.SQLite3x) -> None:
     )
 
     for index_cols in UNIQUE_INDEXES[WALLETS_TABLE_NAME]:
-        _create_index(WALLETS_TABLE_NAME, index_cols)
+        _create_index(WALLETS_TABLE_NAME, index_cols, is_unique=True)
 
 
 def _create_index(table_name: str, columns: List[str], is_unique: bool = False) -> None:

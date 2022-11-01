@@ -16,9 +16,9 @@ PACKAGE_DIR = importlib.resources.files('ethecycle')
 PROJECT_ROOT_DIR: PosixPath = PACKAGE_DIR.joinpath(os.pardir).resolve()
 OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
 DATA_DIR = PACKAGE_DIR.joinpath('data')
-WALLET_LABELS_DIR = DATA_DIR.joinpath('wallet_labels')
-DB_DIR = WALLET_LABELS_DIR.joinpath('db')
-RAW_DATA_DIR = WALLET_LABELS_DIR.joinpath('raw_data')
+CHAIN_ADDRESSES_DIR = DATA_DIR.joinpath('chain_addresses')
+DB_DIR = CHAIN_ADDRESSES_DIR.joinpath('db')
+RAW_DATA_DIR = CHAIN_ADDRESSES_DIR.joinpath('raw_data')
 
 # If files are really big we automatically split them up for loading
 SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')

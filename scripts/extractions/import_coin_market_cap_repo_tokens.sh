@@ -9,4 +9,4 @@ pushd "$REPO_DIR"
 echo "rm -fr Download/chart Download/csv Download/summary.csv Download/summaryOnlyTrue.csv WhitePaper .git"
 popd
 
-python -c 'from ethecycle.data.wallet_labels.coin_market_cap_repo_importer import extract_coin_market_cap_repo_data_to_wallets_db; extract_coin_market_cap_repo_data_to_wallets_db()'
+python -c 'from ethecycle.data.chain_addresses.coin_market_cap_repo_importer import extract_coin_market_cap_repo_data_to_wallets_db; extract_coin_market_cap_repo_data_to_wallets_db()'

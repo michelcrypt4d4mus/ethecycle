@@ -10,9 +10,9 @@ import sqllex as sx
 from rich.pretty import pprint
 
 # from ethecycle.blockchains.token import Token  # Circular import!
-from ethecycle.data.wallet_labels import db
+from ethecycle.data.chain_addresses import db
 from ethecycle.util.logging import console, log
-from ethecycle.util.string_constants import EXTRACTED_AT
+from ethecycle.util.string_constants import EXTRACTED_AT, SYMBOL
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
@@ -61,9 +61,8 @@ def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
                 rows_written += 1
             except IntegrityError as e:
                 failed_writes += 1
-                console.print_exception()
-                msg = f"Integrity violation inserting row {row}... logging and continuing"
-                console.print(msg)
+                msg = f"Skipping {row[SYMBOL]} because {type(e).__name__} inserting row {row}..."
+                #console.print(msg)
                 log.warning(msg)
 
     console.print(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
@@ -106,7 +105,7 @@ def drop_and_recreate_tables() -> None:
     """Drop and recreate all tables and them (only recreates schema; does not re-import rows)"""
     _db = get_db_connection()
 
-    for table_name in db.ALL_TABLES:
+    for table_name in db.UNIQUE_INDEXES.keys():
         console.print(f"Dropping '{table_name}'...", style='bright_red')
         _db.drop(TABLE=table_name, IF_EXIST=True)
 
@@ -117,7 +116,7 @@ def drop_and_recreate_tables() -> None:
 def get_db_connection() -> sx.SQLite3x:
     """Make sure db._db is built / connected and that the tables h`ave been created."""
     if db._db is None:
-        db._db = sx.SQLite3x(path=db.WALLET_DB_PATH)
+        db._db = sx.SQLite3x(path=db.CHAIN_ADDRESSES_DB_PATH)
 
     if not _is_connected_to_db_file():
         db._db.connect()

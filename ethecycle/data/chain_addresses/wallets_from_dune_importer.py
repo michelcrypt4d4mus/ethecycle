@@ -7,8 +7,8 @@ from os import path
 from typing import Dict, List
 
 from ethecycle.blockchains import get_chain_info
-from ethecycle.data.wallet_labels.db import WALLETS_TABLE_NAME
-from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, insert_wallets
+from ethecycle.data.chain_addresses.db import WALLETS_TABLE_NAME
+from ethecycle.data.chain_addresses.wallet_db import delete_rows_for_data_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import ADDRESS_PREFIX

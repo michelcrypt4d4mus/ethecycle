@@ -3,22 +3,19 @@ Extract tag data from https://github.com/tttienthinh/CoinMarketCap.git
 """
 import json
 from os import environ, path
-from sqlite3.dbapi2 import IntegrityError
 from typing import Any, Dict, List
 
 from rich.table import Table
 from rich.text import Text
 
-from ethecycle.blockchains.chain_info import ADDRESS_PREFIX
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.data.wallet_labels import db
-from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, insert_rows, tokens_table
+from ethecycle.data.chain_addresses import db
+from ethecycle.data.chain_addresses.wallet_db import delete_rows_for_data_source, insert_rows
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      files_in_dir)
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import *
-from ethecycle.util.time_helper import current_timestamp_iso8601_str
 
 DATA_SOURCE = environ['COIN_MARKET_CAP_DATA_GITHUB_REPO']
 CMC_DATA_DIR = path.join(TOKEN_DATA_REPO_PARENT_DIR, 'CoinMarketCap', 'Download', 'detail')

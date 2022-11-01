@@ -6,18 +6,18 @@ from ethecycle.util.filesystem_helper import DB_DIR
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import *
 
-WALLET_DB_PATH = str(DB_DIR.joinpath('addresses.db'))
+CHAIN_ADDRESSES_DB_FILE_NAME = 'chain_addresses.db'
+CHAIN_ADDRESSES_DB_PATH = str(DB_DIR.joinpath(CHAIN_ADDRESSES_DB_FILE_NAME))
+
 WALLETS_TABLE_NAME = 'wallets'
 TOKENS_TABLE_NAME = 'tokens'
-ALL_TABLES = [WALLETS_TABLE_NAME, TOKENS_TABLE_NAME]
 
 UNIQUE_INDEXES = {
     WALLETS_TABLE_NAME: [
         [DATA_SOURCE, BLOCKCHAIN, ADDRESS]
     ],
     TOKENS_TABLE_NAME: [
-        [DATA_SOURCE, BLOCKCHAIN, ADDRESS],
-        [DATA_SOURCE, BLOCKCHAIN, SYMBOL]
+        [DATA_SOURCE, BLOCKCHAIN, ADDRESS]
     ]
 }
 
@@ -26,7 +26,7 @@ _db: Optional[sx.SQLite3x] = None
 
 
 def _create_tokens_table() -> None:
-    console.print(f"Creating {TOKENS_TABLE_NAME} in {WALLET_DB_PATH}")
+    console.print(f"Creating table '{TOKENS_TABLE_NAME}' in {CHAIN_ADDRESSES_DB_PATH}")
 
     _db.create_table(
         TOKENS_TABLE_NAME,
@@ -68,7 +68,7 @@ def _create_tokens_table() -> None:
 
 
 def _create_wallets_table() -> None:
-    console.print(f"Creating {WALLETS_TABLE_NAME} in {WALLET_DB_PATH}")
+    console.print(f"Creating table '{WALLETS_TABLE_NAME}' {CHAIN_ADDRESSES_DB_PATH}")
 
     _db.create_table(
         WALLETS_TABLE_NAME,

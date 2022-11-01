@@ -13,12 +13,12 @@ fi
 REPO_FULL_PATH="$TOKEN_DATA_REPO_PARENT_DIR/$REPO_DIR"
 
 if [[ ! -d "$REPO_FULL_PATH" ]]; then
-    echo "$REPO_URL is not checked out; cloning..."
+    echo "$REPO_URL is not checked out; cloning..." >&2
     pushd "$TOKEN_DATA_REPO_PARENT_DIR"
     git clone $REPO_URL
     popd
 else
-    echo "$REPO_URL is already checked out."
+    echo "$REPO_URL is already checked out." >&2
 fi
 
 echo "$REPO_FULL_PATH"

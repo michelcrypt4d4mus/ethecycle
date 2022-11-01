@@ -88,18 +88,12 @@ def extract_coin_market_cap_repo_data_to_wallets_db() -> None:
 
     # Write to tokens table in SQLite
     with tokens_table() as table:
-        try:
-            table.insertmany(tokens)
-        except IntegrityError as e:
-            console.print_exception()
-            console.print("Integrity violation with bulk insert, attempting one row at a time...")
-
-            for token in tokens:
-                try:
-                    table.insert(**token)
-                except IntegrityError as e:
-                    console.print_exception()
-                    console.print(f"Integrity violation inserting row {token}... logging and continuing")
+        for token in tokens:
+            try:
+                table.insert(**token)  # TODO: should prolly use db.insertmany()
+            except IntegrityError as e:
+                console.print_exception()
+                console.print(f"Integrity violation inserting row {token}... logging and continuing")
 
     console.print("Finished.")
 

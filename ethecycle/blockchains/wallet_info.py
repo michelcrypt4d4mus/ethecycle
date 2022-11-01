@@ -15,15 +15,15 @@ from ethecycle.util.logging import console, log
 @contextmanager
 def wallets_table():
     """Returns connection to wallets data table."""
-    with table_connection('tokens') as tokens_table:
-        yield table_connection(wallet_database.WALLET_TABLE_NAME)
+    with table_connection('wallets') as wallets_table:
+        yield wallets_table
 
 
 @contextmanager
 def tokens_table():
     """Returns connection to tokens data table."""
     with table_connection('tokens') as tokens_table:
-        yield table_connection(wallet_database.TOKENS_TABLE_NAME)
+        yield tokens_table
 
 
 @contextmanager
@@ -48,8 +48,8 @@ def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
             SELECT='COUNT(*)',
             WHERE=(db_table['data_source'] == _data_source)
         )
-        # import pdb;pdb.set_trace()
-        console.print(f"About to delete {data_source_row_count} rows from {table_name}")
+
+        console.print(f"About to delete {data_source_row_count[0][0]} rows from {table_name}")
         db_table.delete({'data_source': _data_source})
         console.print("Deleted!", style='bright_red')
 

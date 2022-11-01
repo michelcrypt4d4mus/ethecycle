@@ -8,8 +8,10 @@ from typing import Any, Dict, List
 
 import sqllex as sx
 
+from ethecycle.blockchains.token import Token
 from ethecycle.data.wallet_labels import db
 from ethecycle.util.logging import console, log
+from ethecycle.util.string_constants import EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
@@ -46,6 +48,10 @@ def tokens_table():
 def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
     rows_written = 0
     failed_writes = 0
+    extracted_at = current_timestamp_iso8601_str()
+
+    for row in rows:
+        row[EXTRACTED_AT] = row.get(EXTRACTED_AT, extracted_at)
 
     with table_connection(table_name) as table:
         for row in rows:
@@ -63,12 +69,11 @@ def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
 
 
 def insert_wallets(wallets: List[Wallet]) -> None:
-    extracted_at = current_timestamp_iso8601_str()
-
-    for wallet in wallets:
-        wallet.extracted_at = wallet.extracted_at or extracted_at
-
     insert_rows(db.WALLET_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
+
+
+def insert_tokens(tokens: List[Token]) -> None:
+    insert_rows(db.TOKENS_TABLE_NAME, [token.to_address_db_row() for token in tokens])
 
 
 def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:

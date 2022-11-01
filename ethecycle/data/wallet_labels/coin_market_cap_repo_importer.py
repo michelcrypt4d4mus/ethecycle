@@ -12,7 +12,7 @@ from rich.text import Text
 from ethecycle.blockchains.chain_info import ADDRESS_PREFIX
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.wallet_labels import db
-from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, tokens_table
+from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, insert_rows, tokens_table
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      files_in_dir)
@@ -69,7 +69,6 @@ NON_DISPLAY_KEYS = """
 
 def extract_coin_market_cap_repo_data_to_wallets_db() -> None:
     """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
-    extracted_at = current_timestamp_iso8601_str()
     tokens = []
 
     for json_filename in files_in_dir(CMC_DATA_DIR, 'json'):
@@ -81,14 +80,11 @@ def extract_coin_market_cap_repo_data_to_wallets_db() -> None:
                 if all(chain_token.get(col) is None for col in TABLE_COLS):
                     continue
 
-                chain_token[EXTRACTED_AT] = extracted_at
                 tokens.append(chain_token)
 
     _print_debug_table(tokens)
     delete_rows_for_data_source(TOKEN + 's', DATA_SOURCE)
-    rows_written = failed_row_count = 0
-
-
+    insert_rows(db.TOKENS_TABLE_NAME, tokens)
 
 
 def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> List[Dict[str, Any]]:

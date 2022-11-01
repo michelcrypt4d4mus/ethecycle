@@ -67,4 +67,7 @@ RUN apt-get purge --auto-remove -y \
         curl \
         wget
 
+# Build a minimal .sqliterc config file
+ARG SQLITE_RC=/root/.sqliterc
+RUN echo '.mode table' > ${SQLITE_RC} && echo '.header on' >> ${SQLITE_RC}
 CMD ["/bin/bash"]

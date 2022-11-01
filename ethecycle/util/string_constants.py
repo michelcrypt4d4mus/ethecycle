@@ -3,14 +3,13 @@ BLOCKCHAIN = 'blockchain'
 TXN = 'transaction'
 WALLET = 'wallet'
 
-MISSING_ADDRESS = 'no_address'
-
+# Tokens
 USDT = 'USDT'
 WETH = 'WETH'
 
-LABEL_E = 'labelE'
-LABEL_V = 'labelV'
-
+# Blockchains
+AVALANCHE = 'avalanche'
+AVAX = 'avax'
 ETHEREUM = 'ethereum'
 
 # Txn properties in the graph
@@ -21,3 +20,9 @@ SYMBOL = 'symbol'
 TOKEN_ADDRESS = 'token_address'
 TOKEN = 'token'
 TRANSACTION_HASH = 'transaction_hash'
+EXTRACTED_AT = 'extracted_at'
+
+# Misc
+MISSING_ADDRESS = 'no_address'
+LABEL_E = 'labelE'
+LABEL_V = 'labelV'

@@ -133,7 +133,9 @@ dmypy.json
 .env
 .env.neo4j
 container_id*
-/graphml_lep/
-/output/
 /data/ethereum_transaction_data/
+/data/exported_from_neo4j/
 /data/neo4j/
+/data/wallet_labels/wallets.db-*
+/output/
+

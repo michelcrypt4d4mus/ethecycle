@@ -13,7 +13,7 @@ _db: Optional[sx.SQLite3x] = None
 
 
 def _create_tokens_table(db: sx.SQLite3x) -> None:
-    console.print(f"Creating {WALLET_TABLE_NAME} in {WALLET_DB_PATH}")
+    console.print(f"Creating {TOKENS_TABLE_NAME} in {WALLET_DB_PATH}")
 
     db.create_table(
         TOKENS_TABLE_NAME,

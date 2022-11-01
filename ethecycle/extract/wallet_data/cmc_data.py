@@ -2,28 +2,25 @@
 Extract tag data from https://github.com/tttienthinh/CoinMarketCap.git
 """
 import json
-from datetime import datetime
 from os import environ, path
 from sqlite3.dbapi2 import IntegrityError
-from types import NoneType
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
-from rich.pretty import pprint
 from rich.table import Table
 from rich.text import Text
 
 from ethecycle.blockchains.chain_info import ADDRESS_PREFIX
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.blockchains.wallet_info import tokens_table
+from ethecycle.blockchains.wallet_info import delete_rows_for_data_source, tokens_table
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
-     WALLET_LABELS_DIR, files_in_dir)
+     files_in_dir)
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import *
+from ethecycle.util.time_helper import current_timestamp_iso8601_str
 
+DATA_SOURCE = environ['COIN_MARKET_CAP_DATA_GITHUB_REPO']
 CMC_DATA_DIR = path.join(TOKEN_DATA_REPO_PARENT_DIR, 'CoinMarketCap', 'Download', 'detail')
-CMC_CSV_PATH = WALLET_LABELS_DIR.joinpath('coin_market_cap_data.csv')
-NON_DISPLAY_KEYS = 'description holders notice relatedCoins relatedExchanges slug statistics tags urls wallets'.split()
 
 CHAT = 'chat'
 CONTRACT_ADDRESS = 'contractAddress'
@@ -55,9 +52,64 @@ CSV_OUTPUT_COLUMNS = TABLE_COLS + """
     url_telegram
 """.split()
 
+NON_DISPLAY_KEYS = """
+    description
+    holders
+    notice
+    relatedCoins
+    relatedExchanges
+    slug
+    statistics
+    tags
+    urls
+    wallets
+""".split()
 
-def extract_data(token_data: Dict[str, Any]) -> List[Dict[str, Union[str, int, float, NoneType]]]:
-    """Turn a CMC data .json file into 1 or more result rows."""
+
+def extract_coin_market_cap_repo_data_to_wallets_db() -> None:
+    """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
+    extracted_at = current_timestamp_iso8601_str()
+    tokens = []
+
+    for json_filename in files_in_dir(CMC_DATA_DIR, 'json'):
+        log.debug(f"Processing file {path.basename(json_filename)}...")
+
+        with open(json_filename, 'r') as json_data:
+            for chain_token in _explode_token_blockchain_rows(json.load(json_data)['data']):
+                # Skip rows where all core cols are None; add 'extracted_at" timestamp to the reset
+                if all(chain_token.get(col) is None for col in TABLE_COLS):
+                    continue
+
+                chain_token[EXTRACTED_AT] = extracted_at
+                tokens.append(chain_token)
+
+    _print_debug_table(tokens)
+    delete_rows_for_data_source(TOKEN + 's', DATA_SOURCE)
+
+    # Write to tokens table in SQLite
+    with tokens_table() as table:
+        try:
+            table.insertmany(tokens)
+        except IntegrityError as e:
+            console.print_exception()
+            console.print("Integrity violation with bulk insert, attempting one row at a time...")
+
+            for token in tokens:
+                try:
+                    table.insert(**token)
+                except IntegrityError as e:
+                    console.print_exception()
+                    console.print(f"Integrity violation inserting row {token}... logging and continuing")
+
+    console.print("Finished.")
+
+
+def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Turn a single token's CMC data .json file into 1 or more result rows depending on how many
+    chains that token exists on.
+    The 1 or more objects returned will all be for the same token but each for a different blockchain
+    """
     row = {
         k: v
         for k, v in token_data.items()
@@ -158,58 +210,6 @@ def extract_data(token_data: Dict[str, Any]) -> List[Dict[str, Union[str, int, f
     return tokens_with_chain_data
 
 
-def extract_cmc_data_from_repo() -> List[Dict[str, Any]]:
-    """Go through ~11,000 .json files in the CoinMarketCap data repo."""
-    table_rows = []
-
-    for json_filename in files_in_dir(CMC_DATA_DIR, 'json'):
-        log.debug(f"Processing file {path.basename(json_filename)}...")
-
-        with open(json_filename, 'r') as json_data:
-            token_info = json.load(json_data)['data']
-            key_list_str = ', '.join(sorted(token_info.keys()))
-            log.debug(f"keys: {key_list_str}")
-            table_rows.extend(extract_data(token_info))
-            log.debug(table_rows[-1])
-
-    return sorted(table_rows, key=lambda r: [r.get(SYMBOL, 'zzzzzz'), r.get(BLOCKCHAIN, 'zzzzzz')])
-
-
-def extract_coin_market_cap_data_to_db() -> None:
-    """Print rich.Table and some summary stats then write a CSV."""
-    rows = extract_cmc_data_from_repo()
-    extracted_at = datetime.utcnow().replace(microsecond=0).isoformat()
-
-    # Print table and some summary stats in debug mode
-    if Config.debug:
-        table = Table(*TABLE_COLS)
-
-        for row in rows:
-            style = 'reverse' if ADDRESS not in row else ''
-            table.add_row(*[str(row.get(col, '')) for col in TABLE_COLS], style=style)
-
-        console.print(table)
-        _count_by_col(rows, BLOCKCHAIN)
-        console.line(2)
-        _count_by_col(rows, 'category')
-
-    # Write to tokens table in SQLite
-    with tokens_table() as table:
-        for row in rows:
-            if all(row.get(col) is None for col in TABLE_COLS):
-                continue
-
-            row['extracted_at'] = extracted_at
-
-            try:
-                table.insert(**row)
-            except IntegrityError as e:
-                console.print(f"Integrity violation inserting row {row}... logging and continuing")
-                console.print_exception()
-
-    console.print("Finished.")
-
-
 def _count_by_col(rows: List[Dict[str, Any]], column: str) -> None:
     """Basically GROUP BY, COUNT(*)."""
     console.print(f"Counting by {column}")
@@ -219,3 +219,21 @@ def _count_by_col(rows: List[Dict[str, Any]], column: str) -> None:
         count = len([r for r in rows if r.get(column) == chain])
         chain = chain or 'n/a'
         console.print(f"{chain: >40} {count: <15}")
+
+
+def _print_debug_table(rows: List[Dict[str, Any]]) -> None:
+    """Show table of all tokens w/some stats. Colors reversed for tokens w/out a chain address."""
+    if not Config.debug:
+        return
+
+    table = Table(*TABLE_COLS)
+    rows = sorted(rows, key=lambda t: [t.get(SYMBOL, 'zzzzzz'), t.get(BLOCKCHAIN, 'zzzzzz')])
+
+    for row in rows:
+        style = 'reverse' if ADDRESS not in row else ''
+        table.add_row(*[str(row.get(col, '')) for col in TABLE_COLS], style=style)
+
+    console.print(table)
+    _count_by_col(rows, BLOCKCHAIN)
+    console.line(2)
+    _count_by_col(rows, 'category')

@@ -1,4 +1,9 @@
+# Address stuff
 ADDRESS = 'address'
+ADDRESS_PREFIX = '0x'
+MISSING_ADDRESS = 'no_address'
+
+# Data types
 BLOCKCHAIN = 'blockchain'
 TXN = 'transaction'
 WALLET = 'wallet'
@@ -23,6 +28,5 @@ TRANSACTION_HASH = 'transaction_hash'
 EXTRACTED_AT = 'extracted_at'
 
 # Misc
-MISSING_ADDRESS = 'no_address'
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'

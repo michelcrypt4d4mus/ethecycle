@@ -9,6 +9,7 @@ from rich.text import Text
 
 from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import MISSING_ADDRESS
+from ethecycle.util.time_helper import current_timestamp_iso8601_str
 
 WALLET_LABEL_COLORS = {
     'bridge': 55,
@@ -28,12 +29,14 @@ class Wallet:
     chain_info: Type
     label: Optional[str] = None
     category: Optional[str] = None
+    extracted_at: Optional[str] = None
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""
         self.blockchain = self.chain_info._chain_str()
         self.label = self.label or self.chain_info.wallet_label(self.address)
         self.category = self.category or self.chain_info.wallet_category(self.address)
+        self.extracted_at = self.extracted_at or
 
     def to_neo4j_csv_row(self):
         """Generate Neo4J bulk load CSV row."""

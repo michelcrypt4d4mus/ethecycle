@@ -1,1 +1,1 @@
-sqlite3 data/wallet_labels/wallets.db
+sqlite3 ethecycle/data/wallet_labels/db/wallets.db

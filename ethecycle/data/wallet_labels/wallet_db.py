@@ -73,7 +73,7 @@ def insert_wallets(wallets: List[Wallet]) -> None:
 
 
 def insert_tokens(tokens: List[Token]) -> None:
-    insert_rows(db.TOKENS_TABLE_NAME, [token.to_address_db_row() for token in tokens])
+    insert_rows(db.TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 
 def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
@@ -82,9 +82,12 @@ def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
         data_source_row_count = db_table.select(
             SELECT='COUNT(*)',
             WHERE=(db_table['data_source'] == _data_source)
-        )
+        )[0][0]
 
-        console.print(f"About to delete {data_source_row_count[0][0]} rows from {table_name}")
+        if data_source_row_count == 0:
+            return
+
+        console.print(f"Deleting {data_source_row_count} rows from {_data_source} in {table_name}...")
         db_table.delete({'data_source': _data_source})
         console.print("Deleted!", style='bright_red')
 
@@ -97,9 +100,20 @@ def get_db_connection() -> sx.SQLite3x:
     if not _is_connected_to_db_file():
         db._db.connect()
 
-    db._create_tokens_table(db._db)
-    db._create_wallets_table(db._db)
+    if not is_table_in_database(db.TOKENS_TABLE_NAME):
+        db._create_tokens_table(db._db)
+    if not is_table_in_database(db.WALLET_TABLE_NAME):
+        db._create_wallets_table(db._db)
+
     return db._db
+
+
+def is_table_in_database(table_name: str) -> bool:
+    try:
+        db._db.get_table(table_name)
+        return True
+    except KeyError:
+        return False
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database
@@ -109,7 +123,7 @@ def _is_connected_to_db_file() -> bool:
     if not db._db.connection:
         return False
 
-    console.print("Checking DB connection: ", 'yellow')
+    log.debug("Checking DB connection status...")
     local_cursor = db._db.connection.cursor()
     local_cursor.execute('pragma database_list')
     connected_to_file = local_cursor.fetchall()[0][2]

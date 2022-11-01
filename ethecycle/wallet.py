@@ -30,14 +30,12 @@ class Wallet:
     label: Optional[str] = None
     category: Optional[str] = None
     data_source: Optional[str] = None
-    extracted_at: Optional[str] = None
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""
         self.blockchain = self.chain_info._chain_str()
         self.label = self.label or self.chain_info.wallet_label(self.address)
         self.category = self.category or self.chain_info.wallet_category(self.address)
-        #self.extracted_at = self.extracted_at or current_timestamp_iso8601_str()
 
     def to_neo4j_csv_row(self) -> List[Optional[str]]:
         """Generate Neo4J bulk load CSV row."""

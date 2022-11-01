@@ -4,7 +4,7 @@ the filename (raw_data/ethereum_wallets_from_dune.txt.gz is for ethereum). The d
 format in these files is a side effect of copy/pasting from the Dune web GUI.
 """
 from os import path
-from typing import Dict
+from typing import Dict, List
 
 from ethecycle.blockchains import get_chain_info
 from ethecycle.data.wallet_labels.db import WALLET_TABLE_NAME
@@ -20,31 +20,35 @@ WALLETS_FROM_DUNE_SUFFIX = '_wallets_from_dune.txt.gz'
 
 def import_wallets_from_dune() -> None:
     """Load all files matching the pattern raw_data/*wallets_from_dune.txt.gz."""
-    chain_wallets: Dict[str, Dict[str, Wallet]] = {} # Keys are blockchains
+    wallets: List[Wallet] = []
 
     for file in [f for f in files_in_dir(RAW_DATA_DIR) if f.endswith(WALLETS_FROM_DUNE_SUFFIX)]:
-        blockchain = path.basename(file).removesuffix(WALLETS_FROM_DUNE_SUFFIX)
-        wallet_addresses: Dict[str, Wallet] = {}
-        lines = get_lines(file)
+        wallets.extend(extract_wallets_from_file(file))
 
-        for i in range(0, len(lines) - 1, 3):
-            address = lines[i]
-
-            if not address.startswith(ADDRESS_PREFIX):
-                raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
-            elif address in wallet_addresses:
-                log.warning(f"{address} already labeled '{wallet_addresses[address]}', discarding {lines[i + 1]}...")
-            else:
-                wallet_addresses[address] = Wallet(
-                    address,
-                    get_chain_info(blockchain),
-                    lines[i + 1],
-                    lines[i + 2].lower(),
-                    data_source=DATA_SOURCE
-                )
-
-        chain_wallets[blockchain] = wallet_addresses
-
-    wallets = [w for wallets in chain_wallets.values() for w in wallets.values()]
     delete_rows_for_data_source(WALLET_TABLE_NAME, DATA_SOURCE)
     insert_wallets(wallets)
+
+
+def extract_wallets_from_file(file) -> List[Wallet]:
+    blockchain = path.basename(file).removesuffix(WALLETS_FROM_DUNE_SUFFIX)
+    wallet_addresses: Dict[str, Wallet] = {}
+    lines = get_lines(file)
+
+    for i in range(0, len(lines) - 1, 3):
+        address = lines[i]
+
+        if not address.startswith(ADDRESS_PREFIX):
+            raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
+        elif address in wallet_addresses:
+            log.warning(f"{address} already labeled '{wallet_addresses[address]}', discarding {lines[i + 1]}...")
+        else:
+            wallet_addresses[address] = Wallet(
+                address,
+                get_chain_info(blockchain),
+                lines[i + 1],
+                lines[i + 2].lower(),
+                data_source=DATA_SOURCE
+            )
+
+    return list(wallet_addresses.values())
+

@@ -11,7 +11,7 @@ from rich.text import Text
 
 from ethecycle.blockchains.chain_info import ADDRESS_PREFIX
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.blockchains.wallet_info import delete_rows_for_data_source, tokens_table
+from ethecycle.data.wallet_labels.wallet_db import delete_rows_for_data_source, tokens_table
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      files_in_dir)

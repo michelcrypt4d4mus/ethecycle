@@ -11,10 +11,12 @@ from typing import List, Optional
 from ethecycle.util.num_helper import size_string
 from ethecycle.util.logging import console
 
-PROJECT_ROOT_DIR: PosixPath = importlib.resources.files('ethecycle').joinpath(os.pardir).resolve()
+PACKAGE_DIR = importlib.resources.files('ethecycle')
+PROJECT_ROOT_DIR: PosixPath = PACKAGE_DIR.joinpath(os.pardir).resolve()
 OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
-DATA_DIR = PROJECT_ROOT_DIR.joinpath('data')
+DATA_DIR = PACKAGE_DIR.joinpath('data')
 WALLET_LABELS_DIR = DATA_DIR.joinpath('wallet_labels')
+WALLET_DB_DIR = WALLET_LABELS_DIR.joinpath('db')
 
 # If files are really big we automatically split them up for loading
 SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')

@@ -2,50 +2,21 @@
 Class to manage sqlite DB holding wallet tag info.
 Context managers: https://rednafi.github.io/digressions/python/2020/03/26/python-contextmanager.html#nesting-contexts
 """
-import sqlite3
 from contextlib import contextmanager
-from typing import Dict, List
+from sqlite3.dbapi2 import IntegrityError
+from typing import Any, Dict, List
 
 import sqllex as sx
 
 from ethecycle.data.wallet_labels import db
 from ethecycle.util.logging import console, log
-
-
-@contextmanager
-def wallets_table():
-    """Returns connection to wallets data table."""
-    with table_connection('wallets') as wallets_table:
-        yield wallets_table
-
-
-@contextmanager
-def tokens_table():
-    """Returns connection to tokens data table."""
-    with table_connection('tokens') as tokens_table:
-        yield tokens_table
-
-
-def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
-    with table_connection(table_name) as table:
-        
-    # Write to tokens table in SQLite
-    with tokens_table() as table:
-        for token in tokens:
-            try:
-                table.insert(**token)  # TODO: should prolly use db.insertmany()
-                rows_written += 1
-            except IntegrityError as e:
-                failed_row_count += 1
-                console.print_exception()
-                console.print(f"Integrity violation inserting row {token}... logging and continuing")
-
-    console.print(f"Finished writing {rows_written} to 'tokens.")
+from ethecycle.util.time_helper import current_timestamp_iso8601_str
+from ethecycle.wallet import Wallet
 
 
 @contextmanager
 def table_connection(table_name):
-    """Create if it doesn't exist and disconnect automatically when done to commit data."""
+    """Connect to db and yield table obj. Disconnects automatically when done to commit data."""
     db = get_db_connection()
 
     try:
@@ -54,8 +25,50 @@ def table_connection(table_name):
         console.print_exception()
         console.print(f"Closing connection to SQLite table '{table_name}")
     finally:
-        log.info("Closing DB connection")
+        log.info(f"Closing DB connection to {table_name}")
         db.disconnect()
+
+
+@contextmanager
+def wallets_table():
+    """Returns connection to wallets data table."""
+    with table_connection(db.WALLET_TABLE_NAME) as wallets_table:
+        yield wallets_table
+
+
+@contextmanager
+def tokens_table():
+    """Returns connection to tokens data table."""
+    with table_connection(db.TOKENS_TABLE_NAME) as tokens_table:
+        yield tokens_table
+
+
+def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
+    rows_written = 0
+    failed_writes = 0
+
+    with table_connection(table_name) as table:
+        for row in rows:
+            try:
+                table.insert(**row)  # TODO: should prolly use db.insertmany()
+                rows_written += 1
+            except IntegrityError as e:
+                failed_writes += 1
+                console.print_exception()
+                msg = f"Integrity violation inserting row {row}... logging and continuing"
+                console.print(msg)
+                log.warning(msg)
+
+    console.print(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
+
+
+def insert_wallets(wallets: List[Wallet]) -> None:
+    extracted_at = current_timestamp_iso8601_str()
+
+    for wallet in wallets:
+        wallet.extracted_at = wallet.extracted_at or extracted_at
+
+    insert_rows(db.WALLET_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
 def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:

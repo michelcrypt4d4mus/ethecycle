@@ -1,3 +1,4 @@
+import gzip
 import importlib.resources
 import os
 import re
@@ -6,7 +7,7 @@ from datetime import datetime
 from os import path
 from pathlib import Path, PosixPath
 from subprocess import check_call
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from ethecycle.util.num_helper import size_string
 from ethecycle.util.logging import console
@@ -23,6 +24,7 @@ RAW_DATA_DIR = WALLET_LABELS_DIR.joinpath('raw_data')
 SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')
 DEFAULT_LINES_PER_FILE = 250000
 ETHECYCLE_DIR = '/ethecycle'
+GZIP_EXTENSION = '.gz'
 
 # Token info repo is checked out as part of Dockerfile build process
 # TODO: rename to TOKEN_AND_WALLET_REPOS_DIR
@@ -30,7 +32,7 @@ TOKEN_DATA_REPO_PARENT_DIR = os.environ['TOKEN_DATA_REPO_PARENT_DIR']
 TOKEN_DATA_DIR = os.path.join(TOKEN_DATA_REPO_PARENT_DIR, 'tokens', 'tokens')
 
 
-def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:
+def files_in_dir(dir: Union[str, PosixPath], with_extname: Optional[str] = None) -> List[str]:
     """paths for non dot files, optionally ending in 'with_extname'"""
     files = [path.join(dir, file) for file in os.listdir(dir) if not file.startswith('.')]
     files = [file for file in files if not path.isdir(file)]
@@ -39,6 +41,21 @@ def files_in_dir(dir: str, with_extname: Optional[str] = None) -> List[str]:
         files = [f for f in files if f.endswith(f".{with_extname}")]
 
     return files
+
+
+def get_lines(file_path: str, comment_char: Optional[str] = '#') -> List[str]:
+    """Get lines from text or gzip file optionally skipping lines starting with comment_char."""
+    if file_path.endswith(GZIP_EXTENSION):
+        with gzip.open(file_path, 'rb') as file:
+            lines = [line.decode().rstrip() for line in file]
+    else:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+    if comment_char:
+        lines = [line for line in lines if not line.startswith(comment_char)]
+
+    return lines
 
 
 def file_size_string(file_path: str) -> str:

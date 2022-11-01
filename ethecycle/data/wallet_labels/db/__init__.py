@@ -7,8 +7,9 @@ from ethecycle.util.logging import console
 
 WALLET_TABLE_NAME = 'wallets'
 TOKENS_TABLE_NAME = 'tokens'
-WALLET_DB_PATH = DB_DIR.joinpath('wallets.db')
+WALLET_DB_PATH = str(DB_DIR.joinpath('wallets.db'))
 
+# Not for direct use. Access the DB through methods in wallet_db.py
 _db: Optional[sx.SQLite3x] = None
 
 

@@ -3,7 +3,7 @@ Simple class to hold wallet info.
 TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
 """
 from dataclasses import dataclass
-from typing import List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 from rich.text import Text
 
@@ -29,6 +29,7 @@ class Wallet:
     chain_info: Type
     label: Optional[str] = None
     category: Optional[str] = None
+    data_source: Optional[str] = None
     extracted_at: Optional[str] = None
 
     def __post_init__(self):
@@ -36,9 +37,9 @@ class Wallet:
         self.blockchain = self.chain_info._chain_str()
         self.label = self.label or self.chain_info.wallet_label(self.address)
         self.category = self.category or self.chain_info.wallet_category(self.address)
-        self.extracted_at = self.extracted_at or
+        #self.extracted_at = self.extracted_at or current_timestamp_iso8601_str()
 
-    def to_neo4j_csv_row(self):
+    def to_neo4j_csv_row(self) -> List[Optional[str]]:
         """Generate Neo4J bulk load CSV row."""
         return [
             self.address,
@@ -46,6 +47,9 @@ class Wallet:
             self.label,
             self.category
         ]
+
+    def to_address_db_row(self) -> Dict[str, Any]:
+        return {k: v for k, v in self.__dict__.items() if k != 'chain_info'}
 
     def __rich__(self):
         """rich text format string."""

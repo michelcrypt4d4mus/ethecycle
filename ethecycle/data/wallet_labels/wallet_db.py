@@ -7,6 +7,7 @@ from sqlite3.dbapi2 import IntegrityError
 from typing import Any, Dict, List
 
 import sqllex as sx
+from rich.pretty import pprint
 
 from ethecycle.blockchains.token import Token
 from ethecycle.data.wallet_labels import db
@@ -46,15 +47,14 @@ def tokens_table():
 
 
 def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
+    extracted_at = current_timestamp_iso8601_str()
     rows_written = 0
     failed_writes = 0
-    extracted_at = current_timestamp_iso8601_str()
-
-    for row in rows:
-        row[EXTRACTED_AT] = row.get(EXTRACTED_AT, extracted_at)
 
     with table_connection(table_name) as table:
         for row in rows:
+            row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
+
             try:
                 table.insert(**row)  # TODO: should prolly use db.insertmany()
                 rows_written += 1

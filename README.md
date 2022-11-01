@@ -89,6 +89,7 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 * Get shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
 * Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
 * Display the wallet tags: `scripts/show_wallet_labels.sh`
+* Rebuild chain address database: `scripts/chain_addresses/reimport_all.sh`
 * Print a query that can be run on Dune to find new wallet tags: `scripts/dune_update_query.sh`
 
 

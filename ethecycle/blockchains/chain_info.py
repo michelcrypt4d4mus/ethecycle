@@ -8,7 +8,7 @@ from os import listdir, path
 from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
-from ethecycle.data.chain_addresses.wallet_db import wallets_table
+from ethecycle.data.chain_addresses.address_db import wallets_table
 from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import BLOCKCHAIN

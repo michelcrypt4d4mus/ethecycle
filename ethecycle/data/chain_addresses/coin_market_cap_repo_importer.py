@@ -10,7 +10,7 @@ from rich.text import Text
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.chain_addresses import db
-from ethecycle.data.chain_addresses.wallet_db import delete_rows_for_data_source, insert_rows
+from ethecycle.data.chain_addresses.address_db import delete_rows_for_data_source, insert_rows
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      files_in_dir)
@@ -64,8 +64,9 @@ NON_DISPLAY_KEYS = """
 """.split()
 
 
-def extract_coin_market_cap_repo_data_to_wallets_db() -> None:
+def import_coin_market_cap_repo_addresses() -> None:
     """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
+    console.print("Importing Coin Market Cap chain address data...")
     tokens = []
 
     for json_filename in files_in_dir(CMC_DATA_DIR, 'json'):

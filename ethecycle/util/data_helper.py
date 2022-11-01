@@ -2,6 +2,7 @@
 Helper for generating dune queries to find new labels
 TODO: Get this into the /scripts dir
 """
+from multiprocessing.sharedctypes import Value
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.util.logging import console
 from ethecycle.util.num_helper import comma_format
@@ -22,6 +23,7 @@ ORDER BY 2
 
 
 def generate_ethereum_labels_query():
+    raise ValueError("Needs updating")
     Ethereum._load_wallet_label_file_contents()
 
     query = NEW_LABELS_QUERY.format(

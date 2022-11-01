@@ -2,20 +2,17 @@
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
 Should be implemented for each chain with the appropriate overrides of the abstract methods.
 """
-import gzip
 import json
 from abc import ABC, abstractmethod
 from os import listdir, path
 from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
-from ethecycle.wallet import Wallet
-from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR, WALLET_LABELS_DIR
+from ethecycle.data.wallet_labels.wallet_db import wallets_table
+from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
 from ethecycle.util.logging import log
-from ethecycle.util.string_constants import TOKEN
-
-ADDRESS_PREFIX = '0x'
-WALLET_FILE_EXTENSION = '.txt.gz'
+from ethecycle.util.string_constants import BLOCKCHAIN
+from ethecycle.wallet import Wallet
 
 
 class ChainInfo(ABC):
@@ -121,41 +118,17 @@ class ChainInfo(ABC):
     def known_wallets(cls) -> Dict[str, Wallet]:
         """Lazy loaded wallet label, categories, etc."""
         if len(cls._wallet_labels) == 0:
-            cls._load_wallet_label_file_contents()
+            cls._load_known_wallets()
 
         return cls._wallet_labels
 
     @classmethod
-    def _load_wallet_label_file_contents(cls) -> None:
-        """Load file matching blockchain name in wallet files dir and merge with token address info."""
-        # Label the addresses we know are token addresses
-        for symbol, token in cls.tokens().items():
-            cls._wallet_labels[token.token_address] = Wallet(token.token_address, cls, symbol, TOKEN)
-
-        # Load the rest of the wallet tags from the data/wallet_info/ file
-        label_file = WALLET_LABELS_DIR.joinpath(cls._chain_str() + WALLET_FILE_EXTENSION)
-
-        if not path.isfile(label_file):
-            log.warning(f"{label_file} is not a file - only token addresses loaded for {cls._chain_str()}")
-            return
-
-        with gzip.open(label_file, 'rb') as file:
-            lines = [line.decode().rstrip() for line in file if not line.startswith(b'#')]
-
-        for i in range(0, len(lines) - 1, 3):
-            address = lines[i]
-
-            if not address.startswith(ADDRESS_PREFIX):
-                raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
-            elif address in cls._wallet_labels:
-                log.warning(f"{address} already labeled '{cls._wallet_labels[address]}', discarding {lines[i + 1]}...")
-            else:
-                cls._wallet_labels[address] = Wallet(
-                    address,
-                    cls,
-                    lines[i + 1],
-                    lines[i + 2].lower()
-                )
+    def _load_known_wallets(cls) -> None:
+        with wallets_table() as table:
+            column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
+            rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+            rows = [dict(zip(column_names, row)) for row in rows]
+            cls._wallet_labels = {row['address']: Wallet(chain_info=cls, **row) for row in rows}
 
     @classmethod
     def _chain_str(cls) -> str:

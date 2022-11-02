@@ -11,9 +11,9 @@ from ethecycle.config import Config
 def rebuild_chain_addresses_db():
     Config.skip_load_from_db = True
     """Drop all tables and rebuild from source data."""
-    #drop_and_recreate_tables()
-    #import_hardcoded_addresses()
-    #import_coin_market_cap_repo_addresses()
+    drop_and_recreate_tables()
+    import_hardcoded_addresses()
+    import_coin_market_cap_repo_addresses()
     import_etherscrape_chain_addresses()
-    #import_wallets_from_dune()
+    import_wallets_from_dune()
     Config.skip_load_from_db = False

@@ -19,8 +19,8 @@ ARG GIT_REPO_DIR
 ENV TOKEN_DATA_REPO_PARENT_DIR=${GIT_REPO_DIR:-/token_data}
 RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
 WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
-RUN git clone https://github.com/ethereum-lists/tokens.git
-# Ether scrapes
+
+# Ethereum scrapes
 RUN git clone https://github.com/brianleect/etherscan-labels.git
 RUN git clone https://github.com/W-McDonald/etherscan.git
 # Trustwallet assets

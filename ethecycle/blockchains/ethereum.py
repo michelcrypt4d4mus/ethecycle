@@ -18,12 +18,6 @@ class Ethereum(ChainInfo):
     log.warning("Number of decimals for eth set to 0 but for some data sets it may be 18.")
 
     @classmethod
-    def add_hardcoded_tokens(cls) -> None:
-        """Add ethereum as 0x0"""
-        cls._tokens[cls.ETH] = cls.ETH_TOKEN
-        cls._tokens_by_address[cls.ETH_ADDRESS] = cls.ETH_TOKEN
-
-    @classmethod
     def scanner_url(cls, address: str) -> Optional[str]:
         address_length = len(address)
 

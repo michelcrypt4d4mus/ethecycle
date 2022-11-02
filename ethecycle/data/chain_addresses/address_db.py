@@ -16,6 +16,8 @@ from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
+DbRows = List[Dict[str, Any]]
+
 
 @contextmanager
 def table_connection(table_name):
@@ -46,7 +48,7 @@ def tokens_table():
         yield tokens_table
 
 
-def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
+def insert_rows(table_name: str, rows: DbRows) -> None:
     """Insert 'rows' into table named 'table_name'"""
     extracted_at = current_timestamp_iso8601_str()
     rows_written = 0

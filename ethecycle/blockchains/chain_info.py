@@ -2,16 +2,14 @@
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
 Should be implemented for each chain with the appropriate overrides of the abstract methods.
 """
-import json
 from abc import ABC, abstractmethod
-from os import listdir, path
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from ethecycle.blockchains.token import Token
-from ethecycle.data.chain_addresses.address_db import wallets_table
+from ethecycle.data.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.config import Config
 from ethecycle.util.logging import log
-from ethecycle.util.string_constants import BLOCKCHAIN
+from ethecycle.util.string_constants import ADDRESS, BLOCKCHAIN, DATA_SOURCE
 from ethecycle.wallet import Wallet
 
 
@@ -27,14 +25,6 @@ class ChainInfo(ABC):
     @classmethod
     @abstractmethod
     def scanner_url(cls, address: str) -> str:
-        pass
-
-    @classmethod
-    def add_hardcoded_tokens(cls) -> None:
-        """
-        Overload this method for anything not in the ethereum-lists GitHub repo.
-        It should add key/value pairs to both cls_tokens and cls_tokens_by_address.
-        """
         pass
 
     @classmethod
@@ -63,34 +53,8 @@ class ChainInfo(ABC):
     @classmethod
     def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
-        if len(cls._tokens) > 0 or Config.skip_load_from_db:
-            return cls._tokens
-
-        cls.add_hardcoded_tokens()
-        token_data_dir = path.join(TOKEN_DATA_DIR, cls.token_info_dir())
-
-        for token_info_json_file in listdir(token_data_dir):
-            with open(path.join(token_data_dir, token_info_json_file), 'r') as json_file:
-                token_info = json.load(json_file)
-
-            try:
-                symbol = token_info['symbol']
-                address = token_info['address'].lower()
-
-                token = Token(
-                    blockchain=cls._chain_str(),
-                    token_type=token_info.get('type'),  # Not always provided
-                    address=address,
-                    symbol=symbol,
-                    name=token_info['name'],
-                    decimals=token_info['decimals'],
-                    data_source='https://github.com/ethereum-lists/tokens.git'
-                )
-
-                cls._tokens[symbol] = token
-                cls._tokens_by_address[address] = token
-            except KeyError as e:
-                log.warning(f"Error parsing '{token_info_json_file}': {e}")
+        if len(cls._tokens) == 0 and not Config.skip_load_from_db:
+            cls._load_known_tokens()
 
         return cls._tokens
 
@@ -129,6 +93,44 @@ class ChainInfo(ABC):
         cls._wallet_labels = {row['address']: Wallet(chain_info=cls, **row) for row in rows}
 
     @classmethod
+    def _load_known_tokens(cls) -> None:
+        column_names = [c for c in Token.__dataclass_fields__.keys() if c != 'chain_info']
+
+        with tokens_table() as table:
+            rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+
+        rows = [dict(zip(column_names, row)) for row in rows]
+        tokens = [Token(**row) for row in coalesce_rows(rows)]
+
+        cls._tokens = {token.symbol: token for token in tokens}
+        cls._tokens_by_address = {token.address: token for token in tokens}
+
+    @classmethod
     def _chain_str(cls) -> str:
         """Returns lowercased version of class name (which should be the name of the blockchain)."""
         return cls.__name__.lower()
+
+
+def coalesce_rows(rows: DbRows) -> DbRows:
+    """Assemble the best data for each address by combining the data_sources in the DB."""
+    if len(rows) == 0:
+        return rows
+
+    cols = list(rows[0].keys())
+    coalesced_rows: Dict[str, Dict[str, Any]] = {}
+
+    for row in rows:
+        address = row[ADDRESS]
+
+        if address not in coalesced_rows:
+            log.debug(f"Initializing {address} with data from {row[DATA_SOURCE]}")
+            coalesced_rows[address] = row
+            continue
+
+        coalesced_row = coalesced_rows[address]
+
+        for col in cols:
+            log.debug(f"Updating {address}: {col} with '{row[col]}' from {row[DATA_SOURCE]}...")
+            coalesced_row[col] = coalesced_row[col] or row[col]
+
+    return list(coalesced_rows.values())

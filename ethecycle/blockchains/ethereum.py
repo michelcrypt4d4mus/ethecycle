@@ -42,10 +42,5 @@ class Ethereum(ChainInfo):
         return scanner_url.split('/')[-1]
 
     @classmethod
-    def token_info_dir(cls) -> str:
-        """Folder name in the ethereum-lists repo."""
-        return cls.ETH
-
-    @classmethod
     def _build_scanner_url(cls, restful_path: str, address: str) -> str:
         return urljoin(cls.SCANNER_BASE_URI, f"{restful_path}/{address}")

@@ -7,10 +7,8 @@ from abc import ABC, abstractmethod
 from os import listdir, path
 from typing import Dict, Optional
 
-from ethecycle.blockchains.token import Token
 from ethecycle.data.chain_addresses.address_db import wallets_table
 from ethecycle.config import Config
-from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import BLOCKCHAIN
 from ethecycle.wallet import Wallet
@@ -28,11 +26,6 @@ class ChainInfo(ABC):
     @classmethod
     @abstractmethod
     def scanner_url(cls, address: str) -> str:
-        pass
-
-    @classmethod
-    @abstractmethod
-    def token_info_dir(cls) -> str:
         pass
 
     @classmethod

@@ -19,6 +19,7 @@ from ethecycle.util.string_constants import *
 
 SOURCE_REPO = GithubDataSource('https://github.com/tttienthinh/CoinMarketCap.git')
 
+# Strings
 CHAT = 'chat'
 CONTRACT_ADDRESS = 'contractAddress'
 IS_ACTIVE = 'is_active'

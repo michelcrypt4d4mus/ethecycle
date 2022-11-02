@@ -10,11 +10,10 @@ from rich.text import Text
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.chain_addresses import db
-from ethecycle.data.chain_addresses.address_db import delete_rows_for_data_source, insert_rows
+from ethecycle.data.chain_addresses.address_db import delete_rows_from_source, insert_rows
 from ethecycle.data.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
-from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
-     files_in_dir)
+from ethecycle.util.filesystem_helper import files_in_dir
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import *
 
@@ -82,7 +81,7 @@ def import_coin_market_cap_repo_addresses() -> None:
                 tokens.append(chain_token)
 
     _print_debug_table(tokens)
-    delete_rows_for_data_source(TOKEN + 's', SOURCE_REPO.repo_url)
+    delete_rows_from_source(TOKEN + 's', SOURCE_REPO.repo_url)
     insert_rows(db.TOKENS_TABLE_NAME, tokens)
 
 

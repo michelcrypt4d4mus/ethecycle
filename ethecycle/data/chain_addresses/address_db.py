@@ -78,7 +78,7 @@ def insert_tokens(tokens: List['Token']) -> None:
     insert_rows(db.TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 
-def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
+def delete_rows_from_source(table_name: str, _data_source: str) -> None:
     """Delete all rows where _data_source arg is the data_source col. (Allows updates by reloading entire source)"""
     with table_connection(table_name) as db_table:
         data_source_row_count = db_table.select(

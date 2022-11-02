@@ -1,6 +1,7 @@
 #!/bin/bash
 # Takes a git repo URL as $1, optional dirname for checkout as $2.
 # If repo doesn't exist in $TOKEN_DATA_REPO_PARENT_DIR it will be checked out.
+# TODO: prolly should be reimplemented in python...
 
 REPO_URL=$1
 REPO_DIR=$2

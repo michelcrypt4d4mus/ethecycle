@@ -7,7 +7,7 @@ from inflection import titleize
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.chain_addresses.db import WALLETS_TABLE_NAME
-from ethecycle.data.chain_addresses.address_db import delete_rows_for_data_source, insert_wallets
+from ethecycle.data.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import ADDRESS_PREFIX
@@ -47,5 +47,5 @@ def import_etherscrape_chain_addresses() -> None:
                 log.debug(f"  Processing address {address}...")
                 wallet_addresses[address] = Wallet(address, Ethereum, label, data_source=DATA_SOURCE)
 
-    delete_rows_for_data_source(WALLETS_TABLE_NAME, DATA_SOURCE)
+    delete_rows_from_source(WALLETS_TABLE_NAME, DATA_SOURCE)
     insert_wallets(list(wallet_addresses.values()))

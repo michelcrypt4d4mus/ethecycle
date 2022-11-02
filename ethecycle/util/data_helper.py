@@ -2,7 +2,6 @@
 Helper for generating dune queries to find new labels
 TODO: Get this into the /scripts dir
 """
-from multiprocessing.sharedctypes import Value
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.util.logging import console
 from ethecycle.util.num_helper import comma_format

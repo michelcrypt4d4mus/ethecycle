@@ -26,6 +26,12 @@ ORDER BY count(txn) DESC
 LIMIT 100
 
 
+// Most common send/receive pathways by label
+MATCH (w1)-[txn]->(w2)
+RETURN w1.label, COUNT(txn) AS txn_count, w2.label
+ORDER BY txn_count DESC
+
+
 // Arrow of time query (All txions within 10 block_numbers of matched t0)
 MATCH p=(w0)-[t0:TXN]->(w1)-[t1:TXN]->(w2)
 WHERE t0.block_number < t1.block_number < t0.block_number +10

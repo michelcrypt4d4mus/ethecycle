@@ -1,19 +1,18 @@
 """
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
-Should be implemented for each chain with the appropriate overrides of the abstract methods.
+Can be implemented for each chain with the appropriate overrides but a default
 """
-from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from ethecycle.blockchains.token import Token
-from ethecycle.data.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.config import Config
+from ethecycle.data.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
 from ethecycle.wallet import Wallet
 
 
-class ChainInfo(ABC):
+class ChainInfo:
     # Should be populated with the categories that have been pulled for this blockchain
     LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
 
@@ -23,7 +22,6 @@ class ChainInfo(ABC):
     _wallet_labels: Dict[str, Wallet] = {}
 
     @classmethod
-    @abstractmethod
     def scanner_url(cls, address: str) -> str:
         pass
 

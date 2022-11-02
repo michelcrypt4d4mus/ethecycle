@@ -3,8 +3,9 @@ ADDRESS = 'address'
 ADDRESS_PREFIX = '0x'
 MISSING_ADDRESS = 'no_address'
 
-# Data types
+# Chain stuff
 BLOCKCHAIN = 'blockchain'
+CONTRACT = 'contract'
 TXN = 'transaction'
 WALLET = 'wallet'
 
@@ -32,6 +33,8 @@ DATA_SOURCE = 'data_source'
 SYMBOL = 'symbol'
 
 # Misc
+ETHECYCLE = 'ethecyle'
 DEBUG = 'DEBUG'
+NAME = 'name'
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'

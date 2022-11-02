@@ -1,3 +1,7 @@
+"""
+Functions and constants having to do with the filesystem.
+importlib explanation: https://fossies.org/linux/Python/Lib/importlib/resources.py
+"""
 import gzip
 import importlib.resources
 import os
@@ -31,19 +35,23 @@ ETHECYCLE_DIR = '/ethecycle'
 GZIP_EXTENSION = '.gz'
 
 # Token info repo is checked out as part of Dockerfile build process
-# TODO: rename to TOKEN_AND_WALLET_REPOS_DIR
+# TODO: rename to CHAIN_ADDRESS_REPOS_DIR
 TOKEN_DATA_REPO_PARENT_DIR = os.environ['TOKEN_DATA_REPO_PARENT_DIR']
 
 
-def files_in_dir(dir: Union[str, PosixPath], with_extname: Optional[str] = None) -> List[str]:
-    """paths for non dot files, optionally ending in 'with_extname'"""
-    files = [path.join(dir, file) for file in os.listdir(dir) if not file.startswith('.')]
-    files = [file for file in files if not path.isdir(file)]
+def files_in_dir(dir: Union[os.PathLike, str], with_extname: Optional[str] = None) -> List[str]:
+    """paths for non-hidden files, optionally ending in 'with_extname'"""
+    files = [file for file in _non_hidden_files_in_dir(dir) if not path.isdir(file)]
 
     if with_extname:
         files = [f for f in files if f.endswith(f".{with_extname}")]
 
     return files
+
+
+def subdirs_of_dir(dir: Union[os.PathLike, str]) -> List[str]:
+    """Find non-hidden subdirs in 'dir'."""
+    return [file for file in _non_hidden_files_in_dir(dir) if path.isdir(file)]
 
 
 def get_lines(file_path: str, comment_char: Optional[str] = '#') -> List[str]:
@@ -112,3 +120,7 @@ def split_big_file(file_path: str, lines_per_file: int = DEFAULT_LINES_PER_FILE)
     files = files_in_dir(str(split_files_dir))
     console.print(f"{len(files)} files resulted from the split.")
     return files
+
+
+def _non_hidden_files_in_dir(dir: os.PathLike) -> List[str]:
+    return [path.join(dir, file) for file in os.listdir(dir) if not file.startswith('.')]

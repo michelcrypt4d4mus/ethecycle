@@ -9,7 +9,7 @@ from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.chain_addresses.db import WALLETS_TABLE_NAME
 from ethecycle.data.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
-from ethecycle.util.logging import console, log
+from ethecycle.util.logging import log, print_address_import
 from ethecycle.util.string_constants import ADDRESS_PREFIX
 from ethecycle.wallet import Wallet
 
@@ -21,7 +21,7 @@ ETHERSCAN_DONATE_LABEL = 'Etherscan: Donate'
 
 def import_etherscrape_chain_addresses() -> None:
     """Load 3rd party data (apparently pulled from etherscan)."""
-    console.print("Importing etherscrape chain addresses...")
+    print_address_import('etherscrape')
     wallet_addresses: Dict[str, Wallet] = {}
 
     for line in get_lines(SCRAPE_DATA_FILE):

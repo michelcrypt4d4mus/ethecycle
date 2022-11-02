@@ -10,7 +10,7 @@ from ethecycle.blockchains import get_chain_info
 from ethecycle.data.chain_addresses.db import WALLETS_TABLE_NAME
 from ethecycle.data.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
-from ethecycle.util.logging import console, log
+from ethecycle.util.logging import log, print_address_import
 from ethecycle.util.string_constants import ADDRESS_PREFIX
 from ethecycle.wallet import Wallet
 
@@ -20,7 +20,7 @@ WALLETS_FROM_DUNE_SUFFIX = '_wallets_from_dune.txt.gz'
 
 def import_wallets_from_dune() -> None:
     """Load all files matching the pattern raw_data/*wallets_from_dune.txt.gz."""
-    console.print("Importing Dune Analytics chain addresses...")
+    print_address_import(DATA_SOURCE)
     wallets: List[Wallet] = []
 
     for file in [f for f in files_in_dir(RAW_DATA_DIR) if f.endswith(WALLETS_FROM_DUNE_SUFFIX)]:

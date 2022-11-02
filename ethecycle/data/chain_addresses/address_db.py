@@ -11,7 +11,7 @@ from rich.pretty import pprint
 
 # from ethecycle.blockchains.token import Token  # Circular import!
 from ethecycle.data.chain_addresses import db
-from ethecycle.util.logging import console, log
+from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
@@ -28,7 +28,7 @@ def table_connection(table_name):
         yield db[table_name]
     except Exception as e:
         console.print_exception()
-        console.print(f"Closing connection to SQLite table '{table_name}' because of exception...")
+        console.print(f"Exception while connected to '{table_name}'...")
     finally:
         log.info(f"Closing DB connection to {table_name}...")
         db.disconnect()
@@ -49,7 +49,8 @@ def tokens_table():
 
 
 def insert_rows(table_name: str, rows: DbRows) -> None:
-    """Insert 'rows' into table named 'table_name'"""
+    """Insert 'rows' into table named 'table_name'."""
+    print_dim(f"Writing {len(rows)} rows to table '{table_name}'...")
     extracted_at = current_timestamp_iso8601_str()
     rows_written = 0
     failed_writes = 0
@@ -65,11 +66,10 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
             except IntegrityError as e:
                 if row[ADDRESS] != '0x71c7656ec7ab88b098defb751b7401b5f6d8976f':
                     failed_writes += 1
-                    msg = f"Skipping {row[ADDRESS]} because {type(e).__name__} inserting row {row}..."
-                    #console.print(msg)
+                    msg = f"Skipping {row[ADDRESS]}: {type(e).__name__} while inserting row {row}..."
                     log.warning(msg)
 
-    console.print(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
+    print_dim(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
 
 
 def insert_wallets(wallets: List[Wallet]) -> None:

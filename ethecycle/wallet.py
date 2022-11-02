@@ -8,18 +8,20 @@ from typing import Any, Dict, List, Optional, Type
 from rich.text import Text
 
 from ethecycle.transaction import Txn
-from ethecycle.util.string_constants import MISSING_ADDRESS
+from ethecycle.util.string_constants import *
 
 WALLET_LABEL_COLORS = {
     'bridge': 55,
     'cex': 78,
+    CONTRACT: 45,
     'funds': 33,
     'hackers': 124,
     'mev': 59,
     'multisig': 34,
+    TOKEN: 96,
 }
 
-UNKNOWN = Text('UNKNOWN', style='grey dim')
+UNKNOWN = Text('UNKNOWN', style='color(234)')
 
 
 @dataclass

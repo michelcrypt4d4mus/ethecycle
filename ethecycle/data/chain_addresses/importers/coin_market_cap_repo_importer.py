@@ -1,8 +1,8 @@
 """
-Extract tag data from https://github.com/tttienthinh/CoinMarketCap.git
+Extract token data from https://github.com/tttienthinh/CoinMarketCap.git
 """
 import json
-from os import environ, path
+from os import path
 from typing import Any, Dict, List
 
 from rich.table import Table
@@ -14,10 +14,10 @@ from ethecycle.data.chain_addresses import db
 from ethecycle.data.chain_addresses.address_db import DbRows, delete_rows_from_source, insert_rows
 from ethecycle.data.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir
-from ethecycle.util.logging import console, log
+from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
 
-SOURCE_REPO = GithubDataSource('https://github.com/tttienthinh/CoinMarketCap.git')
+SOURCE_REPO = GithubDataSource('tttienthinh/CoinMarketCap')
 
 # Strings
 CHAT = 'chat'
@@ -66,7 +66,7 @@ NON_DISPLAY_KEYS = """
 
 def import_coin_market_cap_repo_addresses() -> None:
     """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
-    console.print("Importing Coin Market Cap chain addresses...")
+    print_address_import(SOURCE_REPO.repo_url)
     data_dir = path.join(SOURCE_REPO.local_repo_path(), 'Download', 'detail')
     tokens = []
 

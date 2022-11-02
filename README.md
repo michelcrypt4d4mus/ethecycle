@@ -131,6 +131,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 
 # Potential Queries / TODO
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
+1. https://github.com/CryptoScamDB/blacklist/blob/master/data/urls.yaml
 
 
 # Other Technologies
@@ -139,3 +140,4 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
 * [MemGraph](https://memgraph.com) - In memory graph DB.
 * TigerGraph comes up sometimes
+

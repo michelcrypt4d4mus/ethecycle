@@ -38,7 +38,7 @@ def import_ethereum_lists_addresses():
 
 def _import_ethereum_lists_tokens_addresses():
     """Import data from ethereum-lists tokens repo."""
-    print_address_import('ethereum-lists/tokens')
+    print_address_import(TOKENS_REPO.repo_url)
     root_data_dir = path.join(TOKENS_REPO.local_repo_path(), 'tokens')
     tokens: List[Token] = []
 

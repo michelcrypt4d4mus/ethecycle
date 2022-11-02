@@ -10,6 +10,7 @@ import sqllex as sx
 from rich.pretty import pprint
 
 # from ethecycle.blockchains.token import Token  # Circular import!
+from ethecycle.config import Config
 from ethecycle.data.chain_addresses import db
 from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
@@ -63,6 +64,10 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
     try:
         db_conn.insertmany(table_name, row_tuples)
     except IntegrityError as e:
+        if Config.debug:
+            console.print_exception()
+
+        console.print(f"{e} while bulk loading!", style='bright_red')
         _insert_one_at_a_time(table_name, rows)
     finally:
         db_conn.disconnect()
@@ -89,7 +94,7 @@ def delete_rows_from_source(table_name: str, _data_source: str) -> None:
         if data_source_row_count == 0:
             return
 
-        console.print(f"Deleting {data_source_row_count} rows in '{table_name}' sourced from {_data_source}...")
+        console.print(f"Deleting {data_source_row_count} rows in '{table_name}' sourced from '{_data_source}'...", style='bytes')
         db_table.delete({'data_source': _data_source})
         console.print("Deleted!", style='bright_red')
 
@@ -146,6 +151,9 @@ def _insert_one_at_a_time(table_name: str, rows: DbRows) -> None:
                 table.insert(**row)  # TODO: should prolly use db.insertmany()
                 rows_written += 1
             except IntegrityError as e:
+                if Config.debug:
+                    console.print_exception()
+
                 log.warning(f"Skipping {row[ADDRESS]}: {type(e).__name__} error on row {row}...")
                 failed_writes += 1
 

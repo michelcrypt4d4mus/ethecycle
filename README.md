@@ -72,11 +72,6 @@ Cannot guarantee these steps work but they probably will work.
 
 1. Create a virtual env in the project dir: `python -m venv .venv`
 1. Activate the venv: `. .venv/bin/activate`
-1. Checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
-1. When running the loader script, you need to specify the parent dir of the token data repo with the `TOKEN_DATA_REPO_PARENT_DIR` environment variable. Example:
-   ```bash
-   TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
-   ```
 
 ## Queries
 Some queries can be found in the [`queries/`](queries/) folder.
@@ -89,7 +84,9 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 * Get shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
 * Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
 * Display the wallet tags: `scripts/show_wallet_labels.sh`
+* Rebuild chain address database: `scripts/chain_addresses/reimport_all.sh`
 * Print a query that can be run on Dune to find new wallet tags: `scripts/dune_update_query.sh`
+* Set the environment variable `DEBUG=true` when running commands to see various debug ouutput
 
 
 # Neo4j
@@ -129,6 +126,7 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 
 # Potential Queries / TODO
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
+1. https://github.com/CryptoScamDB/blacklist/blob/master/data/urls.yaml
 
 
 # Other Technologies
@@ -137,3 +135,4 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 * [ArcadeDB](https://arcadedb.com) - New fork of OrientDB. Gremlin and OpenCypher support.
 * [MemGraph](https://memgraph.com) - In memory graph DB.
 * TigerGraph comes up sometimes
+

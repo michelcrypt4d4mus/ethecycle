@@ -1,54 +1,34 @@
 """
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
-Should be implemented for each chain with the appropriate overrides of the abstract methods.
+Can be implemented for each chain with the appropriate overrides but a default
 """
-import gzip
-import json
-from abc import ABC, abstractmethod
-from os import listdir, path
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from ethecycle.blockchains.token import Token
-from ethecycle.wallet import Wallet
-from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR, WALLET_LABELS_DIR
+from ethecycle.config import Config
+from ethecycle.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.util.logging import log
-from ethecycle.util.string_constants import TOKEN
-
-ADDRESS_PREFIX = '0x'
-WALLET_FILE_EXTENSION = '.txt.gz'
+from ethecycle.util.string_constants import *
+from ethecycle.wallet import Wallet
 
 
-class ChainInfo(ABC):
+class ChainInfo:
     # Should be populated with the categories that have been pulled for this blockchain
-    WALLET_LABEL_CATEGORIES = []
+    LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
 
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
-    _tokens: Dict[str, Token] = {}
     _tokens_by_address: Dict[str, Token] = {}
+    _tokens_by_symbol: Dict[str, Token] = {}
     _wallet_labels: Dict[str, Wallet] = {}
 
     @classmethod
-    @abstractmethod
     def scanner_url(cls, address: str) -> str:
-        pass
-
-    @classmethod
-    @abstractmethod
-    def token_info_dir(cls) -> str:
-        pass
-
-    @classmethod
-    def add_hardcoded_tokens(cls) -> None:
-        """
-        Overload this method for anything not in the ethereum-lists GitHub repo.
-        It should add key/value pairs to both cls_tokens and cls_tokens_by_address.
-        """
         pass
 
     @classmethod
     def token_address(cls, token_symbol: str) -> str:
         """Lookup a contract address by the symbol"""
-        return cls.tokens()[token_symbol].token_address
+        return cls.tokens()[token_symbol].address
 
     @classmethod
     def token_symbol(cls, token_address: str) -> Optional[str]:
@@ -71,35 +51,10 @@ class ChainInfo(ABC):
     @classmethod
     def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
-        if len(cls._tokens) > 0:
-            return cls._tokens
+        if len(cls._tokens_by_symbol) == 0 and not Config.skip_load_from_db:
+            cls._load_known_tokens()
 
-        cls.add_hardcoded_tokens()
-        token_data_dir = path.join(TOKEN_DATA_DIR, cls.token_info_dir())
-
-        for token_info_json_file in listdir(token_data_dir):
-            with open(path.join(token_data_dir, token_info_json_file), 'r') as json_file:
-                token_info = json.load(json_file)
-
-            try:
-                symbol = token_info['symbol']
-                address = token_info['address'].lower()
-
-                token = Token(
-                    blockchain=cls._chain_str(),
-                    token_type=token_info.get('type'),  # Not always provided
-                    token_address=address,
-                    symbol=symbol,
-                    name=token_info['name'],
-                    decimals=token_info['decimals']
-                )
-
-                cls._tokens[symbol] = token
-                cls._tokens_by_address[address] = token
-            except KeyError as e:
-                log.warning(f"Error parsing '{token_info_json_file}': {e}")
-
-        return cls._tokens
+        return cls._tokens_by_symbol
 
     @classmethod
     def wallet_label(cls, wallet_address: str) -> Optional[str]:
@@ -120,44 +75,67 @@ class ChainInfo(ABC):
     @classmethod
     def known_wallets(cls) -> Dict[str, Wallet]:
         """Lazy loaded wallet label, categories, etc."""
-        if len(cls._wallet_labels) == 0:
-            cls._load_wallet_label_file_contents()
+        if len(cls._wallet_labels) == 0 and not Config.skip_load_from_db:
+            cls._load_known_wallets()
 
         return cls._wallet_labels
 
     @classmethod
-    def _load_wallet_label_file_contents(cls) -> None:
-        """Load file matching blockchain name in wallet files dir and merge with token address info."""
+    def _load_known_wallets(cls) -> None:
+        """Load wallets (and tokens - tokens have wallet addresses) from the database."""
         # Label the addresses we know are token addresses
-        for symbol, token in cls.tokens().items():
-            cls._wallet_labels[token.token_address] = Wallet(token.token_address, cls, symbol, TOKEN)
+        column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
 
-        # Load the rest of the wallet tags from the data/wallet_info/ file
-        label_file = WALLET_LABELS_DIR.joinpath(cls._chain_str() + WALLET_FILE_EXTENSION)
+        token_rows = [
+            {ADDRESS: token.address, 'label': symbol, 'category': TOKEN, DATA_SOURCE: token.data_source}
+            for symbol, token in cls.tokens().items()
+        ]
 
-        if not path.isfile(label_file):
-            log.warning(f"{label_file} is not a file - only token addresses loaded for {cls._chain_str()}")
-            return
+        with wallets_table() as table:
+            db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
 
-        with gzip.open(label_file, 'rb') as file:
-            lines = [line.decode().rstrip() for line in file if not line.startswith(b'#')]
+        db_rows = [dict(zip(column_names, row)) for row in db_rows]
+        coalesced_wallets = coalesce_rows(token_rows + db_rows)
+        cls._wallet_labels = {row[ADDRESS]: Wallet(chain_info=cls, **row) for row in coalesced_wallets}
 
-        for i in range(0, len(lines) - 1, 3):
-            address = lines[i]
+    @classmethod
+    def _load_known_tokens(cls) -> None:
+        column_names = [c for c in Token.__dataclass_fields__.keys() if c != 'chain_info']
 
-            if not address.startswith(ADDRESS_PREFIX):
-                raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
-            elif address in cls._wallet_labels:
-                log.warning(f"{address} already labeled '{cls._wallet_labels[address]}', discarding {lines[i + 1]}...")
-            else:
-                cls._wallet_labels[address] = Wallet(
-                    address,
-                    cls,
-                    lines[i + 1],
-                    lines[i + 2].lower()
-                )
+        with tokens_table() as table:
+            rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+
+        rows = [dict(zip(column_names, row)) for row in rows]
+        tokens = [Token(**row) for row in coalesce_rows(rows)]
+        cls._tokens_by_symbol = {token.symbol: token for token in tokens}
+        cls._tokens_by_address = {token.address: token for token in tokens}
 
     @classmethod
     def _chain_str(cls) -> str:
         """Returns lowercased version of class name (which should be the name of the blockchain)."""
         return cls.__name__.lower()
+
+
+def coalesce_rows(rows: DbRows) -> DbRows:
+    """Assemble the best data for each address by combining the data_sources in the DB."""
+    if len(rows) == 0:
+        return rows
+
+    cols = list(rows[0].keys())
+    coalesced_rows: Dict[str, Dict[str, Any]] = {}
+
+    for row in rows:
+        address = row[ADDRESS]
+
+        if address not in coalesced_rows:
+            log.debug(f"Initializing {address} with data from {row[DATA_SOURCE]}")
+            coalesced_rows[address] = row
+            continue
+
+        coalesced_row = coalesced_rows[address]
+
+        for col in cols:
+            log.debug(f"Updating {address}: {col} with '{row[col]}' from {row[DATA_SOURCE]}...")
+            coalesced_row[col] = coalesced_row.get(col) or row[col]
+
+    return list(coalesced_rows.values())

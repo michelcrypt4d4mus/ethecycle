@@ -3,23 +3,25 @@ Simple class to hold wallet info.
 TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
 """
 from dataclasses import dataclass
-from typing import List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 from rich.text import Text
 
 from ethecycle.transaction import Txn
-from ethecycle.util.string_constants import MISSING_ADDRESS
+from ethecycle.util.string_constants import *
 
 WALLET_LABEL_COLORS = {
     'bridge': 55,
     'cex': 78,
+    CONTRACT: 45,
     'funds': 33,
     'hackers': 124,
     'mev': 59,
     'multisig': 34,
+    TOKEN: 96,
 }
 
-UNKNOWN = Text('UNKNOWN', style='grey dim')
+UNKNOWN = Text('UNKNOWN', style='color(234)')
 
 
 @dataclass
@@ -28,14 +30,20 @@ class Wallet:
     chain_info: Type
     label: Optional[str] = None
     category: Optional[str] = None
+    data_source: Optional[str] = None
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""
+        self.address = self.address.lower()
         self.blockchain = self.chain_info._chain_str()
+
+    def load_labels(self) -> 'Wallet':
+        """Loads label and category fields from chain_addresses.db. Returns self."""
         self.label = self.label or self.chain_info.wallet_label(self.address)
         self.category = self.category or self.chain_info.wallet_category(self.address)
+        return self
 
-    def to_neo4j_csv_row(self):
+    def to_neo4j_csv_row(self) -> List[Optional[str]]:
         """Generate Neo4J bulk load CSV row."""
         return [
             self.address,
@@ -43,6 +51,10 @@ class Wallet:
             self.label,
             self.category
         ]
+
+    def to_address_db_row(self) -> Dict[str, Any]:
+        """Generate a dict we can insert as a row into the chain addresses DB."""
+        return {k: v for k, v in self.__dict__.items() if k != 'chain_info'}
 
     def __rich__(self):
         """rich text format string."""
@@ -68,7 +80,7 @@ class Wallet:
     @classmethod
     def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
         """Extract wallet addresses from from and to addresses and add labels."""
-        wallet_addresses = set([txn.to_address for txn in txns]).union(set([txn.from_address for txn in txns]))
+        wallet_addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
         wallet_addresses.remove('')
         wallet_addresses.add(MISSING_ADDRESS)
-        return [Wallet(address, chain_info) for address in wallet_addresses]
+        return [Wallet(address, chain_info).load_labels() for address in wallet_addresses]

@@ -10,12 +10,11 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.theme import Theme
 
+from ethecycle.config import Config
+from ethecycle.util.string_constants import DEBUG, ETHECYCLE
+
 ### Logging ###
 LOG_LEVEL = 'WARN'
-
-console = Console()
-log = logging.getLogger('ethecycle')
-log.addHandler(RichHandler(rich_tracebacks=True))
 
 
 def set_log_level(log_level) -> None:
@@ -23,6 +22,15 @@ def set_log_level(log_level) -> None:
 
     for handler in log.handlers:
         handler.setLevel(log_level)
+
+
+log = logging.getLogger(ETHECYCLE)
+log.addHandler(RichHandler(rich_tracebacks=True))
+
+if Config.debug:
+    set_log_level(DEBUG)
+else:
+    set_log_level('INFO')
 
 
 ### Printing ###
@@ -64,8 +72,11 @@ COLOR_THEME_DICT = {
 }
 
 COLOR_THEME = Theme(COLOR_THEME_DICT)
-
 console = Console(theme=COLOR_THEME, color_system='256')
+
+
+def print_dim(msg) -> None:
+    console.print(msg, style='dim')
 
 
 def print_wallet_header(wallet_address, wallet_txns):
@@ -88,3 +99,7 @@ def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:st
     style = style if indent_level < 2 else 'benchmark.indent'
     console.print(f"{indent}{msg} in {duration:02.2f} seconds...", style=style)
     return duration
+
+
+def print_address_import(msg: str) -> None:
+    console.print(f"Importing {msg} chain addresses...", style='magenta')

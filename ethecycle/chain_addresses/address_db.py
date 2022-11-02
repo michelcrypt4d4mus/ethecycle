@@ -11,7 +11,7 @@ from rich.pretty import pprint
 
 # from ethecycle.blockchains.token import Token  # Circular import!
 from ethecycle.config import Config
-from ethecycle.data.chain_addresses import db
+from ethecycle.chain_addresses import db
 from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
@@ -67,7 +67,10 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
         if Config.debug:
             console.print_exception()
 
+        # TODO: should we really be doing this preparatory cleanup?
         console.print(f"{e} while bulk loading!", style='bright_red')
+        console.print("Cleaning up before switching to one at a time...", style='bright_white')
+        delete_rows_from_source(table_name, rows[0]['data_source'])
         _insert_one_at_a_time(table_name, rows)
     finally:
         db_conn.disconnect()

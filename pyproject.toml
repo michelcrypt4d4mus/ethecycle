@@ -20,8 +20,8 @@ sqllex = "^0.3.0.post2"
 pytest = "^7.2.0"
 
 [tool.poetry.scripts]
-dune_query = 'ethecycle.data.chain_addresses.scripts:generate_ethereum_labels_query'
-wallet_labels = 'ethecycle.data.chain_addresses.scripts:show_address_labels'
+dune_query = 'ethecycle.chain_addresses.scripts:generate_ethereum_labels_query'
+wallet_labels = 'ethecycle.chain_addresses.scripts:show_address_labels'
 
 [build-system]
 requires = ["poetry-core"]

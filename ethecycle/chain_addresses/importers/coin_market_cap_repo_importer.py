@@ -10,9 +10,9 @@ from rich.text import Text
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.config import Config
-from ethecycle.data.chain_addresses import db
-from ethecycle.data.chain_addresses.address_db import DbRows, delete_rows_from_source, insert_rows
-from ethecycle.data.chain_addresses.github_data_source import GithubDataSource
+from ethecycle.chain_addresses import db
+from ethecycle.chain_addresses.address_db import DbRows, delete_rows_from_source, insert_rows
+from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *

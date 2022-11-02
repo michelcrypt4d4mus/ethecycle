@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from ethecycle.blockchains.token import Token
 from ethecycle.config import Config
-from ethecycle.data.chain_addresses.address_db import DbRows, tokens_table, wallets_table
+from ethecycle.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
 from ethecycle.wallet import Wallet

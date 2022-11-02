@@ -20,8 +20,7 @@ from ethecycle.wallet import Wallet
 
 TOKENS_REPO = GithubDataSource('ethereum-lists/tokens')
 CONTRACTS_REPO = GithubDataSource('ethereum-lists/contracts')
-CONTRACT_JSON_KEYS = set(['project', NAME, 'source'])
-FEATURES = 'features'  # Not quite a nonstandard field
+CONTRACT_JSON_KEYS = set(['project', NAME, 'source', 'features'])
 
 # Keys are folder names, values are blockchain names.
 DIRS_TO_IMPORT = {

@@ -52,24 +52,22 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
     """Insert 'rows' into table named 'table_name'."""
     print_dim(f"Writing {len(rows)} rows to table '{table_name}'...")
     extracted_at = current_timestamp_iso8601_str()
-    rows_written = 0
-    failed_writes = 0
 
-    with table_connection(table_name) as table:
-        for row in rows:
-            row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
-            log.debug(f"Inserting {row}")
+    for row in rows:
+        row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
 
-            try:
-                table.insert(**row)  # TODO: should prolly use db.insertmany()
-                rows_written += 1
-            except IntegrityError as e:
-                if row[ADDRESS] != '0x71c7656ec7ab88b098defb751b7401b5f6d8976f':
-                    failed_writes += 1
-                    msg = f"Skipping {row[ADDRESS]}: {type(e).__name__} while inserting row {row}..."
-                    log.warning(msg)
+    db_conn = get_db_connection()
+    columns = db_conn.get_columns_names(table_name)
+    row_tuples = [[row.get(c) for c in columns] for row in rows]
 
-    print_dim(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
+    try:
+        db_conn.insertmany(table_name, row_tuples)
+    except IntegrityError as e:
+        _insert_one_at_a_time(table_name, rows)
+    finally:
+        db_conn.disconnect()
+
+    print_dim(f"Finished writing {len(rows)} rows to '{table_name}'.")
 
 
 def insert_wallets(wallets: List[Wallet]) -> None:
@@ -132,6 +130,26 @@ def get_db_connection() -> sx.SQLite3x:
         db._create_wallets_table()
 
     return db._db
+
+
+def _insert_one_at_a_time(table_name: str, rows: DbRows) -> None:
+    """Insert 'rows' into table named 'table_name' one at a time for use as a fallback."""
+    console.print(f"Fallback write {len(rows)} rows to '{table_name}' one at a time...", style='bright_yellow')
+    rows_written = 0
+    failed_writes = 0
+
+    with table_connection(table_name) as table:
+        for row in rows:
+            log.debug(f"Inserting {row}")
+
+            try:
+                table.insert(**row)  # TODO: should prolly use db.insertmany()
+                rows_written += 1
+            except IntegrityError as e:
+                log.warning(f"Skipping {row[ADDRESS]}: {type(e).__name__} error on row {row}...")
+                failed_writes += 1
+
+    print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures).")
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database

@@ -14,7 +14,7 @@ from subprocess import check_call
 from typing import List, Optional, Union
 
 from ethecycle.util.logging import console
-from ethecycle.util.num_helper import size_string
+from ethecycle.util.number_helper import size_string
 
 # Dirs inside package structure
 PACKAGE_DIR = importlib.resources.files('ethecycle')

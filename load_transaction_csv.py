@@ -11,7 +11,7 @@ from ethecycle.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
 from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
 from ethecycle.util.logging import console, set_log_level
-from ethecycle.util.num_helper import MEGABYTE
+from ethecycle.util.number_helper import MEGABYTE
 from ethecycle.util.string_constants import DEBUG, ETHEREUM
 
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE

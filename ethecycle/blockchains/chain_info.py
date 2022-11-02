@@ -2,7 +2,7 @@
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
 Can be implemented for each chain with the appropriate overrides but a default
 """
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
 from ethecycle.blockchains.token import Token
 from ethecycle.config import Config

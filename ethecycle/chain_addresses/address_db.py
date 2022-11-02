@@ -9,9 +9,9 @@ from typing import Any, Dict, List
 import sqllex as sx
 from rich.pretty import pprint
 
-# from ethecycle.blockchains.token import Token  # Circular import!
-from ethecycle.config import Config
+from ethecycle.blockchains.token import Token
 from ethecycle.chain_addresses import db
+from ethecycle.config import Config
 from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
@@ -82,7 +82,7 @@ def insert_wallets(wallets: List[Wallet]) -> None:
     insert_rows(db.WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
-def insert_tokens(tokens: List['Token']) -> None:
+def insert_tokens(tokens: List[Token]) -> None:
     insert_rows(db.TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 
@@ -164,7 +164,6 @@ def _insert_one_at_a_time(table_name: str, rows: DbRows) -> None:
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database
-# TODO: doesn't need to take connection arg
 def _is_connected_to_db_file() -> bool:
     """Abuse 'pragma database list' to check if connection status real or just in memory."""
     if not db._db.connection:

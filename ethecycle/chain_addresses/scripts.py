@@ -4,7 +4,7 @@ TODO: Get this into the /scripts dir
 """
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.util.logging import console
-from ethecycle.util.num_helper import comma_format
+from ethecycle.util.number_helper import comma_format
 from ethecycle.util.string_helper import quoted_join
 
 NEW_LABELS_QUERY = """

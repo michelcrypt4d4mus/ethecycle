@@ -10,8 +10,8 @@ from inflection import titleize
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.util.dict_helper import get_dict_key_by_value
-from ethecycle.util.string_constants import *
 from ethecycle.util.logging import log
+from ethecycle.util.string_constants import *
 
 ChainAbbrevation = namedtuple('ChainAbbrevation', ['chain_regex', 'abbreviation'])
 ChainRegex = lambda pattern: re.compile(pattern, re.IGNORECASE)

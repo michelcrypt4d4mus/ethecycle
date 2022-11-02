@@ -6,8 +6,7 @@ from os import path
 from typing import List
 
 from ethecycle.blockchains.token import Token
-from ethecycle.chain_addresses.address_db import (delete_rows_from_source,
-     insert_tokens)
+from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_tokens
 from ethecycle.chain_addresses.db import TOKENS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.logging import print_address_import, print_dim

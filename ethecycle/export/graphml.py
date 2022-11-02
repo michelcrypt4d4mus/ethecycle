@@ -17,7 +17,7 @@ from ethecycle.config import Config
 #from ethecycle.graph import is_wallet_in_graph
 from ethecycle.transaction import Txn
 from ethecycle.util.logging import console, log
-from ethecycle.util.num_helper import MEGABYTE, size_string
+from ethecycle.util.number_helper import MEGABYTE, size_string
 from ethecycle.util.string_constants import *
 from ethecycle.util.types import WalletTxns
 

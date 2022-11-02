@@ -1,1 +1,1 @@
-sqlite3 ethecycle/data/chain_addresses/db/chain_addresses.db
+sqlite3 ethecycle/chain_addresses/db/chain_addresses.db

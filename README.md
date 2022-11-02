@@ -72,11 +72,6 @@ Cannot guarantee these steps work but they probably will work.
 
 1. Create a virtual env in the project dir: `python -m venv .venv`
 1. Activate the venv: `. .venv/bin/activate`
-1. Checkout [the ethereum token data git repo](https://github.com/ethereum-lists/tokens.git) somewhere on your file system.
-1. When running the loader script, you need to specify the parent dir of the token data repo with the `TOKEN_DATA_REPO_PARENT_DIR` environment variable. Example:
-   ```bash
-   TOKEN_DATA_REPO_PARENT_DIR=/Users/uzer/github_repos ./load_transaction_csv.py data/output_1000_lines.csv
-   ```
 
 ## Queries
 Some queries can be found in the [`queries/`](queries/) folder.

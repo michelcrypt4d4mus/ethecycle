@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from os import listdir, path
 from typing import Dict, Optional
 
+from ethecycle.blockchains.token import Token
 from ethecycle.data.chain_addresses.address_db import wallets_table
 from ethecycle.config import Config
 from ethecycle.util.logging import log

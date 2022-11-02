@@ -11,6 +11,8 @@ from ethecycle.data.chain_addresses.wallets_from_dune_importer import \
 
 def rebuild_chain_addresses_db():
     Config.skip_load_from_db = True
+    import_ethereum_lists_addresses()
+    return
     """Drop all tables and rebuild from source data."""
     drop_and_recreate_tables()
     import_hardcoded_addresses()

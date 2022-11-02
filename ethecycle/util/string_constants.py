@@ -32,5 +32,6 @@ DATA_SOURCE = 'data_source'
 SYMBOL = 'symbol'
 
 # Misc
+DEBUG = 'DEBUG'
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'

@@ -91,6 +91,7 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 * Display the wallet tags: `scripts/show_wallet_labels.sh`
 * Rebuild chain address database: `scripts/chain_addresses/reimport_all.sh`
 * Print a query that can be run on Dune to find new wallet tags: `scripts/dune_update_query.sh`
+* Set the environment variable `DEBUG=true` when running commands to see various debug ouutput
 
 
 # Neo4j

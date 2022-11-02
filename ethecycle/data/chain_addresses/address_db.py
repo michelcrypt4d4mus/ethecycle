@@ -12,7 +12,7 @@ from rich.pretty import pprint
 # from ethecycle.blockchains.token import Token  # Circular import!
 from ethecycle.data.chain_addresses import db
 from ethecycle.util.logging import console, log
-from ethecycle.util.string_constants import EXTRACTED_AT, SYMBOL
+from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
@@ -26,9 +26,9 @@ def table_connection(table_name):
         yield db[table_name]
     except Exception as e:
         console.print_exception()
-        console.print(f"Closing connection to SQLite table '{table_name}")
+        console.print(f"Closing connection to SQLite table '{table_name}' because of exception...")
     finally:
-        log.info(f"Closing DB connection to {table_name}")
+        log.info(f"Closing DB connection to {table_name}...")
         db.disconnect()
 
 
@@ -55,15 +55,17 @@ def insert_rows(table_name: str, rows: List[Dict[str, Any]]) -> None:
     with table_connection(table_name) as table:
         for row in rows:
             row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
+            log.debug(f"Inserting {row}")
 
             try:
                 table.insert(**row)  # TODO: should prolly use db.insertmany()
                 rows_written += 1
             except IntegrityError as e:
-                failed_writes += 1
-                msg = f"Skipping {row[SYMBOL]} because {type(e).__name__} inserting row {row}..."
-                #console.print(msg)
-                log.warning(msg)
+                if row[ADDRESS] != '0x71c7656ec7ab88b098defb751b7401b5f6d8976f':
+                    failed_writes += 1
+                    msg = f"Skipping {row[ADDRESS]} because {type(e).__name__} inserting row {row}..."
+                    #console.print(msg)
+                    log.warning(msg)
 
     console.print(f"Finished writing {rows_written} '{table_name}' rows ({failed_writes} failures).")
 
@@ -87,7 +89,7 @@ def delete_rows_for_data_source(table_name: str, _data_source: str) -> None:
         if data_source_row_count == 0:
             return
 
-        console.print(f"Deleting {data_source_row_count} rows from {_data_source} in {table_name}...")
+        console.print(f"Deleting {data_source_row_count} rows in '{table_name}' sourced from {_data_source}...")
         db_table.delete({'data_source': _data_source})
         console.print("Deleted!", style='bright_red')
 

@@ -20,7 +20,7 @@ WALLETS_FROM_DUNE_SUFFIX = '_wallets_from_dune.txt.gz'
 
 def import_wallets_from_dune() -> None:
     """Load all files matching the pattern raw_data/*wallets_from_dune.txt.gz."""
-    console.print("Importing Dune Analytics chain address data...")
+    console.print("Importing Dune Analytics chain addresses...")
     wallets: List[Wallet] = []
 
     for file in [f for f in files_in_dir(RAW_DATA_DIR) if f.endswith(WALLETS_FROM_DUNE_SUFFIX)]:
@@ -44,12 +44,11 @@ def extract_wallets_from_file(file) -> List[Wallet]:
             log.warning(f"{address} already labeled '{wallet_addresses[address]}', discarding {lines[i + 1]}...")
         else:
             wallet_addresses[address] = Wallet(
-                address,
-                get_chain_info(blockchain),
-                lines[i + 1],
-                lines[i + 2].lower(),
+                address=address,
+                chain_info=get_chain_info(blockchain),
+                label=lines[i + 1],
+                category=lines[i + 2].lower(),
                 data_source=DATA_SOURCE
             )
 
     return list(wallet_addresses.values())
-

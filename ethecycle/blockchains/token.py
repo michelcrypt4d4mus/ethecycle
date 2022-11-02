@@ -1,3 +1,7 @@
+"""
+Data class for tokens. Note that tokens are also wallets insofar as all tokens have an
+on-chain address.
+"""
 from dataclasses import dataclass
 from typing import Optional
 
@@ -10,6 +14,7 @@ class Token:
     symbol: str
     name: str
     decimals: int
+    data_source: str
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""

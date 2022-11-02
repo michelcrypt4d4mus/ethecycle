@@ -37,11 +37,12 @@ def _create_tokens_table() -> None:
             'blockchain': sx.TEXT,
             'token_type': sx.TEXT,
             'address': sx.TEXT,
+            'decimals': sx.INTEGER,
             'is_active': sx.BOOL,
             'is_hidden': sx.BOOL,
             'is_audited': sx.BOOL,
             'had_an_ico': sx.BOOL,
-            'launched_at': sx.TEXT,
+            'launched_at': sx.DATE,
             'url_discord': sx.TEXT,
             'url_telegram': sx.TEXT,
             'url_chat': sx.TEXT,
@@ -55,10 +56,10 @@ def _create_tokens_table() -> None:
             'url_website': sx.TEXT,
             'extra_fields': sx.BLOB,  # JSON string
             'listed_on_coin_market_cap_at': sx.DATE,
-            'coin_market_cap_id': sx.NUMERIC,
-            'coin_market_cap_watchers': sx.TEXT,
+            'coin_market_cap_id': sx.INTEGER,
+            'coin_market_cap_watchers': sx.INTEGER,
             'data_source': [sx.TEXT, sx.NOT_NULL],
-            'extracted_at': sx.TEXT
+            'extracted_at': [sx.TEXT, sx.NOT_NULL]
         },
         IF_NOT_EXIST=True
     )
@@ -77,8 +78,8 @@ def _create_wallets_table() -> None:
             'blockchain': sx.TEXT,
             'label': sx.TEXT,
             'category': sx.TEXT,
-            'data_source': sx.TEXT,
-            'extracted_at': sx.TEXT
+            'data_source': [sx.TEXT, sx.NOT_NULL],
+            'extracted_at': [sx.TEXT, sx.NOT_NULL]
         },
         IF_NOT_EXIST=True
     )

@@ -11,14 +11,14 @@ from rich.text import Text
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.data.chain_addresses import db
 from ethecycle.data.chain_addresses.address_db import delete_rows_for_data_source, insert_rows
+from ethecycle.data.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import (TOKEN_DATA_REPO_PARENT_DIR,
      files_in_dir)
 from ethecycle.util.logging import console, log
 from ethecycle.util.string_constants import *
 
-DATA_SOURCE = environ['COIN_MARKET_CAP_DATA_GITHUB_REPO']
-CMC_DATA_DIR = path.join(TOKEN_DATA_REPO_PARENT_DIR, 'CoinMarketCap', 'Download', 'detail')
+SOURCE_REPO = GithubDataSource('https://github.com/tttienthinh/CoinMarketCap.git')
 
 CHAT = 'chat'
 CONTRACT_ADDRESS = 'contractAddress'
@@ -66,22 +66,23 @@ NON_DISPLAY_KEYS = """
 
 def import_coin_market_cap_repo_addresses() -> None:
     """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
-    console.print("Importing Coin Market Cap chain address data...")
+    console.print("Importing Coin Market Cap chain addresses...")
+    data_dir = path.join(SOURCE_REPO.local_repo_path(), 'Download', 'detail')
     tokens = []
 
-    for json_filename in files_in_dir(CMC_DATA_DIR, 'json'):
+    for json_filename in files_in_dir(data_dir, 'json'):
         log.debug(f"Processing file {path.basename(json_filename)}...")
 
         with open(json_filename, 'r') as json_data:
             for chain_token in _explode_token_blockchain_rows(json.load(json_data)['data']):
-                # Skip rows where all core cols are None; add 'extracted_at" timestamp to the reset
+                # Skip rows where all core cols are None
                 if all(chain_token.get(col) is None for col in TABLE_COLS):
                     continue
 
                 tokens.append(chain_token)
 
     _print_debug_table(tokens)
-    delete_rows_for_data_source(TOKEN + 's', DATA_SOURCE)
+    delete_rows_for_data_source(TOKEN + 's', SOURCE_REPO.repo_url)
     insert_rows(db.TOKENS_TABLE_NAME, tokens)
 
 
@@ -101,7 +102,7 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> List[Dict[str,
     row['coin_market_cap_id'] = token_data.get('id')
     row['listed_on_coin_market_cap_at'] = token_data.get('dateAdded')
     row['coin_market_cap_watchers'] = token_data.get('watchCount')
-    row['data_source'] = environ['COIN_MARKET_CAP_DATA_GITHUB_REPO']
+    row['data_source'] = SOURCE_REPO.repo_url
 
     # Boolean fields
     status = token_data.get(STATUS)

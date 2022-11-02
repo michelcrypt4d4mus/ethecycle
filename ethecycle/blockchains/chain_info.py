@@ -9,6 +9,7 @@ from typing import Dict, Optional
 
 from ethecycle.blockchains.token import Token
 from ethecycle.data.chain_addresses.address_db import wallets_table
+from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import TOKEN_DATA_DIR
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import BLOCKCHAIN
@@ -17,7 +18,7 @@ from ethecycle.wallet import Wallet
 
 class ChainInfo(ABC):
     # Should be populated with the categories that have been pulled for this blockchain
-    WALLET_LABEL_CATEGORIES = []
+    LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
 
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
     _tokens: Dict[str, Token] = {}
@@ -45,7 +46,7 @@ class ChainInfo(ABC):
     @classmethod
     def token_address(cls, token_symbol: str) -> str:
         """Lookup a contract address by the symbol"""
-        return cls.tokens()[token_symbol].token_address
+        return cls.tokens()[token_symbol].address
 
     @classmethod
     def token_symbol(cls, token_address: str) -> Optional[str]:
@@ -68,7 +69,7 @@ class ChainInfo(ABC):
     @classmethod
     def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
-        if len(cls._tokens) > 0:
+        if len(cls._tokens) > 0 or Config.skip_load_from_db:
             return cls._tokens
 
         cls.add_hardcoded_tokens()
@@ -88,7 +89,8 @@ class ChainInfo(ABC):
                     address=address,
                     symbol=symbol,
                     name=token_info['name'],
-                    decimals=token_info['decimals']
+                    decimals=token_info['decimals'],
+                    data_source='https://github.com/ethereum-lists/tokens.git'
                 )
 
                 cls._tokens[symbol] = token
@@ -117,18 +119,20 @@ class ChainInfo(ABC):
     @classmethod
     def known_wallets(cls) -> Dict[str, Wallet]:
         """Lazy loaded wallet label, categories, etc."""
-        if len(cls._wallet_labels) == 0:
+        if len(cls._wallet_labels) == 0 and not Config.skip_load_from_db:
             cls._load_known_wallets()
 
         return cls._wallet_labels
 
     @classmethod
     def _load_known_wallets(cls) -> None:
+        column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
+
         with wallets_table() as table:
-            column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
             rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
-            rows = [dict(zip(column_names, row)) for row in rows]
-            cls._wallet_labels = {row['address']: Wallet(chain_info=cls, **row) for row in rows}
+
+        rows = [dict(zip(column_names, row)) for row in rows]
+        cls._wallet_labels = {row['address']: Wallet(chain_info=cls, **row) for row in rows}
 
     @classmethod
     def _chain_str(cls) -> str:

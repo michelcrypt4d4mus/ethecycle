@@ -7,12 +7,12 @@ from rich.columns import Columns
 from rich.panel import Panel
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.config import Config
 from ethecycle.blockchains import BLOCKCHAINS
+from ethecycle.config import Config
 from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
-from ethecycle.util.num_helper import MEGABYTE
 from ethecycle.util.logging import console, set_log_level
-from ethecycle.util.string_constants import ETHEREUM
+from ethecycle.util.num_helper import MEGABYTE
+from ethecycle.util.string_constants import DEBUG, ETHEREUM
 
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
 LIST_TOKEN_SYMBOLS = '--list-token-symbols'
@@ -73,7 +73,7 @@ args = parser.parse_args()
 
 if args.debug:
     console.log("Debug mode...")
-    set_log_level('DEBUG')
+    set_log_level(DEBUG)
 
 if args.drop:
     Config.drop_database = True

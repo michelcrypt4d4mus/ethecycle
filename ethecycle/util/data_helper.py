@@ -28,7 +28,7 @@ def generate_ethereum_labels_query():
 
     query = NEW_LABELS_QUERY.format(
         addresses=quoted_join(Ethereum.known_wallets().keys(), separator=',\n    '),
-        categories=quoted_join(Ethereum.WALLET_LABEL_CATEGORIES)
+        categories=quoted_join(Ethereum.LABEL_CATEGORIES_SCRAPED_FROM_DUNE)
     )
 
     print(query)

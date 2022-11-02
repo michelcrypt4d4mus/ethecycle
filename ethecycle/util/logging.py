@@ -10,12 +10,10 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.theme import Theme
 
+from ethecycle.config import Config
+
 ### Logging ###
 LOG_LEVEL = 'WARN'
-
-console = Console()
-log = logging.getLogger('ethecycle')
-log.addHandler(RichHandler(rich_tracebacks=True))
 
 
 def set_log_level(log_level) -> None:
@@ -23,6 +21,13 @@ def set_log_level(log_level) -> None:
 
     for handler in log.handlers:
         handler.setLevel(log_level)
+
+
+log = logging.getLogger('ethecycle')
+log.addHandler(RichHandler(rich_tracebacks=True))
+
+if Config.debug:
+    set_log_level('DEBUG')
 
 
 ### Printing ###

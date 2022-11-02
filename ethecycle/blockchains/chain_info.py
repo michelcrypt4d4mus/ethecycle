@@ -9,7 +9,7 @@ from ethecycle.blockchains.token import Token
 from ethecycle.data.chain_addresses.address_db import DbRows, tokens_table, wallets_table
 from ethecycle.config import Config
 from ethecycle.util.logging import log
-from ethecycle.util.string_constants import ADDRESS, BLOCKCHAIN, DATA_SOURCE
+from ethecycle.util.string_constants import *
 from ethecycle.wallet import Wallet
 
 
@@ -18,8 +18,8 @@ class ChainInfo(ABC):
     LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
 
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
-    _tokens: Dict[str, Token] = {}
     _tokens_by_address: Dict[str, Token] = {}
+    _tokens_by_symbol: Dict[str, Token] = {}
     _wallet_labels: Dict[str, Wallet] = {}
 
     @classmethod
@@ -53,10 +53,10 @@ class ChainInfo(ABC):
     @classmethod
     def tokens(cls) -> Dict[str, Token]:
         """Lazy load token data."""
-        if len(cls._tokens) == 0 and not Config.skip_load_from_db:
+        if len(cls._tokens_by_symbol) == 0 and not Config.skip_load_from_db:
             cls._load_known_tokens()
 
-        return cls._tokens
+        return cls._tokens_by_symbol
 
     @classmethod
     def wallet_label(cls, wallet_address: str) -> Optional[str]:
@@ -84,13 +84,21 @@ class ChainInfo(ABC):
 
     @classmethod
     def _load_known_wallets(cls) -> None:
+        """Load wallets (and tokens - tokens have wallet addresses) from the database."""
+        # Label the addresses we know are token addresses
         column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
 
-        with wallets_table() as table:
-            rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+        token_rows = [
+            {ADDRESS: token.address, 'label': symbol, 'category': TOKEN, DATA_SOURCE: token.data_source}
+            for symbol, token in cls.tokens().items()
+        ]
 
-        rows = [dict(zip(column_names, row)) for row in rows]
-        cls._wallet_labels = {row['address']: Wallet(chain_info=cls, **row) for row in rows}
+        with wallets_table() as table:
+            db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+
+        db_rows = [dict(zip(column_names, row)) for row in db_rows]
+        coalesced_wallets = coalesce_rows(token_rows + db_rows)
+        cls._wallet_labels = {row[ADDRESS]: Wallet(chain_info=cls, **row) for row in coalesced_wallets}
 
     @classmethod
     def _load_known_tokens(cls) -> None:
@@ -101,8 +109,7 @@ class ChainInfo(ABC):
 
         rows = [dict(zip(column_names, row)) for row in rows]
         tokens = [Token(**row) for row in coalesce_rows(rows)]
-
-        cls._tokens = {token.symbol: token for token in tokens}
+        cls._tokens_by_symbol = {token.symbol: token for token in tokens}
         cls._tokens_by_address = {token.address: token for token in tokens}
 
     @classmethod
@@ -131,6 +138,6 @@ def coalesce_rows(rows: DbRows) -> DbRows:
 
         for col in cols:
             log.debug(f"Updating {address}: {col} with '{row[col]}' from {row[DATA_SOURCE]}...")
-            coalesced_row[col] = coalesced_row[col] or row[col]
+            coalesced_row[col] = coalesced_row.get(col) or row[col]
 
     return list(coalesced_rows.values())

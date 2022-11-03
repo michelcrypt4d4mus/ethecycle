@@ -166,6 +166,7 @@ def write_header_csvs() -> Neo4jCsvs:
 @contextmanager
 def stop_database():
     """Start and stop the database in a context."""
+    raise ValueError("This only works on neo4j enterprise.")
     execute_cypher_query(STOP_DB_QUERY)
 
     try:

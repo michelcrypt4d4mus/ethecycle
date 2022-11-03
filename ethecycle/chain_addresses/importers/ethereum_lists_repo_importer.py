@@ -9,8 +9,8 @@ from typing import List
 
 from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
 from ethecycle.blockchains.token import Token
-from ethecycle.chain_addresses.address_db import (delete_rows_from_source, insert_tokens,
-     insert_wallets)
+from ethecycle.chain_addresses.address_db import (insert_tokens_from_data_source,
+     insert_wallets_from_data_source)
 from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
@@ -65,8 +65,7 @@ def _import_ethereum_lists_tokens_addresses():
             except KeyError as e:
                 log.warning(f"Error parsing '{token_info_json_file}': {e}")
 
-    delete_rows_from_source(TOKENS_TABLE_NAME, TOKENS_REPO.repo_url)
-    insert_tokens(tokens)
+    insert_tokens_from_data_source(tokens)
 
 
 def _import_contract_addresses():
@@ -111,5 +110,4 @@ def _import_contract_addresses():
             except KeyError as e:
                 log.warning(f"Error parsing '{contract_json_file}': {e}")
 
-    delete_rows_from_source(WALLETS_TABLE_NAME, CONTRACTS_REPO.repo_url)
-    insert_wallets(contracts)
+    insert_wallets_from_data_source(contracts)

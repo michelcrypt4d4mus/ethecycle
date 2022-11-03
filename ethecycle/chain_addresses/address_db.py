@@ -87,11 +87,15 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
     print_dim(f"Finished writing {len(rows)} rows to '{table_name}'.")
 
 
-def insert_wallets(wallets: List[Wallet]) -> None:
+def insert_wallets_from_data_source(wallets: List[Wallet]) -> None:
+    """Update all rows from a given data_source (assumes all 'wallets' have same data_source)"""
+    delete_rows_from_source(WALLETS_TABLE_NAME, wallets[0].data_source)
     insert_rows(WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
-def insert_tokens(tokens: List[Token]) -> None:
+def insert_tokens_from_data_source(tokens: List[Token]) -> None:
+    """Update all rows from a given data_source (assumes all 'tokens' have same data_source)"""
+    delete_rows_from_source(TOKENS_TABLE_NAME, tokens[0].data_source)
     insert_rows(TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 

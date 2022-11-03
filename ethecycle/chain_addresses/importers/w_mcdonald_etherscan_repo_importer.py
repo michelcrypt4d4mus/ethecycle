@@ -3,8 +3,8 @@ from os import path
 from typing import List
 
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
-from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
+from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.logging import print_address_import
 from ethecycle.util.string_constants import *
@@ -45,5 +45,4 @@ def import_w_mcdonald_etherscan_addresses():
 
             wallets.append(wallet)
 
-    delete_rows_from_source(TOKENS_TABLE_NAME, SOURCE_REPO.repo_url)
-    insert_wallets(wallets)
+    insert_wallets_from_data_source(wallets)

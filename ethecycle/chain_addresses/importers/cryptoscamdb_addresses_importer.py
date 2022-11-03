@@ -9,8 +9,8 @@ from rich.panel import Panel
 from rich.pretty import pprint
 
 from ethecycle.blockchains.blockchains import guess_chain_info_from_address
-from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
-from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
+from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import console, log, print_address_import
@@ -53,5 +53,4 @@ def import_cryptoscamdb_addresses():
             )
         )
 
-    delete_rows_from_source(TOKENS_TABLE_NAME, SOURCE_URL)
-    insert_wallets(wallets)
+    insert_wallets_from_data_source(wallets)

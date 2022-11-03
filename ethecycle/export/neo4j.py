@@ -56,7 +56,7 @@ TXN_CSV_HEADER = [
     'transactionID',  # Combination of transaction_hash and log_index
     'blockchain',
     'token_address',
-    'token',
+    'symbol',
     ':START_ID',  # from_address
     ':END_ID',  # to_address
     'num_tokens:double',

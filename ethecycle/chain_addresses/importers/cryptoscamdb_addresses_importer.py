@@ -2,25 +2,17 @@
 Scam addresses reported by cryptoscamdb.org. Curl data with:
 curl --location --request GET 'https://api.cryptoscamdb.org/v1/addresses' > ethecycle/chain_addresses/raw_data/cryptoscamdb.addresses.json
 """
-import gzip
 import json
-from collections import defaultdict
-from os import path
-from typing import List, Optional
+from typing import List
 
 from rich.panel import Panel
 from rich.pretty import pprint
 
-from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.blockchains.blockchains import BLOCKCHAINS, guess_chain_info_from_address
+from ethecycle.blockchains.blockchains import guess_chain_info_from_address
 from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
-from ethecycle.chain_addresses.etherscan import determine_category
 from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
-from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
-from ethecycle.util.dict_helper import sort_dict
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
-from ethecycle.util.list_helper import has_intersection, intersection
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
 from ethecycle.wallet import Wallet

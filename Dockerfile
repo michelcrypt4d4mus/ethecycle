@@ -20,9 +20,6 @@ ENV TOKEN_DATA_REPO_PARENT_DIR=${GIT_REPO_DIR:-/token_data}
 RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
 WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
 
-# Ethereum scrapes
-RUN git clone https://github.com/brianleect/etherscan-labels.git
-RUN git clone https://github.com/W-McDonald/etherscan.git
 # Trustwallet assets
 RUN git clone https://github.com/trustwallet/assets trustwallet_assets
 RUN rm -fr trustwallet_assets/.git && find trustwallet_assets/ -name '*.png' -delete

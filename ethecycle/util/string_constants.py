@@ -1,3 +1,6 @@
+ETHECYCLE = 'ethecyle'
+DEBUG = 'DEBUG'
+
 # Address stuff
 ADDRESS = 'address'
 ADDRESS_PREFIX = '0x'
@@ -5,7 +8,9 @@ MISSING_ADDRESS = 'no_address'
 
 # Chain stuff
 BLOCKCHAIN = 'blockchain'
+BLOCK_NUMBER = 'block_number'
 CONTRACT = 'contract'
+NFT = 'nft'
 TXN = 'transaction'
 WALLET = 'wallet'
 
@@ -17,9 +22,9 @@ WETH = 'WETH'
 AVALANCHE = 'avalanche'
 AVAX = 'avax'
 ETHEREUM = 'ethereum'
+MATIC = 'matic'
 
 # Txn properties in the graph
-BLOCK_NUMBER = 'block_number'
 NUM_TOKENS = 'num_tokens'
 SCANNER_URL = 'scanner_url'
 SYMBOL = 'symbol'
@@ -28,13 +33,27 @@ TOKEN = 'token'
 TRANSACTION_HASH = 'transaction_hash'
 EXTRACTED_AT = 'extracted_at'
 
-# Column names
+# Other column names
 DATA_SOURCE = 'data_source'
-SYMBOL = 'symbol'
+
+# Industry
+BRIDGE = 'bridge'
+CATEGORY = 'category'
+CEFI = 'cefi'
+CEX = 'cex'
+DAO = 'dao'
+DEFI = 'defi'
+DEX = 'dex'
+EXCHANGE = 'exchange'
+HACKERS = 'hackers'
+MIXER = 'mixer'
+STABLECOIN = 'stablecoin'
+VAULTS = 'vaults'
+WALLET_PROVIDER = 'wallet provider'
 
 # Misc
-ETHECYCLE = 'ethecyle'
-DEBUG = 'DEBUG'
 NAME = 'name'
+
+# GraphML
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'

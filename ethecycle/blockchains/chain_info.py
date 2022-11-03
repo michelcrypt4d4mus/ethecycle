@@ -11,6 +11,9 @@ from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
 from ethecycle.wallet import Wallet
 
+# TODO: Deal with this a better way
+COLUMNS_TO_NOT_LOAD = ['chain_info', 'data_source']
+
 
 class ChainInfo:
     # Should be populated with the categories that have been pulled for this blockchain
@@ -84,7 +87,7 @@ class ChainInfo:
     def _load_known_wallets(cls) -> None:
         """Load wallets (and tokens - tokens have wallet addresses) from the database."""
         # Label the addresses we know are token addresses
-        column_names = [c for c in Wallet.__dataclass_fields__.keys() if c != 'chain_info']
+        column_names = [c for c in Wallet.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
 
         token_rows = [
             {ADDRESS: token.address, 'label': symbol, 'category': TOKEN, DATA_SOURCE: token.data_source}
@@ -92,7 +95,11 @@ class ChainInfo:
         ]
 
         with wallets_table() as table:
-            db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+            db_rows = table.select_all(
+                SELECT=column_names,
+                #JOIN=['data_sources', 'AS', 'data_sources', 'ON', 'tokens.data_source_id == data_sources.id'],
+                WHERE=table[BLOCKCHAIN] == cls._chain_str()
+            )
 
         db_rows = [dict(zip(column_names, row)) for row in db_rows]
         coalesced_wallets = coalesce_rows(token_rows + db_rows)
@@ -100,12 +107,18 @@ class ChainInfo:
 
     @classmethod
     def _load_known_tokens(cls) -> None:
-        column_names = [c for c in Token.__dataclass_fields__.keys() if c != 'chain_info']
+        """Load known tokens from addresses DB."""
+        # TODO: deal with data_source_id/chain_info better
+        column_names = [c for c in Token.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
 
         with tokens_table() as table:
-            rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == cls._chain_str())
+            db_rows = table.select_all(
+                SELECT=column_names,
+                #JOIN=['data_sources', 'AS', 'data_sources', 'ON', 'tokens.data_source_id == data_sources.id'],
+                WHERE=table[BLOCKCHAIN] == cls._chain_str()
+            )
 
-        rows = [dict(zip(column_names, row)) for row in rows]
+        rows = [dict(zip(column_names, row)) for row in db_rows]
         tokens = [Token(**row) for row in coalesce_rows(rows)]
         cls._tokens_by_symbol = {token.symbol: token for token in tokens}
         cls._tokens_by_address = {token.address: token for token in tokens}
@@ -128,14 +141,14 @@ def coalesce_rows(rows: DbRows) -> DbRows:
         address = row[ADDRESS]
 
         if address not in coalesced_rows:
-            log.debug(f"Initializing {address} with data from {row[DATA_SOURCE]}")
+            #log.debug(f"Initializing {address} with data from {row['data_source_id']}")
             coalesced_rows[address] = row
             continue
 
         coalesced_row = coalesced_rows[address]
 
         for col in cols:
-            log.debug(f"Updating {address}: {col} with '{row[col]}' from {row[DATA_SOURCE]}...")
-            coalesced_row[col] = coalesced_row.get(col) or row[col]
+            #log.debug(f"Updating {address}: {col} with '{row[col]}' from {row['data_source_id']}...")
+            coalesced_row[col] = coalesced_row.get(col) or row.get(col)
 
     return list(coalesced_rows.values())

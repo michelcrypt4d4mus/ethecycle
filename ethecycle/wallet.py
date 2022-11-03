@@ -36,6 +36,7 @@ class Wallet:
         """Look up label and category if they were not provided."""
         self.address = self.address.lower()
         self.blockchain = self.chain_info._chain_str()
+        self.category = self.category.lower() if self.category else None
 
     def load_labels(self) -> 'Wallet':
         """Loads label and category fields from chain_addresses.db. Returns self."""

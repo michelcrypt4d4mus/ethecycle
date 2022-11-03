@@ -32,6 +32,7 @@ def table_connection(table_name):
     except Exception as e:
         console.print_exception()
         console.print(f"Exception while connected to '{table_name}'...")
+        raise e
     finally:
         log.debug(f"Closing DB connection to {table_name}...")
         db.disconnect()
@@ -79,7 +80,7 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
         console.print(f"{e} while bulk loading!", style='bright_red')
         console.print("Cleaning up before switching to one at a time...", style='bright_white')
         delete_rows_from_source(table_name, rows[0]['data_source'])
-        _insert_one_at_a_time(table_name, rows)
+        _insert_one_at_a_time(table_name, row_tuples)
     finally:
         db_conn.disconnect()
 
@@ -147,7 +148,7 @@ def get_db_connection() -> sx.SQLite3x:
     return db._db
 
 
-def _insert_one_at_a_time(table_name: str, rows: DbRows) -> None:
+def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
     """Insert 'rows' into table named 'table_name' one at a time for use as a fallback."""
     console.print(f"Fallback write {len(rows)} rows to '{table_name}' one at a time...", style='bright_yellow')
     rows_written = 0
@@ -158,13 +159,13 @@ def _insert_one_at_a_time(table_name: str, rows: DbRows) -> None:
             log.debug(f"Inserting {row}")
 
             try:
-                table.insert(**row)  # TODO: should prolly use db.insertmany()
+                table.insert(row)
                 rows_written += 1
             except IntegrityError as e:
                 if Config.debug:
                     console.print_exception()
 
-                log.warning(f"Skipping {row[ADDRESS]}: {type(e).__name__} error on row {row}...")
+                log.warning(f"Skipping because {type(e).__name__} error on row {row}...")
                 failed_writes += 1
 
     print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures).")

@@ -1,0 +1,62 @@
+import json
+from collections import defaultdict
+from os import path
+from typing import List, Optional
+
+from rich.panel import Panel
+from rich.pretty import pprint
+
+from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
+from ethecycle.chain_addresses.etherscan import determine_category
+from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
+from ethecycle.chain_addresses.github_data_source import GithubDataSource
+from ethecycle.config import Config
+from ethecycle.util.dict_helper import sort_dict
+from ethecycle.util.filesystem_helper import files_in_dir
+from ethecycle.util.list_helper import has_intersection, intersection
+from ethecycle.util.logging import console, print_address_import
+from ethecycle.util.string_constants import *
+from ethecycle.wallet import Wallet
+
+SOURCE_REPO = GithubDataSource('brianleect/etherscan-labels')
+
+
+def import_etherscan_labels_repo():
+    """Import data from ethereum-lists tokens repo."""
+    print_address_import(SOURCE_REPO.repo_url)
+    addresses_file = path.join(SOURCE_REPO.local_repo_path(), 'combined', 'combinedLabels.json')
+    wallets: List[Wallet] = []
+    label_counts = defaultdict(lambda: 0)
+    uncategorized_label_counts = defaultdict(lambda: 0)
+
+    with open(addresses_file, newline='') as json_file:
+        for address, data in json.load(json_file).items():
+            labels = data['labels']
+            labels_str = ', '.join(sorted(labels))
+            label_counts[labels_str] += 1
+            category = determine_category(labels)
+
+            if category is None:
+                #console.print(f"{address}: {data['name']}\n    {labels}\n")
+                uncategorized_label_counts[labels_str] += 1
+
+            wallet = Wallet(
+                address=address,
+                chain_info=Ethereum,
+                label=data[NAME],
+                category=category,
+                data_source=SOURCE_REPO.repo_url
+            )
+
+            wallets.append(wallet)
+
+    if Config.debug:
+        console.print(Panel('UNCATEGORIZED'))
+        pprint(sort_dict(uncategorized_label_counts))
+        console.print(Panel('CATEGORIZED'))
+        pprint(sort_dict(label_counts))
+
+    delete_rows_from_source(TOKENS_TABLE_NAME, SOURCE_REPO.repo_url)
+    insert_wallets(wallets)
+

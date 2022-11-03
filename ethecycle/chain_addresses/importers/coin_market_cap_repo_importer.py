@@ -168,7 +168,7 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
                 if k in token_data:
                     del token_data[k]
 
-            log.info(msg.append("...").plain)
+            log.debug(msg.append("...").plain)
             log.debug(token_data)
 
         return [row]

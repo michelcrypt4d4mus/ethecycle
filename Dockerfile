@@ -58,13 +58,16 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 RUN poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml ./
 RUN poetry install $(test "$ETHECYCLE_ENV" == production && echo "--no-dev")
+# Create an entrypoint.sh that runs 'poetry install' which is needed for pytest (TODO: why?)
+RUN echo 'poetry install' > ./entrypoint.sh
 
 # Remove unnecessaries
 RUN apt-get purge --auto-remove -y \
-        curl \
         wget
 
 # Build a minimal .sqliterc config file
 ARG SQLITE_RC=/root/.sqliterc
 RUN echo '.mode table' > ${SQLITE_RC} && echo '.header on' >> ${SQLITE_RC}
+
+ENTRYPOINT ["/python/entrypoint.sh"]
 CMD ["/bin/bash"]

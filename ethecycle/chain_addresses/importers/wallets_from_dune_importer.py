@@ -7,11 +7,11 @@ from os import path
 from typing import Dict, List
 
 from ethecycle.blockchains.blockchains import get_chain_info
+from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log, print_address_import
-from ethecycle.util.string_constants import ADDRESS_PREFIX
 from ethecycle.wallet import Wallet
 
 DATA_SOURCE = 'https://dune.com/crypto_oracle/wallets'
@@ -38,8 +38,8 @@ def extract_wallets_from_file(file) -> List[Wallet]:
     for i in range(0, len(lines) - 1, 3):
         address = lines[i]
 
-        if not address.startswith(ADDRESS_PREFIX):
-            raise ValueError(f"{address} does not start with {ADDRESS_PREFIX}!")
+        if not Ethereum.is_valid_address(address):
+            raise ValueError(f"{address} does not start with {Ethereum.ADDRESS_PREFIXES[0]}!")
         elif address in wallet_addresses:
             log.warning(f"{address} already labeled '{wallet_addresses[address]}', discarding {lines[i + 1]}...")
         else:

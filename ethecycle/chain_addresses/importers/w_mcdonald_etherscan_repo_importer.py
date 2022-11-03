@@ -24,7 +24,7 @@ def import_w_mcdonald_etherscan_addresses():
             address = row[ADDRESS]
             category = row['label']
 
-            if not address.startswith(ADDRESS_PREFIX):
+            if not Ethereum.is_valid_address(address):
                 if address.startswith('x'):
                     address = '0' + address
                 else:

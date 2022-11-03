@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from rich.table import Table
 from rich.text import Text
 
+from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.config import Config
 from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
@@ -184,7 +185,8 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
             ADDRESS: chain[CONTRACT_ADDRESS]
         })
 
-        if token_with_chain[ADDRESS].startswith(ADDRESS_PREFIX):
+        # TODO: Lowercasing eth addresses should be unnecessary once we use the Token() class.
+        if token_with_chain[ADDRESS].startswith(Ethereum.ADDRESS_PREFIXES[0]):
             token_with_chain[ADDRESS] = token_with_chain[ADDRESS].lower()
 
         tokens_with_chain_data.append(token_with_chain)

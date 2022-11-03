@@ -50,12 +50,8 @@ parser.add_argument('-d', '--drop', action='store_true',
 parser.add_argument('-e', '--extract-only', action='store_true',
                     help="extract and transform but do not load (will display a command that can load)")
 
-parser.add_argument('-D', '--debug',
-                    help='debug output: shows full XML and optionally indicated number of elements in final graph',
-                    nargs='?',
-                    type=int,
-                    metavar='LINES',
-                    const=DEFAULT_DEBUG_LINES)
+parser.add_argument('-D', '--debug', action='store_true',
+                    help='show debug level log output')
 
 parser.add_argument(LIST_TOKEN_SYMBOLS, action='store_true',
                     help='show all configured tokens selectable with --token and exit')
@@ -72,7 +68,7 @@ if LIST_TOKEN_SYMBOLS in sys.argv:
 args = parser.parse_args()
 
 if args.debug:
-    console.log("Debug mode...")
+    Config.debug = True
     set_log_level(DEBUG)
 
 if args.drop:

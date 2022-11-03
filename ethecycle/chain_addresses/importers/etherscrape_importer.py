@@ -10,7 +10,6 @@ from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import log, print_address_import
-from ethecycle.util.string_constants import ADDRESS_PREFIX
 from ethecycle.wallet import Wallet
 
 DATA_SOURCE = 'https://gist.githubusercontent.com/kheachang/4ce5a98140ad21129acd49aff0df11a8/raw/a049681e7168f7ea920e695f8b180b1fd9d921b0/gistfile1.txt'
@@ -33,7 +32,7 @@ def import_etherscrape_chain_addresses() -> None:
             continue
 
         for address in addresses.split(','):
-            if not address.startswith(ADDRESS_PREFIX):
+            if not Ethereum.is_valid_address(address):
                 raise ValueError(f"{address} is not a valid address! (line: {line}")
 
             address = address.lower()

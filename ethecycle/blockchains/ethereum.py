@@ -8,11 +8,12 @@ from ethecycle.util.string_constants import *
 
 class Ethereum(ChainInfo):
     LABEL_CATEGORIES_SCRAPED_FROM_DUNE = ['cex', 'multisig', 'bridge', 'funds', 'mev', 'hackers']
+    ADDRESS_PREFIXES = ['0x']
     ADDRESS_LENGTH = 42
     TXN_HASH_LENGTH = 66
     SCANNER_BASE_URI = 'https://etherscan.io/'
     ETH_ADDRESS = '0x0'  # Synthetic address because eth itself is not a token
-    ETH = 'eth'
+    SHORT_NAME = 'eth'
 
     # TODO: Currently the data has been adjusted for decimal places, but in the future it may not be
     log.warning("Number of decimals for eth set to 0 but for some data sets it may be 18.")

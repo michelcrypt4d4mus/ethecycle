@@ -19,6 +19,9 @@ class ChainInfo:
     # Should be populated with the categories that have been pulled for this blockchain
     LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
 
+    # Addresses on this chain should start with one of these strings
+    ADDRESS_PREFIXES = []
+
     # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
     _tokens_by_address: Dict[str, Token] = {}
     _tokens_by_symbol: Dict[str, Token] = {}
@@ -26,7 +29,16 @@ class ChainInfo:
 
     @classmethod
     def scanner_url(cls, address: str) -> str:
+        """Generate a URL for a chain browser, e.g. etherscan.io."""
         pass
+
+    @classmethod
+    def is_valid_address(cls, address: str) -> bool:
+        """True if address starts with a prefix in ADDRESS_PREFIXES (or if ADDRESS_PREFIXES is empty)."""
+        if len(cls.ADDRESS_PREFIXES) == 0:
+            return True
+        else:
+            return any(address.startswith(prefix) for prefix in cls.ADDRESS_PREFIXES)
 
     @classmethod
     def token_address(cls, token_symbol: str) -> str:

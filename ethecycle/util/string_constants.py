@@ -3,7 +3,6 @@ DEBUG = 'DEBUG'
 
 # Address stuff
 ADDRESS = 'address'
-ADDRESS_PREFIX = '0x'
 MISSING_ADDRESS = 'no_address'
 
 # Chain stuff
@@ -21,6 +20,8 @@ WETH = 'WETH'
 # Blockchains
 AVALANCHE = 'avalanche'
 AVAX = 'avax'
+BITCOIN = 'bitcoin'
+BITCOIN_CASH = 'bitcoin cash'
 ETHEREUM = 'ethereum'
 MATIC = 'matic'
 

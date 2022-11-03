@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from rich.text import Text
 
-from ethecycle.blockchains import get_chain_info
+from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.config import Config
 from ethecycle.export.neo4j import NEO4J_SSH, Neo4jCsvs, generate_neo4j_csvs, stop_database
 from ethecycle.transaction import Txn

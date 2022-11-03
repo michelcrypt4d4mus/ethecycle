@@ -11,9 +11,11 @@ from rich.pretty import pprint
 
 from ethecycle.blockchains.token import Token
 from ethecycle.chain_addresses import db
+from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID,
+     DATA_SOURCES_TABLE_NAME, TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
 from ethecycle.util.logging import console, log, print_dim
-from ethecycle.util.string_constants import ADDRESS, EXTRACTED_AT
+from ethecycle.util.string_constants import ADDRESS, DATA_SOURCE, EXTRACTED_AT
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
@@ -31,31 +33,37 @@ def table_connection(table_name):
         console.print_exception()
         console.print(f"Exception while connected to '{table_name}'...")
     finally:
-        log.info(f"Closing DB connection to {table_name}...")
+        log.debug(f"Closing DB connection to {table_name}...")
         db.disconnect()
 
 
 @contextmanager
 def wallets_table():
     """Returns connection to wallets data table."""
-    with table_connection(db.WALLETS_TABLE_NAME) as wallets_table:
+    with table_connection(WALLETS_TABLE_NAME) as wallets_table:
         yield wallets_table
 
 
 @contextmanager
 def tokens_table():
     """Returns connection to tokens data table."""
-    with table_connection(db.TOKENS_TABLE_NAME) as tokens_table:
+    with table_connection(TOKENS_TABLE_NAME) as tokens_table:
         yield tokens_table
 
 
 def insert_rows(table_name: str, rows: DbRows) -> None:
-    """Insert 'rows' into table named 'table_name'."""
+    """Insert 'rows' into table named 'table_name'. Assumes all rows have the same data_source."""
     print_dim(f"Writing {len(rows)} rows to table '{table_name}'...")
     extracted_at = current_timestamp_iso8601_str()
+    data_source = rows[0][DATA_SOURCE]
+    data_source_id = _get_or_create_data_source_id(data_source)
 
     for row in rows:
+        if row[DATA_SOURCE] != data_source:
+            raise ValueError(f"Rows must have same data_source but {row[DATA_SOURCE]} != {data_source}")
+
         row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
+        row[DATA_SOURCE_ID] = data_source_id
 
     db_conn = get_db_connection()
     columns = db_conn.get_columns_names(table_name)
@@ -79,26 +87,28 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
 
 
 def insert_wallets(wallets: List[Wallet]) -> None:
-    insert_rows(db.WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
+    insert_rows(WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
 def insert_tokens(tokens: List[Token]) -> None:
-    insert_rows(db.TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
+    insert_rows(TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
 
 
 def delete_rows_from_source(table_name: str, _data_source: str) -> None:
     """Delete all rows where _data_source arg is the data_source col. (Allows updates by reloading entire source)"""
+    data_source_id = _get_or_create_data_source_id(_data_source)
+
     with table_connection(table_name) as db_table:
         data_source_row_count = db_table.select(
             SELECT='COUNT(*)',
-            WHERE=(db_table['data_source'] == _data_source)
+            WHERE=(db_table[DATA_SOURCE_ID] == data_source_id)
         )[0][0]
 
         if data_source_row_count == 0:
             return
 
         console.print(f"Deleting {data_source_row_count} rows in '{table_name}' sourced from '{_data_source}'...", style='bytes')
-        db_table.delete({'data_source': _data_source})
+        db_table.delete({DATA_SOURCE_ID: data_source_id})
         console.print("Deleted!", style='bright_red')
 
 
@@ -113,14 +123,13 @@ def is_table_in_database(table_name: str) -> bool:
 
 def drop_and_recreate_tables() -> None:
     """Drop and recreate all tables and them (only recreates schema; does not re-import rows)"""
-    _db = get_db_connection()
+    db_conn = get_db_connection()
 
-    for table_name in db.UNIQUE_INDEXES.keys():
-        console.print(f"Dropping '{table_name}'...", style='bright_red')
-        _db.drop(TABLE=table_name, IF_EXIST=True)
+    for table_definition in TABLE_DEFINITIONS:
+        table_definition.drop_table(db_conn)
 
-    db._create_tokens_table()
-    db._create_wallets_table()
+    for table_definition in TABLE_DEFINITIONS:
+        table_definition.create_table(db_conn)
 
 
 def get_db_connection() -> sx.SQLite3x:
@@ -131,11 +140,9 @@ def get_db_connection() -> sx.SQLite3x:
     if not _is_connected_to_db_file():
         db._db.connect()
 
-    # Create tables if they don't exist
-    if not is_table_in_database(db.TOKENS_TABLE_NAME):
-        db._create_tokens_table()
-    if not is_table_in_database(db.WALLETS_TABLE_NAME):
-        db._create_wallets_table()
+    for table_definition in TABLE_DEFINITIONS:
+        if not is_table_in_database(table_definition.table_name):
+            table_definition.create_table(db._db)
 
     return db._db
 
@@ -174,3 +181,26 @@ def _is_connected_to_db_file() -> bool:
     local_cursor.execute('pragma database_list')
     connected_to_file = local_cursor.fetchall()[0][2]
     return connected_to_file is not None and len(connected_to_file) > 0
+
+
+def _get_or_create_data_source_id(data_source: str) -> int:
+    """Get the data_sources.id, creating a row if necessary."""
+    data_sources = _load_table(DATA_SOURCES_TABLE_NAME)
+    row = next((r for r in data_sources if r[DATA_SOURCE] == data_source), None)
+
+    if row is not None:
+        return row['id']
+
+    with table_connection(DATA_SOURCES_TABLE_NAME) as table:
+        table.insert(data_source=data_source, created_at=current_timestamp_iso8601_str())
+        return table.select_all(WHERE=table[DATA_SOURCE] == data_source)[0][0]
+
+
+def _load_table(table_name: str) -> List[Dict[str, Any]]:
+    """Load whole table into list of dicts."""
+    with table_connection(table_name) as table:
+        column_names = table.get_columns_names()
+        rows = table.select_all()
+
+    log.debug(f"Table '{table_name}' has columns:\n  {column_names}\nrows: {rows}")
+    return [dict(zip(column_names, row)) for row in rows]

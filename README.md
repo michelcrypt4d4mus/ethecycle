@@ -128,7 +128,8 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 1. Identify the largest short term pass through wallets (AKA wallets with large xfers in and out in a short time frame that end up w/0 balances and are not used again)
 1. More address sources:
    1. https://github.com/CryptoScamDB/blacklist/blob/master/data/urls.yaml
-   1. https://dune.com/beetle/opensea-stolen-assets-top-pfp-collections
+   1. [Stolen OpenSea NFTs](https://dune.com/beetle/opensea-stolen-assets-top-pfp-collections)
+   1. [Ethereum Name Service](https://docs.ens.domains/dapp-developer-guide/resolving-names)
 
 
 # Other Technologies

@@ -7,11 +7,11 @@ from os import path
 from pathlib import Path
 from typing import List
 
-from ethecycle.blockchains import CHAIN_IDS, get_chain_info
+from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
 from ethecycle.blockchains.token import Token
 from ethecycle.chain_addresses.address_db import (delete_rows_from_source, insert_tokens,
      insert_wallets)
-from ethecycle.chain_addresses.db import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
+from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
 from ethecycle.util.logging import console, log, print_address_import

@@ -7,7 +7,7 @@ from rich.columns import Columns
 from rich.panel import Panel
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.blockchains import BLOCKCHAINS
+from ethecycle.blockchains.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
 from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
 from ethecycle.util.logging import console, set_log_level

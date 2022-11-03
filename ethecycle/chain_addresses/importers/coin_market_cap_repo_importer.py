@@ -10,7 +10,7 @@ from rich.text import Text
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.config import Config
-from ethecycle.chain_addresses import db
+from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
 from ethecycle.chain_addresses.address_db import DbRows, delete_rows_from_source, insert_rows
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir
@@ -83,7 +83,7 @@ def import_coin_market_cap_repo_addresses() -> None:
 
     _print_debug_table(tokens)
     delete_rows_from_source(TOKEN + 's', SOURCE_REPO.repo_url)
-    insert_rows(db.TOKENS_TABLE_NAME, tokens)
+    insert_rows(TOKENS_TABLE_NAME, tokens)
 
 
 def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
@@ -160,14 +160,14 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
             row[ADDRESS] = Ethereum.extract_address_from_scanner_url(row[URL_EXPLORER])
         else:
             # Print (almost) the whole JSON dict if there's no chain/address info
-            msg = Text("No platforms for '", 'bright_red').append(row.get(SYMBOL, ''), 'magenta')
+            msg = Text("No blockchain found for symbol '", 'bright_red').append(row.get(SYMBOL, ''), 'magenta')
 
             # delete some of the longer elements so we only see a summary of unprintable coins
             for k in NON_DISPLAY_KEYS:
                 if k in token_data:
                     del token_data[k]
 
-            log.info(msg.append("'!").plain)
+            log.info(msg.append("...").plain)
             log.debug(token_data)
 
         return [row]

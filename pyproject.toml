@@ -27,6 +27,11 @@ wallet_labels = 'ethecycle.chain_addresses.scripts:show_address_labels'
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
 [tool.isort]
 line_length = 100
 profile = "black"

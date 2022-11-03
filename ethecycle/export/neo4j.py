@@ -16,7 +16,7 @@ from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
-from ethecycle.blockchains import get_chain_info
+from ethecycle.blockchains.blockchains import get_chain_info
 
 from ethecycle.config import Config
 from ethecycle.transaction import Txn

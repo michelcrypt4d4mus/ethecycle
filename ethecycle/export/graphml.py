@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from pympler.asizeof import asizeof
 
-from ethecycle.blockchains import get_chain_info
+from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.config import Config
 #from ethecycle.graph import is_wallet_in_graph
 from ethecycle.transaction import Txn

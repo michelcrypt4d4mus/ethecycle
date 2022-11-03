@@ -6,9 +6,9 @@ format in these files is a side effect of copy/pasting from the Dune web GUI.
 from os import path
 from typing import Dict, List
 
-from ethecycle.blockchains import get_chain_info
-from ethecycle.chain_addresses.db import WALLETS_TABLE_NAME
+from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
+from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log, print_address_import
 from ethecycle.util.string_constants import ADDRESS_PREFIX

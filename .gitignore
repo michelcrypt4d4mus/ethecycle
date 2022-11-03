@@ -139,3 +139,4 @@ container_id*
 /ethecycle/chain_addresses/raw_data/etherscrape.txt
 /ethecycle/chain_addresses/db/chain_addresses.db-*
 /output/
+/tests/file_fixtures/chain_addresses.db

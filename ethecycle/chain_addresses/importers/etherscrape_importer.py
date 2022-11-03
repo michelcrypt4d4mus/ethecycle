@@ -6,7 +6,7 @@ from typing import Dict
 from inflection import titleize
 
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.db import WALLETS_TABLE_NAME
+from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.address_db import delete_rows_from_source, insert_wallets
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import log, print_address_import

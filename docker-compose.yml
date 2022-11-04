@@ -13,10 +13,10 @@ services:
       - 7474:7474
       - 7687:7687
     volumes:
+      - .:/ethecycle
       - ${NEO4J_DATA_DIR}/data:/data
       - ${NEO4J_DATA_DIR}/logs:/logs
       - ${TXION_DATA_DIR}:${TXION_DATA_MOUNT_DIR}
-      - .:/ethecycle
   python_etl:
     build:
       context: .

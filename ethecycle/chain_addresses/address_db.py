@@ -35,7 +35,10 @@ def table_connection(table_name):
         raise e
     finally:
         log.debug(f"Closing DB connection to {table_name}...")
-        db.disconnect()
+
+        # Hold connection open for big inserts bc writing is slow.
+        if not Config.skip_load_from_db:
+            db.disconnect()
 
 
 @contextmanager
@@ -82,7 +85,9 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
         delete_rows_from_source(table_name, rows[0]['data_source'])
         _insert_one_at_a_time(table_name, row_tuples)
     finally:
-        db_conn.disconnect()
+        # Hold connection open for big inserts bc writing is slow.
+        if not Config.skip_load_from_db:
+            db_conn.disconnect()
 
     print_dim(f"Finished writing {len(rows)} rows to '{table_name}'.")
 

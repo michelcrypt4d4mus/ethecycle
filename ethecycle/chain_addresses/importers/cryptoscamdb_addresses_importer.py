@@ -10,7 +10,6 @@ from rich.pretty import pprint
 
 from ethecycle.blockchains.blockchains import guess_chain_info_from_address
 from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
-from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import console, log, print_address_import
@@ -25,7 +24,6 @@ def import_cryptoscamdb_addresses():
     """Import data from ethereum-lists tokens repo."""
     print_address_import(SOURCE_URL)
     wallets: List[Wallet] = []
-    #file_contents = "\n".join(get_lines(CURL_OUTPUT_FILE))
 
     for address, data in json.loads("\n".join(get_lines(CURL_OUTPUT_FILE)))['result'].items():
         label = f"{data[0]['name']}: {data[0]['category']} ({data[0]['subcategory']})"

@@ -24,9 +24,9 @@ CONTRACT_JSON_KEYS = set(['project', NAME, 'source', 'features'])
 
 # Keys are folder names, values are blockchain names.
 DIRS_TO_IMPORT = {
-    'arb': 'Abitrum',
-    'avax': 'Avalanche',
-    'bsc': 'Binance Smart Chain',
+    'arb': ARBITRUM,
+    'avax': AVALANCHE,
+    'bsc': BINANCE_SMART_CHAIN,
     'eth': ETHEREUM,
 }
 

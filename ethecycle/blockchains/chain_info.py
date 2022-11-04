@@ -4,6 +4,8 @@ Can be implemented for each chain with the appropriate overrides but a default
 """
 from typing import Any, Dict, Optional
 
+from inflection import underscore
+
 from ethecycle.blockchains.token import Token
 from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import DbRows, tokens_table, wallets_table
@@ -138,7 +140,14 @@ class ChainInfo:
     @classmethod
     def _chain_str(cls) -> str:
         """Returns lowercased version of class name (which should be the name of the blockchain)."""
-        return cls.__name__.lower()
+        return underscore(cls.__name__)
+
+    @classmethod
+    def _chain_shortname(cls):
+        if 'SHORT_NAME' in dir(cls):
+            return cls.SHORT_NAME
+        else:
+            return cls._chain_str()
 
 
 def coalesce_rows(rows: DbRows) -> DbRows:

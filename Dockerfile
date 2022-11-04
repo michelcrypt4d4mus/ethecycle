@@ -59,7 +59,7 @@ RUN poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml ./
 RUN poetry install $(test "$ETHECYCLE_ENV" == production && echo "--no-dev")
 # Create an entrypoint.sh that runs 'poetry install' which is needed for pytest (TODO: why?)
-RUN echo "#!/bin/bash\npoetry install" > ./entrypoint.sh && chmod 774 ./entrypoint.sh
+RUN echo '#!/bin/bash\npoetry install\nexec "$@"' > ./entrypoint.sh && chmod 774 ./entrypoint.sh
 
 # Remove unnecessaries
 RUN apt-get purge --auto-remove -y \
@@ -69,6 +69,5 @@ RUN apt-get purge --auto-remove -y \
 ARG SQLITE_RC=/root/.sqliterc
 RUN echo '.mode table' > ${SQLITE_RC} && echo '.header on' >> ${SQLITE_RC}
 
-# TODO: for some reaosn adding the entrypoint causes the container to exit immediately.
-#ENTRYPOINT ["/bin/bash", "-c", "/python/entrypoint.sh"]
+ENTRYPOINT ["/python/entrypoint.sh"]
 CMD ["/bin/bash"]

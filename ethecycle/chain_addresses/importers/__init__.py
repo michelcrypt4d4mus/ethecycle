@@ -10,7 +10,7 @@ TODO: Other possible sources:
     - https://raw.githubusercontent.com/GuillermoEscobero/fraud-in-ethereum/main/dark_addresses.yaml
 """
 from ethecycle.config import Config
-from ethecycle.chain_addresses.address_db import drop_and_recreate_tables
+from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection
 
 from .coin_market_cap_repo_importer import import_coin_market_cap_repo_addresses
 from .cryptoscamdb_addresses_importer import import_cryptoscamdb_addresses
@@ -19,6 +19,7 @@ from .etherscan_labels_importer import import_etherscan_labels_repo
 from .etherscrape_importer import import_etherscrape_chain_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
 from .my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
+from .trustwallet_assets_importer import import_trust_wallet_repo
 from .wallets_from_dune_importer import import_wallets_from_dune
 from .w_mcdonald_etherscan_repo_importer import import_w_mcdonald_etherscan_addresses
 
@@ -34,6 +35,8 @@ def rebuild_chain_addresses_db():
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()
     import_my_ether_wallet_addresses()
+    import_trust_wallet_repo()
     import_wallets_from_dune()
     import_w_mcdonald_etherscan_addresses()
+    get_db_connection().disconnect()
     Config.skip_load_from_db = False

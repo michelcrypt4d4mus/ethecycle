@@ -15,6 +15,9 @@ class Token:
     name: str
     decimals: int
     data_source: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_scam: Optional[bool] = None
+    url_explorer: Optional[str] = None
 
     def __post_init__(self):
         """Look up label and category if they were not provided."""

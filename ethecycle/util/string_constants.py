@@ -18,12 +18,22 @@ USDT = 'USDT'
 WETH = 'WETH'
 
 # Blockchains
+ARBITRUM = 'arbitrum'
 AVALANCHE = 'avalanche'
 AVAX = 'avax'
+BINANCE_SMART_CHAIN = 'binance_smart_chain'
 BITCOIN = 'bitcoin'
-BITCOIN_CASH = 'bitcoin cash'
+BITCOIN_CASH = 'bitcoin_cash'
+CARDANO = 'cardano'
 ETHEREUM = 'ethereum'
+LITECOIN = 'litecoin'
 MATIC = 'matic'
+OASIS = 'oasis'
+OKEX = 'okx_chain'
+POLYGON = 'polygon'
+RIPPLE = 'ripple'
+SOLANA = 'solana'
+TRON = 'tron'
 
 # Txn properties in the graph
 NUM_TOKENS = 'num_tokens'
@@ -38,6 +48,7 @@ EXTRACTED_AT = 'extracted_at'
 DATA_SOURCE = 'data_source'
 
 # Industry
+BINANCE = 'binance'
 BRIDGE = 'bridge'
 CATEGORY = 'category'
 CEFI = 'cefi'

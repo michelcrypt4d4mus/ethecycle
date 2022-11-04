@@ -1,5 +1,5 @@
 """
-MyEtherWallet has repo called ethereum-lists that has a bunch of black and whitelist stucff.
+MyEtherWallet has repo called ethereum-lists that has a bunch of black and whitelist stuff.
 """
 import json
 from os import path

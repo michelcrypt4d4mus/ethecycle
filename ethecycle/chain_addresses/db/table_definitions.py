@@ -81,6 +81,7 @@ TABLE_DEFINITIONS = [
             ADDRESS: sx.TEXT,
             'decimals': sx.INTEGER,
             'is_active': sx.BOOL,
+            'is_scam': sx.BOOL,
             'is_hidden': sx.BOOL,
             'is_audited': sx.BOOL,
             'had_an_ico': sx.BOOL,

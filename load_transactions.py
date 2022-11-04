@@ -9,7 +9,7 @@ from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
-from ethecycle.transaction_loader import create_neo4j_bulk_load_csvs
+from ethecycle.transaction_loader import load_into_neo4j
 from ethecycle.util.logging import console, set_log_level
 from ethecycle.util.number_helper import MEGABYTE
 from ethecycle.util.string_constants import DEBUG, ETHEREUM
@@ -50,6 +50,9 @@ parser.add_argument('-d', '--drop', action='store_true',
 parser.add_argument('-e', '--extract-only', action='store_true',
                     help="extract and transform but do not load (will display a command that can load)")
 
+parser.add_argument('-p', '--preserve-csvs', action='store_true',
+                    help="remove (delete) extracted data CSVs once they have been loaded")
+
 parser.add_argument('-D', '--debug', action='store_true',
                     help='show debug level log output')
 
@@ -57,7 +60,7 @@ parser.add_argument(LIST_TOKEN_SYMBOLS, action='store_true',
                     help='show all configured tokens selectable with --token and exit')
 
 
-# Parse args, run loader
+# Parse args
 if LIST_TOKEN_SYMBOLS in sys.argv:
     console.print(Panel('Known Token Symbols'))
     console.line()
@@ -81,4 +84,4 @@ if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")
 
 # Actual loading happens here
-create_neo4j_bulk_load_csvs(args.csv_path, args.blockchain, args.token)
+load_into_neo4j(args.csv_path, args.blockchain, args.token, preserve_csvs=args.preserve_csvs)

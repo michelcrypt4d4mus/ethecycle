@@ -3,6 +3,7 @@ Logging and printing, for now.
 """
 import logging
 import time
+from sys import exit
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -103,3 +104,11 @@ def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:st
 
 def print_address_import(msg: str) -> None:
     console.print(f"Importing {msg} chain addresses...", style='magenta')
+
+
+def ask_for_confirmation(msg: Text) -> None:
+    """Primitive user confirmation"""
+    console.print(msg.append("\n('y' to continue, any other key to exit)", style='white dim'))
+
+    if input().lower() != 'y':
+        exit()

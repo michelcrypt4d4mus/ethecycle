@@ -15,10 +15,9 @@ COPY ./container_id_ed25519 $SSH_DIR/id_ed25519
 COPY ./container_id_ed25519.pub $SSH_DIR/id_ed25519.pub
 
 # Pull some wallet tag sources of variable quality from github (GIT_REPO_DIR comes from .env)
-ARG GIT_REPO_DIR
-ENV TOKEN_DATA_REPO_PARENT_DIR=${GIT_REPO_DIR:-/token_data}
-RUN mkdir ${TOKEN_DATA_REPO_PARENT_DIR}
-WORKDIR ${TOKEN_DATA_REPO_PARENT_DIR}
+ENV CHAIN_ADDRESS_DATA_DIR=/chain_address_data
+RUN mkdir ${CHAIN_ADDRESS_DATA_DIR}
+WORKDIR ${CHAIN_ADDRESS_DATA_DIR}
 
 # Pull Adamant vaults
 RUN git clone https://github.com/eepdev/vaults.git && \

@@ -13,6 +13,7 @@ from pathlib import Path, PosixPath
 from subprocess import check_call
 from typing import List, Optional, Union
 
+from ethecycle.config import Config
 from ethecycle.util.logging import console
 from ethecycle.util.number_helper import size_string
 
@@ -23,8 +24,12 @@ RAW_DATA_DIR = CHAIN_ADDRESSES_DIR.joinpath('raw_data')
 
 # Dirs outside package structure
 PROJECT_ROOT_DIR: PosixPath = PACKAGE_DIR.joinpath(os.pardir).resolve()
-OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
 SCRIPTS_DIR = PROJECT_ROOT_DIR.joinpath('scripts')
+
+if Config.is_test_env:
+    OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('tests', 'file_fixtures', 'tmp')
+else:
+    OUTPUT_DIR = PROJECT_ROOT_DIR.joinpath('output')
 
 # If files are really big we automatically split them up for loading
 SPLIT_FILES_DIR = OUTPUT_DIR.joinpath('tmp')
@@ -34,7 +39,7 @@ GZIP_EXTENSION = '.gz'
 
 # Token info repo is checked out as part of Dockerfile build process
 # TODO: rename to CHAIN_ADDRESS_REPOS_DIR
-TOKEN_DATA_REPO_PARENT_DIR = os.environ['TOKEN_DATA_REPO_PARENT_DIR']
+CHAIN_ADDRESS_DATA_DIR = os.environ['CHAIN_ADDRESS_DATA_DIR']
 
 
 def files_in_dir(dir: Union[os.PathLike, str], with_extname: Optional[str] = None) -> List[str]:

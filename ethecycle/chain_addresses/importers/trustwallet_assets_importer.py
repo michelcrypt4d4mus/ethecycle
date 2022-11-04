@@ -45,32 +45,34 @@ MAPPED_DIRS_TO_IMPORT.update({
 def import_trust_wallet_repo():
     """Import data from trust wallet assets repo."""
     print_address_import(SOURCE_REPO.repo_url)
-    root_data_dir = path.join(SOURCE_REPO.local_repo_path(), 'blockchains')
-    tokens: List[Token] = []
-    wallets: List[Wallet] = []
 
-    for subdir, blockchain in MAPPED_DIRS_TO_IMPORT.items():
-        console.print(f"Processing {blockchain}...")
-        chain_data_dir = path.join(root_data_dir, subdir)
-        tokens_dir = path.join(chain_data_dir, 'assets')
-        validators_dir = path.join(chain_data_dir, 'validators')
-        # TODO: this file has something about trading pairs something something?
-        token_list_json = path.join(chain_data_dir, 'tokenlist.json')
+    with SOURCE_REPO.local_repo_path() as repo_dir:
+        root_data_dir = path.join(repo_dir, 'blockchains')
+        tokens: List[Token] = []
+        wallets: List[Wallet] = []
 
-        if path.exists(tokens_dir):
-            chain_tokens = _get_tokens_for_chain(blockchain, tokens_dir)
-            tokens.extend(chain_tokens)
-        else:
-            log.info(f"    No token assets dir in '{subdir}'...")
+        for subdir, blockchain in MAPPED_DIRS_TO_IMPORT.items():
+            console.print(f"Processing {blockchain}...")
+            chain_data_dir = path.join(root_data_dir, subdir)
+            tokens_dir = path.join(chain_data_dir, 'assets')
+            validators_dir = path.join(chain_data_dir, 'validators')
+            # TODO: this file has something about trading pairs something something?
+            token_list_json = path.join(chain_data_dir, 'tokenlist.json')
 
-        if path.exists(validators_dir):
-            validator_wallets = _get_validator_wallets_for_chain(blockchain, validators_dir)
-            wallets.extend(validator_wallets)
-        else:
-            log.info(f"    No validators assets dir in '{subdir}'...")
+            if path.exists(tokens_dir):
+                chain_tokens = _get_tokens_for_chain(blockchain, tokens_dir)
+                tokens.extend(chain_tokens)
+            else:
+                log.info(f"    No token assets dir in '{subdir}'...")
 
-    insert_tokens_from_data_source(tokens)
-    insert_wallets_from_data_source(wallets)
+            if path.exists(validators_dir):
+                validator_wallets = _get_validator_wallets_for_chain(blockchain, validators_dir)
+                wallets.extend(validator_wallets)
+            else:
+                log.info(f"    No validators assets dir in '{subdir}'...")
+
+        insert_tokens_from_data_source(tokens)
+        insert_wallets_from_data_source(wallets)
 
 
 def _get_tokens_for_chain(blockchain: str, tokens_dir: str) -> List[Token]:

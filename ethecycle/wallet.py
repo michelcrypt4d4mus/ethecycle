@@ -3,6 +3,7 @@ Simple class to hold wallet info.
 TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
 """
 from dataclasses import dataclass
+from random import randint
 from typing import Any, Dict, List, Optional, Type
 
 from rich.text import Text
@@ -11,14 +12,25 @@ from ethecycle.transaction import Txn
 from ethecycle.util.string_constants import *
 
 WALLET_LABEL_COLORS = {
+    'balancer': 49,
     'bridge': 55,
     'cex': 78,
     CONTRACT: 45,
+    'contract-deployer': 47,
+    DEFI: 167,
+    DEX: 169,
     'funds': 33,
+    'game': 13,
     'hackers': 124,
+    'individual': 157,
+    'market maker': 76,
     'mev': 59,
     'multisig': 34,
+    'mining': 94,
+    STABLECOIN: 7,
+    'sybil-delegate': 29,
     TOKEN: 96,
+    'token-sale': 95,
 }
 
 UNKNOWN = Text('UNKNOWN', style='color(234)')
@@ -69,7 +81,7 @@ class Wallet:
         txt.append(' (', 'grey')
 
         if self.category:
-            txt.append(self.category, style=f"color({WALLET_LABEL_COLORS.get(self.category, 226)})")
+            txt.append(self.category, style=self._category_style())
         else:
             txt.append_text(UNKNOWN)
 
@@ -77,6 +89,13 @@ class Wallet:
 
     def __str__(self):
         return self.__rich__().plain
+
+    def _category_style(self) -> str:
+        """Get a color for the wallet category."""
+        if self.category not in WALLET_LABEL_COLORS:
+            WALLET_LABEL_COLORS[str(self.category)] = randint(38, 229)
+
+        return f"color({WALLET_LABEL_COLORS[str(self.category)]})"
 
     @classmethod
     def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:

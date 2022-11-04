@@ -28,27 +28,29 @@ def import_my_ether_wallet_addresses():
 def _import_tokens_addresses():
     """Import data from ethereum-lists tokens repo."""
     print_address_import(MY_ETHER_WALLET_REPO.repo_url)
-    root_data_dir = path.join(MY_ETHER_WALLET_REPO.local_repo_path(), 'dist', 'tokens')
-    tokens: List[Token] = []
 
-    for subdir, blockchain in DIRS_TO_IMPORT.items():
-        token_data_file = path.join(root_data_dir, subdir, f"tokens-{subdir}.json")
-        print_dim(f"Processing '{blockchain}' file: '{token_data_file}'...")
+    with MY_ETHER_WALLET_REPO.local_repo_path() as repo_dir:
+        root_data_dir = path.join(repo_dir, 'dist', 'tokens')
+        tokens: List[Token] = []
 
-        with open(token_data_file, 'r') as json_file:
-            tokens_info = json.load(json_file)
+        for subdir, blockchain in DIRS_TO_IMPORT.items():
+            token_data_file = path.join(root_data_dir, subdir, f"tokens-{subdir}.json")
+            print_dim(f"Processing '{blockchain}' file: '{token_data_file}'...")
 
-        for token_info in tokens_info:
-            token = Token(
-                blockchain=blockchain,
-                token_type=token_info.get('type'),  # Not always provided
-                address=token_info[ADDRESS],
-                symbol=token_info[SYMBOL],
-                name=token_info[NAME],
-                decimals=token_info['decimals'],
-                data_source=MY_ETHER_WALLET_REPO.repo_url
-            )
+            with open(token_data_file, 'r') as json_file:
+                tokens_info = json.load(json_file)
 
-            tokens.append(token)
+            for token_info in tokens_info:
+                token = Token(
+                    blockchain=blockchain,
+                    token_type=token_info.get('type'),  # Not always provided
+                    address=token_info[ADDRESS],
+                    symbol=token_info[SYMBOL],
+                    name=token_info[NAME],
+                    decimals=token_info['decimals'],
+                    data_source=MY_ETHER_WALLET_REPO.repo_url
+                )
 
-    insert_tokens_from_data_source(tokens)
+                tokens.append(token)
+
+        insert_tokens_from_data_source(tokens)

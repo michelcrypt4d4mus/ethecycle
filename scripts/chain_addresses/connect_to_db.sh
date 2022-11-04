@@ -1,1 +1,1 @@
-sqlite3 ethecycle/chain_addresses/db/chain_addresses.db
+sqlite3 "$TOKEN_DATA_REPO_PARENT_DIR/chain_addresses.db"

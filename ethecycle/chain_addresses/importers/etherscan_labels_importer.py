@@ -22,36 +22,38 @@ SOURCE_REPO = GithubDataSource('brianleect/etherscan-labels')
 def import_etherscan_labels_repo():
     """Import data from ethereum-lists tokens repo."""
     print_address_import(SOURCE_REPO.repo_url)
-    addresses_file = path.join(SOURCE_REPO.local_repo_path(), 'combined', 'combinedLabels.json')
-    wallets: List[Wallet] = []
-    label_counts = defaultdict(lambda: 0)
-    uncategorized_label_counts = defaultdict(lambda: 0)
 
-    with open(addresses_file, newline='') as json_file:
-        for address, data in json.load(json_file).items():
-            labels = data['labels']
-            labels_str = ', '.join(sorted(labels))
-            label_counts[labels_str] += 1
-            category = determine_category(labels)
+    with SOURCE_REPO.local_repo_path() as repo_dir:
+        addresses_file = path.join(repo_dir, 'combined', 'combinedLabels.json')
+        wallets: List[Wallet] = []
+        label_counts = defaultdict(lambda: 0)
+        uncategorized_label_counts = defaultdict(lambda: 0)
 
-            if category is None:
-                #console.print(f"{address}: {data['name']}\n    {labels}\n")
-                uncategorized_label_counts[labels_str] += 1
+        with open(addresses_file, newline='') as json_file:
+            for address, data in json.load(json_file).items():
+                labels = data['labels']
+                labels_str = ', '.join(sorted(labels))
+                label_counts[labels_str] += 1
+                category = determine_category(labels)
 
-            wallet = Wallet(
-                address=address,
-                chain_info=Ethereum,
-                label=data[NAME],
-                category=category,
-                data_source=SOURCE_REPO.repo_url
-            )
+                if category is None:
+                    #console.print(f"{address}: {data['name']}\n    {labels}\n")
+                    uncategorized_label_counts[labels_str] += 1
 
-            wallets.append(wallet)
+                wallet = Wallet(
+                    address=address,
+                    chain_info=Ethereum,
+                    label=data[NAME],
+                    category=category,
+                    data_source=SOURCE_REPO.repo_url
+                )
 
-    if Config.debug:
-        console.print(Panel('UNCATEGORIZED'))
-        pprint(sort_dict(uncategorized_label_counts))
-        console.print(Panel('CATEGORIZED'))
-        pprint(sort_dict(label_counts))
+                wallets.append(wallet)
 
-    insert_wallets_from_data_source(wallets)
+        if Config.debug:
+            console.print(Panel('UNCATEGORIZED'))
+            pprint(sort_dict(uncategorized_label_counts))
+            console.print(Panel('CATEGORIZED'))
+            pprint(sort_dict(label_counts))
+
+        insert_wallets_from_data_source(wallets)

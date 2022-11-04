@@ -69,23 +69,25 @@ NON_DISPLAY_KEYS = """
 def import_coin_market_cap_repo_addresses() -> None:
     """Go through ~11,000 .json files in the CoinMarketCap data repo and create rows in wallets DB."""
     print_address_import(SOURCE_REPO.repo_url)
-    data_dir = path.join(SOURCE_REPO.local_repo_path(), 'Download', 'detail')
-    tokens = []
 
-    for json_filename in files_in_dir(data_dir, 'json'):
-        log.debug(f"Processing file {path.basename(json_filename)}...")
+    with SOURCE_REPO.local_repo_path() as repo_dir:
+        data_dir = path.join(repo_dir, 'Download', 'detail')
+        tokens = []
 
-        with open(json_filename, 'r') as json_data:
-            for chain_token in _explode_token_blockchain_rows(json.load(json_data)['data']):
-                # Skip rows where all core cols are None
-                if all(chain_token.get(col) is None for col in TABLE_COLS):
-                    continue
+        for json_filename in files_in_dir(data_dir, 'json'):
+            log.debug(f"Processing file {path.basename(json_filename)}...")
 
-                tokens.append(chain_token)
+            with open(json_filename, 'r') as json_data:
+                for chain_token in _explode_token_blockchain_rows(json.load(json_data)['data']):
+                    # Skip rows where all core cols are None
+                    if all(chain_token.get(col) is None for col in TABLE_COLS):
+                        continue
 
-    _print_debug_table(tokens)
-    delete_rows_from_source(TOKEN + 's', SOURCE_REPO.repo_url)
-    insert_rows(TOKENS_TABLE_NAME, tokens)
+                    tokens.append(chain_token)
+
+        _print_debug_table(tokens)
+        delete_rows_from_source(TOKEN + 's', SOURCE_REPO.repo_url)
+        insert_rows(TOKENS_TABLE_NAME, tokens)
 
 
 def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:

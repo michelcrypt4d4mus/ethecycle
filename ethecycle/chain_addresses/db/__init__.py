@@ -1,17 +1,17 @@
-from os import environ
+from os import environ, path
 from typing import Optional
 
 import sqllex as sx
 
-from ethecycle.util.filesystem_helper import DB_DIR, PROJECT_ROOT_DIR
-from ethecycle.util.string_constants import *
+from ethecycle.util.filesystem_helper import PROJECT_ROOT_DIR, TOKEN_DATA_REPO_PARENT_DIR
 
-# TODO: code smell
 if 'INVOKED_BY_PYTEST' in environ:
     DB_DIR = PROJECT_ROOT_DIR.joinpath('tests').joinpath('file_fixtures')
+else:
+    DB_DIR = TOKEN_DATA_REPO_PARENT_DIR
 
 CHAIN_ADDRESSES_DB_FILE_NAME = 'chain_addresses.db'
-CHAIN_ADDRESSES_DB_PATH = str(DB_DIR.joinpath(CHAIN_ADDRESSES_DB_FILE_NAME))
+CHAIN_ADDRESSES_DB_PATH = path.join(DB_DIR, CHAIN_ADDRESSES_DB_FILE_NAME)
 
 # Not for direct use. Access the DB through methods in wallet_db.py
 # TODO: maybe instantiate without the connection? there's an arg for that i think...

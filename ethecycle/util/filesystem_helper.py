@@ -19,7 +19,6 @@ from ethecycle.util.number_helper import size_string
 # Dirs inside package structure
 PACKAGE_DIR = importlib.resources.files('ethecycle')
 CHAIN_ADDRESSES_DIR = PACKAGE_DIR.joinpath('chain_addresses')
-DB_DIR = CHAIN_ADDRESSES_DIR.joinpath('db')
 RAW_DATA_DIR = CHAIN_ADDRESSES_DIR.joinpath('raw_data')
 
 # Dirs outside package structure

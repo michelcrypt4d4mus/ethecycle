@@ -11,7 +11,7 @@ from rich.text import Text
 
 from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.config import Config
-from ethecycle.export.neo4j import HEADER, Neo4jCsvs
+from ethecycle.export.neo4j_csv import HEADER, Neo4jCsvs
 from ethecycle.models.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, file_size_string, files_in_dir
 from ethecycle.util.neo4j_helper import admin_load_bash_command, import_to_neo4j

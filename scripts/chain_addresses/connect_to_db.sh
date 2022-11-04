@@ -1,1 +1,1 @@
-sqlite3 "$TOKEN_DATA_REPO_PARENT_DIR/chain_addresses.db"
+sqlite3 "$CHAIN_ADDRESS_DATA_DIR/chain_addresses.db"

@@ -1,5 +1,4 @@
 from os import environ, path, pardir, remove
-environ['INVOKED_BY_PYTEST'] = 'True'
 
 import pytest
 

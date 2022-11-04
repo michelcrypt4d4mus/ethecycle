@@ -20,6 +20,8 @@ services:
       context: .
     tty: true
     stdin_open: true
+    environment:
+      - ETHECYCLE_ENV=${ETHECYCLE_ENV:-development}
     env_file:
       - .env
     depends_on:

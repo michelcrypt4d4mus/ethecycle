@@ -34,7 +34,7 @@ GZIP_EXTENSION = '.gz'
 
 # Token info repo is checked out as part of Dockerfile build process
 # TODO: rename to CHAIN_ADDRESS_REPOS_DIR
-TOKEN_DATA_REPO_PARENT_DIR = os.environ['TOKEN_DATA_REPO_PARENT_DIR']
+CHAIN_ADDRESS_DATA_DIR = os.environ['CHAIN_ADDRESS_DATA_DIR']
 
 
 def files_in_dir(dir: Union[os.PathLike, str], with_extname: Optional[str] = None) -> List[str]:

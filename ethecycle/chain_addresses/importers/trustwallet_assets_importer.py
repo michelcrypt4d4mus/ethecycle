@@ -12,7 +12,7 @@ from typing import List
 from rich.panel import Panel
 
 from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
-from ethecycle.blockchains.token import Token
+from ethecycle.models.token import Token
 from ethecycle.chain_addresses.address_db import (insert_tokens_from_data_source,
      insert_wallets_from_data_source)
 from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
@@ -21,7 +21,7 @@ from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('trustwallet/assets', 'trustwallet_assets')
 

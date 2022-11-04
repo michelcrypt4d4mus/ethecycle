@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Type
 
 from rich.text import Text
 
-from ethecycle.transaction import Txn
+from ethecycle.models.transaction import Txn
 from ethecycle.util.string_constants import *
 
 WALLET_LABEL_COLORS = {

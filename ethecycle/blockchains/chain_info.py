@@ -6,12 +6,12 @@ from typing import Any, Dict, Optional
 
 from inflection import underscore
 
-from ethecycle.blockchains.token import Token
+from ethecycle.models.token import Token
 from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import load_tokens, load_wallets
 from ethecycle.util.logging import log
 from ethecycle.util.string_constants import *
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 
 class ChainInfo:

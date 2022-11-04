@@ -19,11 +19,11 @@ from rich.text import Text
 from ethecycle.blockchains.blockchains import get_chain_info
 
 from ethecycle.config import Config
-from ethecycle.transaction import Txn
+from ethecycle.models.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
 from ethecycle.util.logging import PEACH, console, print_benchmark
 from ethecycle.util.string_constants import ETHEREUM
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 # Path on the docker container
 NEO4J_DB = 'neo4j'

@@ -7,7 +7,7 @@ from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.logging import print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('W-McDonald/etherscan')
 

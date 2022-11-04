@@ -14,7 +14,7 @@ from ethecycle.config import Config
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 SOURCE_URL = 'https://api.cryptoscamdb.org/v1/addresses'
 CURL_OUTPUT_FILE = str(RAW_DATA_DIR.joinpath('cryptoscamdb.addresses.json.gz'))

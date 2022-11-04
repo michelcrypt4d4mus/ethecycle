@@ -14,7 +14,7 @@ from ethecycle.config import Config
 from ethecycle.util.dict_helper import sort_dict
 from ethecycle.util.logging import console, print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('brianleect/etherscan-labels')
 

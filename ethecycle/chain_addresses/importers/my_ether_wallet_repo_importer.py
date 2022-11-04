@@ -5,7 +5,7 @@ import json
 from os import path
 from typing import List
 
-from ethecycle.blockchains.token import Token
+from ethecycle.models.token import Token
 from ethecycle.chain_addresses.address_db import insert_tokens_from_data_source
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.logging import print_address_import, print_dim

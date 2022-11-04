@@ -12,7 +12,7 @@ from rich.text import Text
 from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.config import Config
 from ethecycle.export.neo4j import NEO4J_SSH, Neo4jCsvs, generate_neo4j_csvs, stop_database
-from ethecycle.transaction import Txn
+from ethecycle.models.transaction import Txn
 from ethecycle.util.filesystem_helper import file_size_string, files_in_dir
 from ethecycle.util.logging import console, print_benchmark
 

@@ -10,7 +10,7 @@ from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import log, print_address_import
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 DATA_SOURCE = 'https://gist.githubusercontent.com/kheachang/4ce5a98140ad21129acd49aff0df11a8/raw/a049681e7168f7ea920e695f8b180b1fd9d921b0/gistfile1.txt'
 SCRAPE_DATA_FILE = str(RAW_DATA_DIR.joinpath('etherscrape.txt.gz'))

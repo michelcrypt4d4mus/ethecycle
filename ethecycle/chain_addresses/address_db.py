@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import sqllex as sx
 from rich.pretty import pprint
 
-from ethecycle.blockchains.token import Token
+from ethecycle.models.token import Token
 from ethecycle.chain_addresses import db
 from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID,
      DATA_SOURCES_TABLE_NAME, TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
@@ -17,7 +17,7 @@ from ethecycle.config import Config
 from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import *
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
-from ethecycle.wallet import Wallet
+from ethecycle.models.wallet import Wallet
 
 DbRows = List[Dict[str, Any]]
 

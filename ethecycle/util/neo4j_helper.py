@@ -100,19 +100,20 @@ def stop_database():
         execute_cypher_query(START_DB_QUERY)
 
 
-def execute_cypher_query(cql: str) -> None:
+def execute_cypher_query(cql: str) -> str:
     """Execute CQL query on the Neo4J container"""
     console.print(Text("Executing CQL query: ").append(cql, style=PEACH))
     user, password = _neo4j_user_and_pass()
     cmd = f"echo '{cql}' | {CYPHER_EXECUTABLE} -u {user} -p {password}"
-    _execute_shell_cmd_on_neo4j_container(cmd)
+    return _execute_shell_cmd_on_neo4j_container(cmd)
 
 
-def _execute_shell_cmd_on_neo4j_container(cmd: str) -> None:
+def _execute_shell_cmd_on_neo4j_container(cmd: str) -> str:
     remote_cmd = f"{NEO4J_SSH} {cmd}"
     print(f"Executing remote command:\n\n{remote_cmd}")
-    query_result = check_output(remote_cmd.split(' ')).decode()
-    console.print(f"\nRESULT:\n{query_result}\n")
+    cmd_result = check_output(remote_cmd.split(' ')).decode().rstrip()
+    console.print(f"\nRESULT:\n{cmd_result}\n")
+    return cmd_result
 
 
 def _neo4j_user_and_pass() -> List[str]:

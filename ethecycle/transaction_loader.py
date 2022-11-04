@@ -30,7 +30,7 @@ def create_neo4j_bulk_load_csvs(txn_csv_path: str, blockchain: str, token: Optio
     if path.isfile(txn_csv_path):
         csv_files = [txn_csv_path]
     elif path.isdir(txn_csv_path):
-        console.print('Directory detected...', style='grey')
+        console.print(f"\nDirectory detected, loading all files from '{txn_csv_path}'...", style='bright_cyan')
         csv_files = files_in_dir(txn_csv_path)
     else:
         raise ValueError(f"'{txn_csv_path}' is not a filesystem path")

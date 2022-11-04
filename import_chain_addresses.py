@@ -7,17 +7,19 @@ from argparse import ArgumentParser
 
 from rich_argparse_plus import RichHelpFormatterPlus
 
+from ethecycle.chain_addresses.address_db import drop_and_recreate_tables
 from ethecycle.chain_addresses.importers import rebuild_chain_addresses_db
 from ethecycle.config import Config
 from ethecycle.util.logging import console, set_log_level
 from ethecycle.util.string_constants import DEBUG
 
 REBUILD_ALL = 'ALL'
+RESET_DB = 'RESET_DB'
 IMPORT_PREFIX = 'import_'
 IMPORTER_MODULE_STR = 'ethecycle.chain_addresses.importers'
 IMPORTERS_MODULE = importlib.import_module(IMPORTER_MODULE_STR)
 
-IMPORTER_METHODS = [REBUILD_ALL] + [
+IMPORTER_METHODS = [REBUILD_ALL, RESET_DB] + [
     import_method.removeprefix(IMPORT_PREFIX)
     for import_method in dir(IMPORTERS_MODULE)
     if import_method.startswith(IMPORT_PREFIX)
@@ -29,7 +31,7 @@ RichHelpFormatterPlus.choose_theme('prince')
 
 parser = ArgumentParser(
     formatter_class=RichHelpFormatterPlus,
-    description="Reimport or update various chain address data sources. Select 'ALL' to rebuild DB from scratch."
+    description=f"Reimport a chain address data sources. Select '{REBUILD_ALL}' to rebuild DB from scratch, '{RESET_DB}' to drop and recreate empty DB."
 )
 
 parser.add_argument('importer_method',
@@ -47,5 +49,7 @@ if args.debug:
 
 if args.importer_method == REBUILD_ALL:
     rebuild_chain_addresses_db()
+elif args.importer_method == RESET_DB:
+    drop_and_recreate_tables()
 else:
     getattr(IMPORTERS_MODULE, IMPORT_PREFIX + args.importer_method)()

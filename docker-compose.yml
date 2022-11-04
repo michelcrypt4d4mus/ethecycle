@@ -8,6 +8,7 @@ services:
     env_file:
       - .env.neo4j
     environment:
+      - ETHECYCLE_ENV=${ETHECYCLE_ENV:-development}
       - NEO4J_AUTH=${NEO4J_USER_AND_PASS}
     ports:
       - 7474:7474

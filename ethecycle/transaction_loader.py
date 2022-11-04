@@ -4,7 +4,6 @@ Load transactions from CSV as python lists and/or directly into the graph databa
 import csv
 import time
 from os import path, remove
-from subprocess import check_output
 from typing import List, Optional
 
 from rich.text import Text
@@ -15,13 +14,25 @@ from ethecycle.export.neo4j_csv import HEADER, Neo4jCsvs
 from ethecycle.models.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, file_size_string, files_in_dir
 from ethecycle.util.neo4j_helper import admin_load_bash_command, import_to_neo4j
+from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.util.logging import ask_for_confirmation, console, log, print_benchmark
 
-time_sorter = lambda txn: txn.block_number
-wallet_sorter = lambda txn: txn.from_address
+# Expected column order for source CSVs.
+RAW_TXN_DATA_CSV_COLS = [
+    'token_address',
+    'from_address',
+    'to_address',
+    'value',  # num_tokens
+    'transaction_hash',
+    'log_index',
+    'block_number'
+]
 
 INCREMENTAL_LOAD_WARNING = Text("\nYou selected incremental import which probably doesn't work.\n", style='red')
 INCREMENTAL_LOAD_WARNING.append('  Did you forget the --drop option?', style='bright_red')
+
+time_sorter = lambda txn: txn.block_number
+wallet_sorter = lambda txn: txn.from_address
 
 
 def load_into_neo4j(
@@ -45,6 +56,7 @@ def load_into_neo4j(
     start_time = time.perf_counter()
     neo4j_csvs = [Neo4jCsvs(HEADER)] + [_extract_and_transform(txn_csv, blockchain, token) for txn_csv in txn_csvs]
     print_benchmark(f"\nProcessed {len(txn_csvs)} CSVs", start_time, indent_level=0, style='yellow')
+    
     bulk_load_shell_command = admin_load_bash_command(neo4j_csvs)
 
     if Config.extract_only:
@@ -72,10 +84,11 @@ def load_into_neo4j(
 
 def extract_transactions(csv_path: str, blockchain: str, token: Optional[str] = None) -> List[Txn]:
     """Load txions from a CSV to list of Txn objects optionally filtered for 'token' records only."""
+    extracted_at = current_timestamp_iso8601_str()
     chain_info = get_chain_info(blockchain)
     token_address = None
 
-    if not (token is None or token in chain_info.tokens()):
+    if not (token is None or token in chain_info.token_addresses()):
         raise ValueError(f"Address for '{token}' token not found.")
 
     msg = Text('Loading ').append(blockchain, style='color(112)').append(' chain ')
@@ -89,7 +102,7 @@ def extract_transactions(csv_path: str, blockchain: str, token: Optional[str] = 
 
     with open(csv_path, newline='') as csvfile:
         return [
-            Txn(*([blockchain] + row + [chain_info])) for row in csv.reader(csvfile, delimiter=',')
+            Txn(*(row + [chain_info, extracted_at])) for row in csv.reader(csvfile, delimiter=',')
             if row[0] != 'token_address' and (token is None or row[0] == token_address)
         ]
 

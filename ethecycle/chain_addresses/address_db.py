@@ -1,12 +1,15 @@
 """
-Class to manage sqlite DB holding wallet tag info.
+Class to manage sqlite DB holding wallet tag info. Most methods here assume you are bulk
+updating all data in a given table from a given data_source.
 Context managers: https://rednafi.github.io/digressions/python/2020/03/26/python-contextmanager.html#nesting-contexts
 """
+import json
 from contextlib import contextmanager
 from sqlite3.dbapi2 import IntegrityError
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import sqllex as sx
+from rich.panel import Panel
 from rich.pretty import pprint
 
 from ethecycle.models.token import Token
@@ -60,19 +63,14 @@ def tokens_table():
 
 def load_wallets(chain_info: 'ChainInfo') -> List[Wallet]:
     """Load wallets (and tokens - tokens have wallet addresses) from the database."""
+    token_wallets = [Wallet.from_token(token, chain_info) for token in load_tokens(chain_info)]
     column_names = [c for c in Wallet.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
-
-    # Tokens are wallets too.
-    token_rows = [
-        {ADDRESS: token.address, 'label': token.symbol, 'category': TOKEN}
-        for token in load_tokens(chain_info)
-    ]
 
     with wallets_table() as table:
         db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info._chain_str())
 
     db_rows = [dict(zip(column_names, row)) for row in db_rows]
-    return [Wallet(chain_info=chain_info, **row) for row in _coalesce_rows(token_rows + db_rows)]
+    return token_wallets + [Wallet(chain_info=chain_info, **row) for row in _coalesce_rows(db_rows)]
 
 
 def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
@@ -89,20 +87,13 @@ def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
 def insert_rows(table_name: str, rows: DbRows) -> None:
     """Insert 'rows' into table named 'table_name'. Assumes all rows have the same data_source."""
     print_dim(f"Writing {len(rows)} rows to table '{table_name}'...")
-    extracted_at = current_timestamp_iso8601_str()
-    data_source = rows[0][DATA_SOURCE]
-    data_source_id = _get_or_create_data_source_id(data_source)
-
-    for row in rows:
-        if row[DATA_SOURCE] != data_source:
-            raise ValueError(f"Rows must have same data_source but {row[DATA_SOURCE]} != {data_source}")
-
-        row[EXTRACTED_AT] = row.get(EXTRACTED_AT) or extracted_at
-        row[DATA_SOURCE_ID] = data_source_id
-
     db_conn = get_db_connection()
     columns = db_conn.get_columns_names(table_name)
     row_tuples = [[row.get(c) for c in columns] for row in rows]
+
+    if True: #Config.debug:
+        console.print(Panel("FIRST ROW TO INSERT", expand=False))
+        pprint(rows[0])
 
     try:
         db_conn.insertmany(table_name, row_tuples)
@@ -110,7 +101,6 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
         if Config.debug:
             console.print_exception()
 
-        # TODO: should we really be doing this preparatory cleanup?
         console.print(f"{e} while bulk loading!", style='bright_red')
         console.print("Cleaning up before switching to one at a time...", style='bright_white')
         delete_rows_from_source(table_name, rows[0]['data_source'])
@@ -125,14 +115,40 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
 
 def insert_wallets_from_data_source(wallets: List[Wallet]) -> None:
     """Update all rows from a given data_source (assumes all 'wallets' have same data_source)"""
+    _prepare_rows(wallets)
     delete_rows_from_source(WALLETS_TABLE_NAME, wallets[0].data_source)
     insert_rows(WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
 
 
 def insert_tokens_from_data_source(tokens: List[Token]) -> None:
     """Update all rows from a given data_source (assumes all 'tokens' have same data_source)"""
+    _prepare_rows(tokens)
     delete_rows_from_source(TOKENS_TABLE_NAME, tokens[0].data_source)
     insert_rows(TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
+
+
+def _prepare_rows(objs: Union[List[Token], List[Wallet]]) -> None:
+    """Validate all rows have same data_source. Set 'extracted_at' and 'data_source_id' fields."""
+    if len(objs) == 0:
+        return
+
+    data_source = objs[0].data_source
+
+    if data_source is None or not isinstance(data_source, str):
+        raise ValueError(f"Invalid data_source field for {objs[0]}!")
+
+    extracted_at = current_timestamp_iso8601_str()
+    data_source_id = _get_or_create_data_source_id(data_source)
+
+    for obj in objs:
+        if obj.data_source != data_source:
+            raise ValueError(f"Insertion have mismatched data_sources: '{obj.data_source}' != '{data_source}'")
+
+        obj.extracted_at = obj.extracted_at or extracted_at
+        obj.data_source_id = data_source_id
+        #import pdb;pdb.set_trace()
+        if 'extra_fields' in dir(obj) and obj.extra_fields is not None:
+            obj.extra_fields = json.dumps(obj.extra_fields)
 
 
 def delete_rows_from_source(table_name: str, _data_source: str) -> None:
@@ -258,11 +274,13 @@ def _coalesce_rows(rows: DbRows) -> DbRows:
     for row in rows:
         address = row[ADDRESS]
 
+        # If the address is not in the coalesced_rows yet just add it and go to next row
         if address not in coalesced_rows:
             #log.debug(f"Initializing {address} with data from {row['data_source_id']}")
             coalesced_rows[address] = row
             continue
 
+        # Otherwise fill in any missing fields in the coalesced row with data from 'row'
         coalesced_row = coalesced_rows[address]
 
         for col in cols:

@@ -21,7 +21,7 @@ DEFAULT_DEBUG_LINES = 5
 CONFIGURED_TOKENS = set([
     token
     for chain_info in BLOCKCHAINS.values()
-    for token in chain_info.tokens().keys()
+    for token in chain_info.token_symbols().keys()
 ])
 
 

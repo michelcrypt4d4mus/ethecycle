@@ -1,6 +1,6 @@
 """
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
-Can be implemented for each chain with the appropriate overrides but a default
+Handles lookups of address properties for tokens and wallets on the chain.
 """
 from typing import Any, Dict, Optional
 
@@ -21,10 +21,75 @@ class ChainInfo:
     # Addresses on this chain should start with one of these strings
     ADDRESS_PREFIXES = []
 
-    # Lazy load; should only be access through cls.tokens(), cls.wallet_label(), etc.
+    # Default decimals for tokens on this chain
+    DEFAULT_DECIMALS = 0
+
+    # Lazy load; should only be access through cls.token_addresses(), cls.wallet_label(), etc.
     _tokens_by_address: Dict[str, Token] = {}
     _tokens_by_symbol: Dict[str, Token] = {}
     _wallet_labels: Dict[str, Wallet] = {}
+
+    # Use flags to prevent repeatedly reloading data on chains where we have no info
+    _loaded_tokens = False
+    _loaded_wallets = False
+
+    @classmethod
+    def token_address(cls, token_symbol: str) -> str:
+        """Lookup a contract's chain address by the symbol."""
+        if token_symbol not in cls.token_symbols():
+            raise ValueError(f"No '{cls._chain_str()}' address found for {token_symbol}!")
+
+        return cls.token_symbols()[token_symbol].address
+
+    @classmethod
+    def token_symbol(cls, token_address: str) -> Optional[str]:
+        """Reverse lookup - takes an address, returns a symbol"""
+        token = cls._get_token_by_address(token_address)
+        return token.symbol if token else None
+
+    @classmethod
+    def token_decimals(cls, token_address: str) -> int:
+        """Reverse lookup - takes an address, returns a symbol"""
+        token = cls._get_token_by_address(token_address)
+        return cls.DEFAULT_DECIMALS if token is None else (token.decimals or cls.DEFAULT_DECIMALS)
+
+    @classmethod
+    def token_addresses(cls) -> Dict[str, Token]:
+        """Returns dict mapping token address to Token obj for this chain."""
+        if len(cls._tokens_by_address) == 0 and not Config.skip_load_from_db and not cls._loaded_tokens:
+            tokens = load_tokens(cls)
+            cls._tokens_by_symbol = {token.symbol: token for token in tokens}
+            cls._tokens_by_address = {token.address: token for token in tokens}
+            cls._loaded_tokens = True
+
+        return cls._tokens_by_address
+
+    @classmethod
+    def token_symbols(cls) -> Dict[str, Token]:
+        """Returns dict mapping token symbol to Token obj for this chain."""
+        cls.token_addresses()  # Ensures data is loaded from DB
+        return cls._tokens_by_symbol
+
+    @classmethod
+    def wallet_label(cls, wallet_address: str) -> Optional[str]:
+        """Lazy loaded wallet address labels."""
+        wallet = cls._get_wallet_by_address(wallet_address)
+        return None if wallet is None else wallet.label
+
+    @classmethod
+    def wallet_category(cls, wallet_address: str) -> Optional[str]:
+        """Get category for a wallet address if there is one in DB."""
+        wallet = cls._get_wallet_by_address(wallet_address)
+        return None if wallet is None else wallet.category
+
+    @classmethod
+    def known_wallets(cls) -> Dict[str, Wallet]:
+        """Lazy loaded wallet label, categories, etc."""
+        if len(cls._wallet_labels) == 0 and not Config.skip_load_from_db and not cls._loaded_wallets:
+            cls._wallet_labels = {wallet.address: wallet for wallet in load_wallets(cls)}
+            cls._loaded_wallets = True
+
+        return cls._wallet_labels
 
     @classmethod
     def scanner_url(cls, address: str) -> str:
@@ -40,61 +105,12 @@ class ChainInfo:
             return any(address.startswith(prefix) for prefix in cls.ADDRESS_PREFIXES)
 
     @classmethod
-    def token_address(cls, token_symbol: str) -> str:
-        """Lookup a contract address by the symbol"""
-        return cls.tokens()[token_symbol].address
+    def _get_token_by_address(cls, token_address: str):
+        return cls.token_addresses().get(token_address)
 
     @classmethod
-    def token_symbol(cls, token_address: str) -> Optional[str]:
-        """Reverse lookup - takes an address, returns a symbol"""
-        cls.tokens()  # Force load the tokens
-
-        try:
-            return cls._tokens_by_address[token_address].symbol
-        except KeyError:
-            return None
-
-    @classmethod
-    def token_decimals(cls, token_address: str) -> int:
-        """Reverse lookup - takes an address, returns a symbol"""
-        if token_address in cls.tokens():
-            return cls.tokens()[token_address].decimals or 0
-        else:
-            return 0
-
-    @classmethod
-    def tokens(cls) -> Dict[str, Token]:
-        """Lazy load token data."""
-        if len(cls._tokens_by_symbol) == 0 and not Config.skip_load_from_db:
-            tokens = load_tokens(cls)
-            cls._tokens_by_symbol = {token.symbol: token for token in tokens}
-            cls._tokens_by_address = {token.address: token for token in tokens}
-
-        return cls._tokens_by_symbol
-
-    @classmethod
-    def wallet_label(cls, wallet_address: str) -> Optional[str]:
-        """Lazy loaded wallet address labels."""
-        if wallet_address in cls.known_wallets():
-            return cls.known_wallets()[wallet_address].label
-        else:
-            return None
-
-    @classmethod
-    def wallet_category(cls, wallet_address: str) -> Optional[str]:
-        """Lazy loaded wallet label categories."""
-        if wallet_address in cls.known_wallets():
-            return cls.known_wallets()[wallet_address].category
-        else:
-            return None
-
-    @classmethod
-    def known_wallets(cls) -> Dict[str, Wallet]:
-        """Lazy loaded wallet label, categories, etc."""
-        if len(cls._wallet_labels) == 0 and not Config.skip_load_from_db:
-            cls._wallet_labels = {wallet.address: wallet for wallet in load_wallets(cls)}
-
-        return cls._wallet_labels
+    def _get_wallet_by_address(cls, wallet_address: str):
+        return cls.known_wallets().get(wallet_address)
 
     @classmethod
     def _chain_str(cls) -> str:

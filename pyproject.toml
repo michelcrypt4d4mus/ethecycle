@@ -21,7 +21,7 @@ pytest = "^7.2.0"
 
 [tool.poetry.scripts]
 dune_query = 'ethecycle.chain_addresses.scripts:generate_ethereum_dune_labels_query'
-show_addresses = 'ethecycle.chain_addresses.scripts:show_address_labels'
+show_chain_addresses = 'ethecycle.chain_addresses.scripts:show_chain_addresses'
 show_tokens = 'ethecycle.chain_addresses.scripts:show_tokens'
 
 [build-system]

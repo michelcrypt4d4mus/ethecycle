@@ -81,6 +81,7 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 
 ## Other Useful Commands
 * Get shell on the Python ETL container: `scripts/docker/python_etl/shell.sh`
+* Get shell on the test env Python ETL container: `scripts/docker/python_etl/test_shell.sh`
 * Get shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
 * Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
 * Display the wallet tags: `scripts/show_wallet_labels.sh`
@@ -97,6 +98,12 @@ After starting you can browse to [http://localhost:7474/browser/](http://localho
 ## Running Queries
 * Addresses start with `0x` (same as etherscan)
 * All addresses in the DB are lowercased, so make sure to use `toLower()` on an address of mixed/upper case.
+* Occasionally Neo4j from docker messes up the permissions. If that happens it may help to get on the container and run
+  ```bash
+  cd /var/lib/neo4j/data
+  sudo chown -R neo4j:neo4j databases/
+  sudo chown -R neo4j:neo4j transactions/
+  ```
 
 
 ## Other Neo4J Resources

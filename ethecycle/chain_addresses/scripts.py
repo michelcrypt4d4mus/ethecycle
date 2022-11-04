@@ -3,6 +3,7 @@ Helper for generating dune queries to find new labels
 TODO: Get this into the /scripts dir
 """
 from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.chain_addresses.importers.wallets_from_dune_importer import DATA_SOURCE
 from ethecycle.util.logging import console
 from ethecycle.util.number_helper import comma_format
 from ethecycle.util.string_helper import quoted_join
@@ -30,7 +31,8 @@ def generate_ethereum_dune_labels_query():
     print(query)
 
 
-def show_address_labels():
+def show_chain_addresses():
+    """Print out a list of all chain addresses in the chain_addresses DB."""
     for _address, wallet in Ethereum.known_wallets().items():
         console.print(wallet)
 
@@ -40,9 +42,9 @@ def show_address_labels():
 
 
 def show_tokens():
-    for token in Ethereum.tokens().values():
+    for token in Ethereum.token_addresses().values():
         console.print(token)
 
-    formatted = comma_format(len(Ethereum.tokens().keys()))
+    formatted = comma_format(len(Ethereum.token_addresses().keys()))
     console.print(f"\n\n    {formatted} tokens found for {Ethereum._chain_str()}.")
     console.line(2)

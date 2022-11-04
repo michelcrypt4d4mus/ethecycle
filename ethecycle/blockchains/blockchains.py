@@ -1,5 +1,7 @@
 """
-Metadata and constants having to do with the various different blockchains.
+Metadata and constants having to do with the various different blockchains as well as ChainInfo
+lookups. If there is no subclass of ChainInfo for a given blockchain a default ChainInfo will be
+constructed.
 """
 import re
 from collections import namedtuple

@@ -7,7 +7,7 @@ from ethecycle.util.string_constants import *
 
 
 class Ethereum(ChainInfo):
-    LABEL_CATEGORIES_SCRAPED_FROM_DUNE = ['cex', 'multisig', 'bridge', 'funds', 'mev', 'hackers']
+    LABEL_CATEGORIES_SCRAPED_FROM_DUNE = ['cex', 'multisig', 'bridge', 'funds', 'mev', 'hackers', 'ofac_sanction']
     ADDRESS_PREFIXES = ['0x']
     ADDRESS_LENGTH = 42
     TXN_HASH_LENGTH = 66

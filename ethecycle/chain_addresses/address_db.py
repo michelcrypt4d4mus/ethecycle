@@ -4,7 +4,7 @@ Context managers: https://rednafi.github.io/digressions/python/2020/03/26/python
 """
 from contextlib import contextmanager
 from sqlite3.dbapi2 import IntegrityError
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import sqllex as sx
 from rich.pretty import pprint
@@ -15,11 +15,14 @@ from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID,
      DATA_SOURCES_TABLE_NAME, TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
 from ethecycle.util.logging import console, log, print_dim
-from ethecycle.util.string_constants import ADDRESS, DATA_SOURCE, EXTRACTED_AT
+from ethecycle.util.string_constants import *
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.wallet import Wallet
 
 DbRows = List[Dict[str, Any]]
+
+# TODO: Deal with this a better way
+COLUMNS_TO_NOT_LOAD = ['chain_info', 'data_source']
 
 
 @contextmanager
@@ -53,6 +56,34 @@ def tokens_table():
     """Returns connection to tokens data table."""
     with table_connection(TOKENS_TABLE_NAME) as tokens_table:
         yield tokens_table
+
+
+def load_wallets(chain_info: 'ChainInfo') -> List[Wallet]:
+    """Load wallets (and tokens - tokens have wallet addresses) from the database."""
+    column_names = [c for c in Wallet.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
+
+    # Tokens are wallets too.
+    token_rows = [
+        {ADDRESS: token.address, 'label': token.symbol, 'category': TOKEN}
+        for token in load_tokens(chain_info)
+    ]
+
+    with wallets_table() as table:
+        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info._chain_str())
+
+    db_rows = [dict(zip(column_names, row)) for row in db_rows]
+    return [Wallet(chain_info=chain_info, **row) for row in _coalesce_rows(token_rows + db_rows)]
+
+
+def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
+    """Load known tokens from addresses DB for a chain."""
+    column_names = [c for c in Token.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
+
+    with tokens_table() as table:
+        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info._chain_str())
+
+    rows = [dict(zip(column_names, row)) for row in db_rows]
+    return [Token(**row) for row in _coalesce_rows(rows)]
 
 
 def insert_rows(table_name: str, rows: DbRows) -> None:
@@ -214,3 +245,28 @@ def _load_table(table_name: str) -> List[Dict[str, Any]]:
 
     log.debug(f"Table '{table_name}' has columns:\n  {column_names}\nrows: {rows}")
     return [dict(zip(column_names, row)) for row in rows]
+
+
+def _coalesce_rows(rows: DbRows) -> DbRows:
+    """Assemble the best data for each address by combining the data_sources in the DB."""
+    if len(rows) == 0:
+        return rows
+
+    cols = list(rows[0].keys())
+    coalesced_rows: Dict[str, Dict[str, Any]] = {}
+
+    for row in rows:
+        address = row[ADDRESS]
+
+        if address not in coalesced_rows:
+            #log.debug(f"Initializing {address} with data from {row['data_source_id']}")
+            coalesced_rows[address] = row
+            continue
+
+        coalesced_row = coalesced_rows[address]
+
+        for col in cols:
+            #log.debug(f"Updating {address}: {col} with '{row[col]}' from {row['data_source_id']}...")
+            coalesced_row[col] = coalesced_row.get(col) or row.get(col)
+
+    return list(coalesced_rows.values())

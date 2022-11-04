@@ -5,6 +5,8 @@ on-chain address.
 from dataclasses import dataclass
 from typing import Optional
 
+from rich.text import Text
+
 
 @dataclass
 class Token:
@@ -24,3 +26,8 @@ class Token:
         self.address = self.address.lower()
         self.blockchain = self.blockchain.lower()
         self.token_type = self.token_type.lower() if self.token_type is not None else None
+
+    def __rich__(self):
+        txt = Text('').append(self.symbol, 'bright_green').append(f" (").append(self.address, style='grey')
+        txt.append(f") ").append(self.name, 'cyan').append(f" {self.blockchain}", 'bytes')
+        return txt

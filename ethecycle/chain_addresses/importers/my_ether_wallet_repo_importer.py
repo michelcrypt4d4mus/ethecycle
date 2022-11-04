@@ -7,7 +7,6 @@ from typing import List
 
 from ethecycle.blockchains.token import Token
 from ethecycle.chain_addresses.address_db import insert_tokens_from_data_source
-from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.logging import print_address_import, print_dim
 from ethecycle.util.string_constants import *
@@ -16,7 +15,7 @@ MY_ETHER_WALLET_REPO = GithubDataSource('MyEtherWallet/ethereum-lists')
 
 # Keys are folder names, values are blockchain names.
 DIRS_TO_IMPORT = {
-    'bsc': 'Binance Smart Chain',
+    'bsc': BINANCE_SMART_CHAIN,
     'eth': ETHEREUM,
     'matic': 'Polygon'
 }

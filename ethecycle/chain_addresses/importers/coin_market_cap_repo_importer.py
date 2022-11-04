@@ -5,6 +5,7 @@ import json
 from os import path
 from typing import Any, Dict, List
 
+from inflection import underscore
 from rich.table import Table
 from rich.text import Text
 
@@ -179,9 +180,14 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
 
     for chain in chains:
         token_with_chain = row.copy()
+        blockchain = underscore(chain['contractPlatform'])
+
+        if blockchain.startswith(BINANCE):
+            blockchain = BINANCE_SMART_CHAIN
+
 
         token_with_chain.update({
-            BLOCKCHAIN: chain['contractPlatform'].lower(),
+            BLOCKCHAIN: blockchain,
             ADDRESS: chain[CONTRACT_ADDRESS]
         })
 

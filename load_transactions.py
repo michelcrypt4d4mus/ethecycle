@@ -9,6 +9,7 @@ from rich_argparse_plus import RichHelpFormatterPlus
 
 from ethecycle.blockchains.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
+from ethecycle.neo4j import Neo4j
 from ethecycle.transaction_loader import load_into_neo4j
 from ethecycle.util.logging import console, set_log_level
 from ethecycle.util.number_helper import MEGABYTE
@@ -85,3 +86,6 @@ if args.token and args.token not in CONFIGURED_TOKENS:
 
 # Actual loading happens here
 load_into_neo4j(args.csv_path, args.blockchain, args.token, preserve_csvs=args.preserve_csvs)
+
+if args.drop:
+    Neo4j().create_indexes()

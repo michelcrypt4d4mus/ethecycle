@@ -8,6 +8,7 @@ TODO: Other possible sources:
     - https://github.com/dawsbot/evm-labels
     - https://github.com/Zaehyeon2/FDGNN-Fraud-Address-Detection-on-Ethereum-using-Graph-Neural-Network
     - https://raw.githubusercontent.com/GuillermoEscobero/fraud-in-ethereum/main/dark_addresses.yaml
+    - Searching for google sheets: 'blockchain addresses site:docs.google.com sheet'
 """
 from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection

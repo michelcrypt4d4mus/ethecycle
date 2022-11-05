@@ -10,11 +10,11 @@ from neo4j.graph import Graph
 from pandas import DataFrame
 from rich.text import Text
 
-from ethecycle.util.filesystem_helper import PROJECT_ROOT_DIR
+from ethecycle.util.filesystem_helper import SCRIPTS_DIR
 from ethecycle.util.logging import console
 from ethecycle.util.neo4j_helper import neo4j_user_and_pass
 
-INDEX_CQL_FILE = PROJECT_ROOT_DIR.joinpath('queries').joinpath('indexes.cql')
+INDEX_CQL_FILE = SCRIPTS_DIR.joinpath('queries', 'cypher', 'indexes.cql')
 
 
 class Neo4j:
@@ -49,11 +49,10 @@ class Neo4j:
     def create_indexes(self):
         """Create indexes on txns and wallets."""
         with open(INDEX_CQL_FILE) as file:
-            idx_queries = [q for q in file.read().split(';') if not re.match('\\s+', q, re.DOTALL)]
-            print(idx_queries)
+            idx_queries = [q for q in file.read().split(';') if not re.match('^\\s+$', q, re.DOTALL)]
 
         with self.driver.session().begin_transaction() as tx:
             for idx_query in idx_queries:
-                txt = Text("Creating index with query:", style='dim').append(idx_query, style='cyan')
+                txt = Text("Creating index with query:\n", style='dim').append(idx_query, style='cyan')
                 console.print(txt)
                 tx.run(idx_query)

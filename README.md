@@ -72,19 +72,26 @@ Cannot guarantee these steps work but they probably will work.
 1. Activate the venv: `. .venv/bin/activate`
 
 ## Queries
-Some queries can be found in the [`queries/`](queries/) folder.
+* Some queries can be found in the [`queries/`](queries/) folder.
+* Queries can be run from python via [the `Neo4j` class](ethecycle/neo4j.py).
 
 #### Index Creation Queries
 Some reasonable guesses as to useful ways to index transactions can be found [here](queries/indexes.cql).
 
 ## Other Useful Commands
-* Get shell on the Python ETL container: `scripts/docker/python_etl/shell.sh`
-* Get shell on the test env Python ETL container: `scripts/docker/python_etl/test_shell.sh`
-* Get shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
-* Generate `.env.neo4j` file ([example](.env.neo4j.example)): `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
-* Display the wallet tags: `scripts/show_wallet_labels.sh`
-* Rebuild chain address database: `scripts/chain_addresses/reimport_all.sh`
-* Print a query that can be run on Dune to find new wallet tags: `scripts/dune_update_query.sh`
+#### Outside the Container
+* Get a shell on the Python ETL container: `scripts/docker/python_etl/shell.sh`
+* Get `bpython` REPL on the Python ETL container: `scripts/docker/python_etl/bpython.sh`
+* Get a shell on the test env Python ETL container: `scripts/docker/python_etl/test_shell.sh`
+* Get a shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
+* Generate `.env.neo4j` file ([example](.env.neo4j.example)) with Neo4j official recommendations: `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
+
+#### On the Container
+* Display the wallet tags: `show_chain_addresses`
+* Display known tokens: `show_tokens`
+* Connect to the chain address sqlite DB: `chain_address_db`
+* Print a query that can be run on Dune to find new wallet tags: `dune_query`
+* Reimport chain addresses database: `./import_chain_addresses.py -h` (note that these won't persist on the image!)
 * Set the environment variable `DEBUG=true` when running commands to see various debug ouutput
 
 

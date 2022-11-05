@@ -274,6 +274,20 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-skip-slow"
+version = "0.0.3"
+description = "A pytest plugin to skip `@pytest.mark.slow` tests by default. "
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=6.2.0"
+
+[package.extras]
+test = ["tox"]
+
+[[package]]
 name = "pytz"
 version = "2022.5"
 description = "World timezone definitions, modern and historical"
@@ -399,7 +413,7 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "0fb7e7021ae9baa368e02712f385ec4e114cd368629f0ef304553557be17c65b"
+content-hash = "6d115fe670b048e01a24576f7fbc2493a3589dc66022a1e430b372893578b1f2"
 
 [metadata.files]
 ansicon = [
@@ -582,6 +596,10 @@ pyparsing = [
 pytest = [
     {file = "pytest-7.2.0-py3-none-any.whl", hash = "sha256:892f933d339f068883b6fd5a459f03d85bfcb355e4981e146d2c7616c21fef71"},
     {file = "pytest-7.2.0.tar.gz", hash = "sha256:c4014eb40e10f11f355ad4e3c2fb2c6c6d1919c73f3b5a433de4708202cade59"},
+]
+pytest-skip-slow = [
+    {file = "pytest-skip-slow-0.0.3.tar.gz", hash = "sha256:5ba043e8b9bbf23bb4cb43fb802d1f5b71823c9869b33434a88170c2c68432ff"},
+    {file = "pytest_skip_slow-0.0.3-py3-none-any.whl", hash = "sha256:f4b419f545251ce9a24d574c70b15e6f24614d648b5c16ae8551ec0c4b5e48d6"},
 ]
 pytz = [
     {file = "pytz-2022.5-py2.py3-none-any.whl", hash = "sha256:335ab46900b1465e714b4fda4963d87363264eb662aab5e65da039c25f1f5b22"},

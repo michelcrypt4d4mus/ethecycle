@@ -237,7 +237,8 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
                         )
                     )[0]
 
-                    msg = f"Address collision for {row_dict[ADDRESS]} ({row_dict[BLOCKCHAIN]}). Mismatched cols:\n    "
+                    msg = f"Address collision for {row_dict[ADDRESS]} ({row_dict[BLOCKCHAIN]}).\n"
+                    msg +="Mismatched cols:\n    "
                     mismatches = compare_lists(row, old_row, column_names, ['extra_fields'])
                     log.warning(msg + mismatches + "\n  (Keeping only original row)")
                 else:

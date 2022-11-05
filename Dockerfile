@@ -59,7 +59,7 @@ RUN poetry install $(test "$ETHECYCLE_ENV" == production && echo "--no-dev")
 # Create an entrypoint.sh that runs 'poetry install' which is needed for pytest (TODO: why?)
 RUN echo '#!/bin/bash\npoetry install\nexec "$@"' > ./entrypoint.sh && chmod 774 ./entrypoint.sh
 
-# TODO: Put a copy of the repo onto the image and build the chain addresses database on the image.
+# TODO: Put a temporary copy of repo on the image and bake the chain addresses database into the image
 WORKDIR /ethecycle_build_address_db
 COPY ./ ./
 RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL

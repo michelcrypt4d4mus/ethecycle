@@ -17,6 +17,7 @@ from .cryptoscamdb_addresses_importer import import_cryptoscamdb_addresses
 from .ethereum_lists_repo_importer import import_ethereum_lists_addresses
 from .etherscan_labels_importer import import_etherscan_labels_repo
 from .etherscrape_importer import import_etherscrape_chain_addresses
+from .hand_collated_address_importer import import_hand_collated_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
 from .my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
 from .trustwallet_assets_importer import import_trust_wallet_repo
@@ -34,6 +35,7 @@ def rebuild_chain_addresses_db():
     import_ethereum_lists_addresses()
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()
+    import_hand_collated_addresses()
     import_my_ether_wallet_addresses()
     import_trust_wallet_repo()
     import_wallets_from_dune()

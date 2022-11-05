@@ -17,6 +17,7 @@ from ethecycle.chain_addresses import db
 from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID,
      DATA_SOURCES_TABLE_NAME, TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
+from ethecycle.util.list_helper import compare_lists
 from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_constants import *
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
@@ -146,7 +147,7 @@ def _prepare_rows(objs: Union[List[Token], List[Wallet]]) -> None:
 
         obj.extracted_at = obj.extracted_at or extracted_at
         obj.data_source_id = data_source_id
-        #import pdb;pdb.set_trace()
+
         if 'extra_fields' in dir(obj) and obj.extra_fields is not None:
             obj.extra_fields = json.dumps(obj.extra_fields)
 
@@ -211,6 +212,8 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
     failed_writes = 0
 
     with table_connection(table_name) as table:
+        column_names = table.get_columns_names()
+
         for row in rows:
             log.debug(f"Inserting {row}")
 
@@ -218,11 +221,27 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
                 table.insert(row)
                 rows_written += 1
             except IntegrityError as e:
+                failed_writes += 1
+
                 if Config.debug:
                     console.print_exception()
 
-                log.warning(f"Skipping because {type(e).__name__} error on row {row}...")
-                failed_writes += 1
+                if 'UNIQUE constraint' in str(e):
+                    row_dict = dict(zip(column_names, row))
+
+                    old_row = table.select_all(
+                        WHERE=(
+                            (table[BLOCKCHAIN] == row_dict[BLOCKCHAIN]) & \
+                            (table[DATA_SOURCE_ID] == row_dict[DATA_SOURCE_ID]) & \
+                            (table[ADDRESS] == row_dict[ADDRESS])
+                        )
+                    )[0]
+
+                    msg = f"Address collision for {row_dict[ADDRESS]} ({row_dict[BLOCKCHAIN]}). Mismatched cols:\n    "
+                    mismatches = compare_lists(row, old_row, column_names, ['extra_fields'])
+                    log.warning(msg + mismatches + "\n  (Keeping only original row)")
+                else:
+                    log.warning(f"Skipping because {type(e).__name__} error {e} on row {row}...")
 
     print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures).")
 

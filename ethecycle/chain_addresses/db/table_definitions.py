@@ -84,8 +84,8 @@ TABLE_DEFINITIONS = [
             'is_scam': sx.BOOL,
             'launched_at': sx.DATE,
             'url_explorer': sx.TEXT,
-            'extra_fields': sx.BLOB,  # JSON string
             'listed_on_coin_market_cap_at': sx.DATE,
+            'extra_fields': sx.BLOB,  # JSON blob with any other params worth saving
             DATA_SOURCE_ID: [sx.INTEGER, sx.NOT_NULL],
             'extracted_at': [sx.DATE, sx.NOT_NULL]
         },

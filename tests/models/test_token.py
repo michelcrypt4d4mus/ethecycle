@@ -8,7 +8,7 @@ from ethecycle.models.transaction import Txn
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import *
 
-from tests.ethecycle.models.conftest import EXTRACTION_TIMESTAMP_STR, TEST_TXN_HASH, TEST_TXN_LOG_LEVEL
+from tests.models.conftest import EXTRACTION_TIMESTAMP_STR, TEST_TXN_HASH, TEST_TXN_LOG_LEVEL
 
 TOKEN_LAUNCHED_AT = datetime(2019, 10, 5, 18, 00)
 URL_PROPERTIES = 'discord telegram chat announcement explorer message_board reddit source_code'.split()

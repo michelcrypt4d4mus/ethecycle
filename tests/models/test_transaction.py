@@ -3,7 +3,7 @@ import pytest
 from ethecycle.models.transaction import Txn
 from ethecycle.util.string_constants import *
 
-from tests.ethecycle.models.conftest import EXTRACTION_TIMESTAMP_STR, TEST_TXN_HASH, TEST_TXN_LOG_LEVEL
+from tests.models.conftest import EXTRACTION_TIMESTAMP_STR, TEST_TXN_HASH, TEST_TXN_LOG_LEVEL
 
 
 def test_constructor(transaction_of_the_beast):

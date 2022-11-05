@@ -105,8 +105,6 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
         for k, v in token_data.items()
         if k in ['category', 'name', SYMBOL]
     }
-    if row.get(SYMBOL) == 'USDT':
-        pprint(token_data)
 
     row['launched_at'] = token_data.get('dateLaunched')
     row['coin_market_cap_id'] = token_data.get('id')

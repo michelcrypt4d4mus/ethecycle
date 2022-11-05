@@ -4,7 +4,7 @@ from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.models.wallet import Wallet
 from ethecycle.util.string_constants import *
 
-from tests.ethecycle.models.conftest import EXTRACTION_TIMESTAMP_STR
+from tests.models.conftest import EXTRACTION_TIMESTAMP_STR
 
 
 def test_to_neo4j_csv_row(wallet_1, transaction_of_the_beast):

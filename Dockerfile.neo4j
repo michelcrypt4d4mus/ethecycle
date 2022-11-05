@@ -22,10 +22,10 @@ RUN sed -ri 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh
 RUN sed -ri 's/#PermitUserEnvironment no/PermitUserEnvironment yes/' /etc/ssh/sshd_config
 
 # Configure root intranet ssh environment by public key
+ARG SSH_KEY_DIR
 ARG SSH_DIR=/root/.ssh
-RUN mkdir -p ${SSH_DIR}
-RUN chmod 700 ${SSH_DIR}
-COPY ./container_id_ed25519.pub ${SSH_DIR}/authorized_keys
+RUN mkdir -p ${SSH_DIR} && chmod 700 ${SSH_DIR}
+COPY ${SSH_KEY_DIR}/id_ed25519.pub ${SSH_DIR}/authorized_keys
 RUN chmod 600 ${SSH_DIR}/authorized_keys
 
 # Make env available to ssh login; fix heap to recommended import level

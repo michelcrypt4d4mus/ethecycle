@@ -1,10 +1,12 @@
 """
 Methods that interact with the Neo4j docker container.
+For running queries see Neo4j() class.
+TODO: split into two files, neo4j_server_helper.py and neo4j_query_helper.py
 """
 from contextlib import contextmanager
 from os import environ, path
 from subprocess import check_output
-from typing import List
+from typing import Any, List, Optional, Tuple
 
 from rich.text import Text
 
@@ -57,20 +59,21 @@ def admin_load_bash_command(neo4j_csvs: List['Neo4jCsvs']) -> str:
     """Generate shell command to bulk load a set of CSVs."""
     wallet_csvs = [n.wallet_csv_path for n in neo4j_csvs]
     txn_csvs = [n.txn_csv_path for n in neo4j_csvs]
+    loader_cli_args = LOADER_CLI_ARGS.copy()
 
     if Config.drop_database:
-        msg = f"WARNING: This command will overwrite current DB '{NEO4J_DB}'!"
+        msg = f"WARNING: This will overwrite current DB '{NEO4J_DB}'!"
         console.print(msg, style='red blink bold', justify='center')
-        LOADER_CLI_ARGS['overwrite-destination'] = 'true'
+        loader_cli_args['overwrite-destination'] = 'true'
         subcommand = 'full'
     else:
         console.print(INCREMENTAL_INSTRUCTIONS)
         # '--force' is required for all incremental loads, which must be run when the DB is stopped
-        LOADER_CLI_ARGS['force'] = 'true'
-        LOADER_CLI_ARGS['stage'] = 'all'
+        loader_cli_args['force'] = 'true'
+        loader_cli_args['stage'] = 'all'
         subcommand = 'incremental'
 
-    load_args = [f"--{k}={v}" for k, v in LOADER_CLI_ARGS.items()]
+    load_args = [f"--{k}={v}" for k, v in loader_cli_args.items()]
     load_args.append(f"--nodes={NODE_LABEL}={','.join(wallet_csvs)}")
     load_args.append(f"--relationships={EDGE_LABEL}={','.join(txn_csvs)}")
     return f"{CSV_IMPORT_CMD} {subcommand} {' '.join(load_args)} {NEO4J_DB}"
@@ -103,7 +106,7 @@ def stop_database():
 def execute_cypher_query(cql: str) -> str:
     """Execute CQL query on the Neo4J container"""
     console.print(Text("Executing CQL query: ").append(cql, style=PEACH))
-    user, password = _neo4j_user_and_pass()
+    user, password = neo4j_user_and_pass()
     cmd = f"echo '{cql}' | {CYPHER_EXECUTABLE} -u {user} -p {password}"
     return _execute_shell_cmd_on_neo4j_container(cmd)
 
@@ -116,9 +119,9 @@ def _execute_shell_cmd_on_neo4j_container(cmd: str) -> str:
     return cmd_result
 
 
-def _neo4j_user_and_pass() -> List[str]:
+def neo4j_user_and_pass() -> Tuple[str, str]:
     """Returns a 2-tuple, [username, password]."""
     if '/' not in (NEO4J_AUTH or ''):
         raise ValueError("NEO4J_AUTH env var is not set correctly")
 
-    return NEO4J_AUTH.split('/')
+    return tuple(NEO4J_AUTH.split('/'))

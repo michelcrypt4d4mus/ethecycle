@@ -25,5 +25,5 @@ set_NEO4J_CONTAINER_ID() {
 
 # Run a command on the neo4j container, launching it if it's not running.
 run_on_neo4j_container() {
-    docker exec --env-file=.env.neo4j -it `get_neo4j_container_id` "$@"
+    docker exec --env-file=scripts/docker/neo4j/.env.neo4j -it `get_neo4j_container_id` "$@"
 }

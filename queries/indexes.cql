@@ -7,7 +7,7 @@
 // Index txns on block_number
 CREATE RANGE INDEX idx_txn_block_number IF NOT EXISTS
 FOR ()-[r:TXN]-()
-ON (r.block_number)
+ON (r.block_number);
 
 // Index txns on num_tokens
 CREATE RANGE INDEX idx_txn_num_tokens IF NOT EXISTS

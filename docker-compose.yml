@@ -1,18 +1,22 @@
+# It's critical that $TXION_DATA_MOUNT_DIR and /ethecycle be mounted on both containers.
 version: "3.9"
 
 services:
   neo4j:
     build:
-      dockerfile: Dockerfile-neo4j
+      dockerfile: Dockerfile.neo4j
       context: .
+      args:
+        - SSH_KEY_DIR=${SSH_KEY_DIR}
     env_file:
-      - .env.neo4j
+      - ${DOCKER_SCRIPTS_DIR}/neo4j/.env.neo4j
     environment:
       - ETHECYCLE_ENV=${ETHECYCLE_ENV:-development}
       - NEO4J_AUTH=${NEO4J_USER_AND_PASS}
+      - SSH_KEY_DIR=${SSH_KEY_DIR}
     ports:
-      - 7474:7474
-      - 7687:7687
+      - 127.0.0.1:7474:7474
+      - 127.0.0.1:7687:7687
     volumes:
       - .:/ethecycle
       - ${NEO4J_DATA_DIR}/data:/data
@@ -21,13 +25,14 @@ services:
   python_etl:
     build:
       context: .
+      args:
+        - SSH_KEY_DIR=${SSH_KEY_DIR}
     tty: true
     stdin_open: true
     environment:
       - ETHECYCLE_ENV=${ETHECYCLE_ENV:-development}
       - NEO4J_AUTH=${NEO4J_USER_AND_PASS}
-    env_file:
-      - .env
+      - SSH_KEY_DIR=${SSH_KEY_DIR}
     depends_on:
       - neo4j
     volumes:

@@ -1,4 +1,5 @@
 #!/bin/bash
-# Get a bash shell on the test container
+# Get a bash shell on the test version of the python_etl container
 
-docker-compose --env-file .env.test run --rm python_etl
+cat .env scripts/docker/python_etl/.env.test > scripts/docker/python_etl/.env.test.tmp
+docker-compose --env-file scripts/docker/python_etl/.env.test.tmp run --rm python_etl

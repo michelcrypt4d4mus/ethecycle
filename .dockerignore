@@ -2,4 +2,10 @@
 data/
 doc/
 output/
+queries/
+scripts/tests/
 tests/
+Dockerfile
+docker-compose.yml
+pytest.ini
+README.md

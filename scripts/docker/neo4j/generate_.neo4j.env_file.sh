@@ -4,7 +4,6 @@
 #      https://neo4j.com/docs/operations-manual/current/docker/operations/#docker-neo4j-memrec
 
 SCRIPT_PATH=$(dirname -- "$(readlink -f -- "$0";)";)
-ETHECYCLE_PATH=$(readlink -f -- "$SCRIPT_PATH/../../..")
 
 show_help() {
     cat << EOF
@@ -24,6 +23,7 @@ EOF
 
 
 # Find the neo4j container
+docker-compose up -d
 . $SCRIPT_PATH/neo4j_container_helper.sh
 set_NEO4J_CONTAINER_ID
 
@@ -45,8 +45,8 @@ else
 fi
 
 # Execute neo4j-admin server memory-recommendation on the container
-NEO4J_ENV_FILE=$ETHECYCLE_PATH/.env.neo4j
-run_on_neo4j_container neo4j-admin server memory-recommendation --memory=$MEMORY_STRING --docker > $NEO4J_ENV_FILE
+NEO4J_ENV_FILE="$SCRIPT_PATH/.env.neo4j"
+run_on_neo4j_container /var/lib/neo4j/bin/neo4j-admin server memory-recommendation --memory=$MEMORY_STRING --docker > $NEO4J_ENV_FILE
 
 echo -e "\nOfficial neo4j-admin recommendations:\n"
 grep -v "#" "$NEO4J_ENV_FILE"

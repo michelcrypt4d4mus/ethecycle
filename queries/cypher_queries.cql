@@ -16,13 +16,16 @@ RETURN address, c
 LIMIT 10
 
 
-// Top 100 transacting wallets
-MATCH (w)-[txn]->()
-RETURN w.address,
+// Top 100 eth sending wallets
+// MATCH (w)-[txn]->()
+// Top 100 eth receiving wallets
+MATCH ()-[txn]->(w)
+RETURN COALESCE(w.label, w.address) AS who,
+       w.category AS ctgry,
        count(txn) AS sent_txn_count,
        ROUND(SUM(txn.num_tokens), 2) AS sent_tokens_total,
        ROUND(SUM(txn.num_tokens) / count(txn), 3) AS avg_tokens_per_txn
-ORDER BY count(txn) DESC
+ORDER BY sent_tokens_total DESC
 LIMIT 100
 
 

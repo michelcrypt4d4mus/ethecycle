@@ -29,8 +29,8 @@ cp .env.neo4j.example .env.neo4j
 # Use vi or whatever editor you prefer to set variables in .env
 vi .env
 
-# Generate an ssh key pair for your containers to use to talk to each other:
-ssh-keygen -f ./container_id_ed25519 -t ed25519 -C -q -N ""
+# Generate an ssh key pair your containers can use to talk to each other and some .env files:
+scripts/docker/container_file_setup.sh
 
 # When you run this command docker-compose should build everything and leave you in a
 # bash shell, at which point you can run 'bpython' to get a python REPL etc.

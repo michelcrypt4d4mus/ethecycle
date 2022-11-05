@@ -142,3 +142,5 @@ container_id*
 /tests/file_fixtures/neo4j/
 /tests/file_fixtures/chain_addresses_sqlite.d*
 /tests/file_fixtures/tmp/
+/scripts/docker/container_files/id_ed2551*
+/scripts/docker/python_etl/.env.test.tmp

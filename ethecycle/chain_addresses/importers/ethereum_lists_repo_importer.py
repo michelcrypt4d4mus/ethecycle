@@ -1,6 +1,5 @@
 """
 Import data from ethereum-lists repo.
-# TODO: They also have a contracts repo we could import: https://github.com/ethereum-lists/contracts
 """
 import json
 from os import path

@@ -67,6 +67,7 @@ VAULTS = 'vaults'
 WALLET_PROVIDER = 'wallet provider'
 
 # Misc
+JSON = 'json'
 NAME = 'name'
 
 # GraphML

@@ -210,6 +210,7 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
     console.print(f"Fallback write {len(rows)} rows to '{table_name}' one at a time...", style='bright_yellow')
     rows_written = 0
     failed_writes = 0
+    identical_writes = 0
 
     with table_connection(table_name) as table:
         column_names = table.get_columns_names()
@@ -221,8 +222,6 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
                 table.insert(row)
                 rows_written += 1
             except IntegrityError as e:
-                failed_writes += 1
-
                 if Config.debug:
                     console.print_exception()
 
@@ -240,11 +239,16 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
                     msg = f"Address collision for {row_dict[ADDRESS]} ({row_dict[BLOCKCHAIN]}).\n"
                     msg +="Mismatched cols:\n    "
                     mismatches = compare_lists(row, old_row, column_names, ['extra_fields'])
-                    log.warning(msg + mismatches + "\n  (Keeping only original row)")
+
+                    if len(mismatches) > 0:
+                        failed_writes += 1
+                        log.warning(msg + mismatches + "\n  (Keeping only original row)")
+                    else:
+                        identical_writes += 1
                 else:
                     log.warning(f"Skipping because {type(e).__name__} error {e} on row {row}...")
 
-    print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures).")
+    print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures, {identical_writes} identical rows).")
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database

@@ -1,5 +1,4 @@
 from os import path
-from subprocess import CalledProcessError, check_output
 
 from ethecycle.config import Config
 from ethecycle.util.neo4j_helper import execute_cypher_query

@@ -1,14 +1,32 @@
-ARG BUILD_CHAIN_ADDRESS_DB=copy
+# Building the chain_addresses.db file is slow and hard to cache correctly.
+# Once it has been built if you copy it to 'scripts/docker/container_files/chain_addresses_sqlite.db'
+# and set REBUILD_CHAIN_ADDRESS_DB to 'copy_prebuilt_address_db' in the docker build process, it will
+# just be copied rather than rebuilt.
+#
+# Possible values are 'freshly_built_address_db' and 'copy_prebuilt_address_db'
+ARG REBUILD_CHAIN_ADDRESS_DB=freshly_built_address_db
+ARG CHAIN_ADDRESS_DATA_DIR=/chain_address_data
+ARG SSH_KEY_DIR
 
-FROM alpine as build_copy
-ONBUILD COPY file /file
+FROM python:3.10 as build_with_freshly_built_address_db
+ARG CHAIN_ADDRESS_DATA_DIR
+ARG SSH_KEY_DIR
+ONBUILD RUN mkdir ${CHAIN_ADDRESS_DATA_DIR}
 
-FROM alpine as build_no_copy
-ONBUILD RUN echo "I don't copy"
+FROM python:3.10 as build_with_copy_prebuilt_address_db
+ARG CHAIN_ADDRESS_DATA_DIR
+ARG SSH_KEY_DIR
+ONBUILD RUN mkdir ${CHAIN_ADDRESS_DATA_DIR}
+ONBUILD COPY ${SSH_KEY_DIR}/chain_addresses_sqlite.db ${CHAIN_ADDRESS_DATA_DIR}/
 
-FROM build_${BUILD_ENV}
+# This is the branching logic for the build
+FROM build_with_${REBUILD_CHAIN_ADDRESS_DB}
 
-FROM python:3.10
+# ARGs don't persist after FROM unless you redeclare them
+ARG SSH_KEY_DIR
+ARG REBUILD_CHAIN_ADDRESS_DB
+ARG CHAIN_ADDRESS_DATA_DIR
+ENV CHAIN_ADDRESS_DATA_DIR=${CHAIN_ADDRESS_DATA_DIR}
 
 # Get some bash tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,12 +36,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         sqlite3 \
         wget
 
-# Pull some wallet tag sources of variable quality from github (GIT_REPO_DIR comes from .env)
-ENV CHAIN_ADDRESS_DATA_DIR=/chain_address_data
-RUN mkdir ${CHAIN_ADDRESS_DATA_DIR}
+# Pull Adamant vaults and other chain address data that is not in the chain_address DB yet.
 WORKDIR ${CHAIN_ADDRESS_DATA_DIR}
 
-# Pull Adamant vaults and other chain address data that is not in the chain_address DB yet.
 RUN git clone https://github.com/eepdev/vaults.git && \
     git clone https://github.com/rchen8/hop-airdrop.git && \
     git clone https://github.com/Mmoouu/test-iotxview/ && \
@@ -34,10 +49,9 @@ RUN git clone https://github.com/eepdev/vaults.git && \
     git clone https://github.com/aurafinance/aura-token-allocation.git && \
     git clone https://github.com/kovart/forta-agents.git && \
     git clone https://github.com/graphsense/graphsense-tagpacks.git && \
-    git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git
-
-# Remove some unnecessary cruft from image
-RUN rm -fr test-iotxview/.git && find test-iotxview/ -name '*.png' -delete && \
+    git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git && \
+    # Remove some unnecessary cruft from image
+    rm -fr test-iotxview/.git && find test-iotxview/ -name '*.png' -delete && \
     rm -fr assets/.git && find assets/ -name '*.png' -delete && \
     rm -fr TronStreaming/.git
 
@@ -80,7 +94,7 @@ RUN echo '.mode table\n.header on' > ${HOME}/.sqliterc && \
     mkdir ${SSH_DIR} && chmod 700 ${SSH_DIR}
 
 # Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
-COPY ${SSH_KEY_DIR}/ ${SSH_DIR}/
+COPY ${SSH_KEY_DIR}/id_ed25519 ${SSH_KEY_DIR}/id_ed25519.pub ${SSH_DIR}/
 
 # Entrypoints
 ENTRYPOINT ["/python/entrypoint.sh"]

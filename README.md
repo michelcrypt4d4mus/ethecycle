@@ -22,15 +22,13 @@ To launch docker containers and load graph data:
 git clone https://github.com/michelcrypt4d4mus/ethecycle.git
 cd ethecycle
 
-# Edit local copy of .env to set TXION_DATA_DIR as the location of some txion CSVs
-cp .env.example .env
-cp .env.neo4j.example .env.neo4j
-
-# Use vi or whatever editor you prefer to set variables in .env
-vi .env
-
-# Generate an ssh key pair your containers can use to talk to each other and some .env files:
+# Generate ssh key pair your containers can use to talk to each other and create some .env files:
 scripts/docker/container_file_setup.sh
+
+# Edit local copy of .env to set TXION_DATA_DIR as the location of some txion CSVs
+# NOTE: After the first build you may want to set REBUILD_CHAIN_ADDRESS_DB to avoid rebuilding
+#       the chain addresses DB every time.
+vi .env
 
 # When you run this command docker-compose should build everything and leave you in a
 # bash shell, at which point you can run 'bpython' to get a python REPL etc.

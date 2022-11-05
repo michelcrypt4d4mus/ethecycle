@@ -6,6 +6,7 @@ services:
     build:
       dockerfile: Dockerfile.neo4j
       context: .
+      # See Dockerfile comment about REBUILD_CHAIN_ADDRESS_DB arg.
       args:
         - SSH_KEY_DIR=${SSH_KEY_DIR}
     env_file:
@@ -27,6 +28,7 @@ services:
       context: .
       args:
         - SSH_KEY_DIR=${SSH_KEY_DIR}
+        - REBUILD_CHAIN_ADDRESS_DB=${REBUILD_CHAIN_ADDRESS_DB}
     tty: true
     stdin_open: true
     environment:

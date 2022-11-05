@@ -70,5 +70,8 @@ RUN rm -fr /ethecycle_build_address_db
 RUN apt-get purge --auto-remove -y \
         wget
 
+# Build a little .bash_profile with helpful aliases
+RUN echo 'alias chain_address_db=/ethecycle/scripts/chain_addresses/connect_to_db.sh' >> /root/.bash_profile
+
 ENTRYPOINT ["/python/entrypoint.sh"]
-CMD ["/bin/bash"]
+CMD ["/bin/bash", "-l"]

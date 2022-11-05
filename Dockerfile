@@ -1,3 +1,13 @@
+ARG BUILD_CHAIN_ADDRESS_DB=copy
+
+FROM alpine as build_copy
+ONBUILD COPY file /file
+
+FROM alpine as build_no_copy
+ONBUILD RUN echo "I don't copy"
+
+FROM build_${BUILD_ENV}
+
 FROM python:3.10
 
 # Get some bash tools

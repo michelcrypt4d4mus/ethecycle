@@ -3,33 +3,19 @@ Import data from https://github.com/cl2089/etherscan-contract-crawler
 """
 import json
 from os import path
-from pathlib import Path
 from typing import List, Type
 
-from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.blockchains.binance_smart_chain import BinanceSmartChain
-from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
 from ethecycle.blockchains.chain_info import ChainInfo
-from ethecycle.models.token import Token
-from ethecycle.chain_addresses.address_db import (insert_tokens_from_data_source,
-     insert_wallets_from_data_source)
+from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.chain_addresses.address_db import (insert_wallets_from_data_source)
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
-from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
+from ethecycle.util.filesystem_helper import files_in_dir
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
 from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('cl2089/etherscan-contract-crawler')
-
-CONTRACT_JSON_KEYS = set(['project', NAME, 'source', 'features'])
-
-# Keys are folder names, values are blockchain names.
-DIRS_TO_IMPORT = {
-    'arb': ARBITRUM,
-    'avax': AVALANCHE,
-    'bsc': BINANCE_SMART_CHAIN,
-    'eth': ETHEREUM,
-}
 
 
 def import_ethereum_contract_crawler_addresses():

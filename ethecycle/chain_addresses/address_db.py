@@ -242,11 +242,14 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
 
                     if len(mismatches) > 0:
                         failed_writes += 1
-                        log.warning(msg + mismatches + "\n  (Keeping only original row)")
+
+                        if not Config.suppress_chain_address_db_collision_warnings:
+                            log.warning(msg + mismatches + "\n  (Keeping only original row)")
                     else:
                         identical_writes += 1
                 else:
-                    log.warning(f"Skipping because {type(e).__name__} error {e} on row {row}...")
+                    if not Config.suppress_chain_address_db_collision_warnings:
+                        log.warning(f"Skipping because {type(e).__name__} error {e} on row {row}...")
 
     print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures, {identical_writes} identical rows).")
 

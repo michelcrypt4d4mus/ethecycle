@@ -43,6 +43,9 @@ parser.add_argument('importer_method',
                     help='chain address importer method to call',
                     choices=IMPORTER_METHODS)
 
+parser.add_argument('-s', '--suppress-warnings', action='store_true',
+                    help='suppress DB collision warnings')
+
 parser.add_argument('-D', '--debug', action='store_true',
                     help='show debug level log output')
 
@@ -51,6 +54,9 @@ args = parser.parse_args()
 if args.debug:
     Config.debug = True
     set_log_level(DEBUG)
+
+if args.suppress_warnings:
+    Config.suppress_chain_address_db_collision_warnings = True
 
 if args.importer_method == REBUILD_ALL:
     rebuild_db_arg = environ.get('REBUILD_CHAIN_ADDRESS_DB')

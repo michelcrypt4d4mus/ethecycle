@@ -11,3 +11,4 @@ class Config:
     skip_load_from_db = False
     is_docker_image_build = 'IS_DOCKER_IMAGE_BUILD' in environ
     is_test_env = environ['ETHECYCLE_ENV'] == 'test'
+    suppress_chain_address_db_collision_warnings = False

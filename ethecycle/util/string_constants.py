@@ -61,7 +61,7 @@ TIKTOK = 'tiktok'
 TWITTER = 'twitter'
 YOUTUBE = 'youtube'
 
-SOCIAL_MEDIA_LINKS = [
+SOCIAL_MEDIA_ORGS = [
     FACEBOOK,
     INSTAGRAM,
     LINKEDIN,

@@ -16,9 +16,15 @@ from ethecycle.models.wallet import Wallet
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR
 from ethecycle.util.logging import console, log
 from ethecycle.util.number_helper import pct, pct_str
-from ethecycle.util.string_constants import INDIVIDUAL, SOCIAL_MEDIA_LINKS
+from ethecycle.util.string_constants import BITCOINTALK, INDIVIDUAL, SOCIAL_MEDIA_ORGS
 
 GOOGLE_SHEETS = {
+    '1KX42FnK2TAZ2caf14TiJ5LbA7rUnsHIHX-FdJPfqx5k': [
+        'Form Responses 1'
+    ],
+    '1gFGizvgADXVHMNhiP0WlFJY2floPpIaU14OecgngDXo': [
+        'Twitter Campaign',
+    ],
     '1VN61OS92gyZSHlYorDMfVVf90n3jl-HKTGbhBXVthNE': [
         'Final sheet Signature',
         'Final Translation',
@@ -83,11 +89,10 @@ def import_google_sheets() -> None:
             url = _build_url(sheet_id, worksheet)
             df = pd.read_csv(url)
             df = df[[c for c in df if not c.startswith("Unnamed")]]
+            df_length = len(df)
             _write_df_to_csv(df, sheet_id, worksheet)
             column_names = list(df.columns.values)
-            df_length = len(df)
-            invalid_address_count = 0
-            wallet_cols = _guess_address_column(column_names)
+            wallet_cols = _guess_address_columns(column_names)
 
             if len(wallet_cols) == 0:
                 raise ValueError(f"No wallet cols found in {column_names}")
@@ -106,7 +111,7 @@ def import_google_sheets() -> None:
             wallet_cols_df = df[wallet_cols]
             mismatches = wallet_cols_df[wallet_cols_df[address_col_label] != wallet_cols_df[wallet_cols[-1]]]
             mismatches_length = len(mismatches)
-            social_media_col_label = _guess_social_media_column(column_names, df)
+            social_media_col_label = _guess_social_media_column(df)
 
             for (_row_number, row) in df.iterrows():
                 wallets.append(_build_wallet(row, address_col_label, social_media_col_label, url))
@@ -120,7 +125,7 @@ def import_google_sheets() -> None:
                 console.print(mismatches)
                 console.print(f"SOCIAL COL: {social_media_col_label}", style='magenta')
 
-            valid_row_count = df_length - invalid_address_count - mismatches_length - df_nulls_length
+            valid_row_count = df_length - invalid_addresses_count - mismatches_length - df_nulls_length
             console.print(f"Total rows: {df_length}, VALID: {valid_row_count} ({invalid_addresses_count} invalid, {mismatches_length} mismatches, {df_nulls_length} nulls)")
             insert_wallets_from_data_source(wallets)
 
@@ -151,14 +156,16 @@ def _build_wallet(df_row: pd.Series, address_col_label: str, social_col_label: s
 
 
 def _build_url(sheet_id: str, worksheet_name: str) -> str:
+    """Build google sheets URL."""
     args = ARGS.copy()
     args.update({'sheet': worksheet_name})
     url = f'{SHEETS_URL}{sheet_id}/gviz/tq?{urlencode(args).replace("/", "%%2F")}'
+    console.line(2)
     console.print(f"Reading '{worksheet_name}' from '{url}'...")
     return url
 
 
-def _guess_address_column(columns: List[str]) -> Optional[List[str]]:
+def _guess_address_columns(columns: List[str]) -> Optional[List[str]]:
     """Guess which col has the addresses."""
     ethereum_wallet_cols = [c for c in columns if ETHEREUM_ADDRESS_REGEX.search(c)]
 
@@ -166,40 +173,54 @@ def _guess_address_column(columns: List[str]) -> Optional[List[str]]:
         return ethereum_wallet_cols
 
 
-def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
+def _guess_social_media_column(df: pd.DataFrame) -> str:
     """Guess which col has the addresses."""
+    column_names = list(df.columns.values)
+
     social_media_cols = [
-        c for c in columns
-        if any(social_media_org in c.lower() for social_media_org in SOCIAL_MEDIA_LINKS)
+        c for c in column_names
+        if any(social_media_org in c.lower() for social_media_org in SOCIAL_MEDIA_ORGS)
     ]
+    social_media_cols = sorted(social_media_cols, key=lambda c: 'zzzz' if BITCOINTALK in c.lower() else c)
+    console.print(f"All column names: {column_names}", style='color(130)')
+    console.print(f"Possible social media columns: {social_media_cols}", style='color(132)')
 
     for col in social_media_cols:
-        social_media_url = _social_media_url(col)
-        row_count = len([c for c in df[col] if isinstance(c, str) and (social_media_url in c or c.startswith('@'))])
-        console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
-
-        if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:
-            console.print(f"        CHOOSING '{col}'", style='color(143)')
+        if _is_good_label_col(df, col):
             return col
 
-    for col in columns:
+    for col in column_names:
         if not isinstance(col, str):
             continue
 
         if col.lower().startswith('profile') or col.lower().startswith('vk '):
-            row_count = len([c for c in df[col] if isinstance(c, str) and (c.startswith('https://') or c.startswith('@'))])
-            console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
-
-            if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:
-                console.print(f"        CHOOSING '{col}'", style='color(143)')
+            if _is_good_label_col(df, col):
                 return col
 
     raise ValueError(f"No social media column identified!")
 
 
+def _is_good_label_col(df: pd.DataFrame, col: str) -> bool:
+    """If """
+    if any(social_media_org in col.lower() for social_media_org in SOCIAL_MEDIA_ORGS):
+        substring = _social_media_url(col)
+    else:
+        substring = 'https://'
+
+    console.print(f"    Substring to look for '{col}' profile is '@' prefix or '{substring}'...", style='cyan dim')
+    row_count = len([c for c in df[col] if isinstance(c, str) and (substring in c or c.startswith('@'))])
+    console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))})", style='color(155)')
+
+    if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:
+        console.print(f"        CHOOSING '{col}'", style='color(143)')
+        return True
+    else:
+        return False
+
+
 def _social_media_url(column: str) -> str:
     """Find which social media org and return e.g. twitter.com."""
-    for social_media_org in SOCIAL_MEDIA_LINKS:
+    for social_media_org in SOCIAL_MEDIA_ORGS:
         if social_media_org in column.lower():
             if social_media_org == 'bitcointalk':
                 return f"{social_media_org}.org"

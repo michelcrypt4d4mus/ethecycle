@@ -19,6 +19,15 @@ from ethecycle.util.number_helper import pct, pct_str
 from ethecycle.util.string_constants import INDIVIDUAL, SOCIAL_MEDIA_LINKS
 
 GOOGLE_SHEETS = {
+    '1VN61OS92gyZSHlYorDMfVVf90n3jl-HKTGbhBXVthNE': [
+        'Final sheet Signature',
+        'Final Translation',
+        'Twitter Bounty',
+        'Facebook Bounty',
+        'Translation Bounty',
+        'Blog/Media Bounty',
+        'Signature',
+    ],
     '1VY4YK06p_9Mn0tPlHoXO_N3KJZbwGB18uypXSQtk3Gc': [
         'Twitter Master Sheet',
         'Facebook Master Sheet',

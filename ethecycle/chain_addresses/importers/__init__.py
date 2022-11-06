@@ -8,7 +8,11 @@ TODO: Other possible sources:
     - https://github.com/dawsbot/evm-labels
     - https://github.com/Zaehyeon2/FDGNN-Fraud-Address-Detection-on-Ethereum-using-Graph-Neural-Network
     - https://raw.githubusercontent.com/GuillermoEscobero/fraud-in-ethereum/main/dark_addresses.yaml
+    - https://www.bitcoinabuse.com/api/download/forever?api_token={API_TOKEN}
     - Searching for google sheets: 'blockchain addresses site:docs.google.com sheet'
+    - https://docs.google.com/spreadsheets/u/0/d/1oF6vA71id2xDp8GTxY7xBMNz67ZpbwVDAzhDeIXtnzo/htmlview
+    - https://docs.google.com/spreadsheets/d/1JljucXr5mJU1m2rA63NgRa7pwvmRtkIjjYHPVGpolZA/htmlview
+    - https://docs.google.com/spreadsheets/d/1QlbETkBQAgnSJth5Na2ypQL-RaE_b1tddBX1rqT5ZK8/edit#gid=941991872
 """
 from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection
@@ -19,6 +23,7 @@ from .ethereum_lists_repo_importer import import_ethereum_lists_addresses
 from .etherscan_labels_importer import import_etherscan_labels_repo
 from .etherscan_contract_crawler_importer import import_ethereum_contract_crawler_addresses
 from .etherscrape_importer import import_etherscrape_chain_addresses
+from .google_sheets_importer import import_google_sheets
 from .hand_collated_address_importer import import_hand_collated_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
 from .my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
@@ -34,6 +39,7 @@ def rebuild_chain_addresses_db():
     import_hardcoded_addresses()
     import_coin_market_cap_repo_addresses()
     import_cryptoscamdb_addresses()
+    import_ethereum_contract_crawler_addresses()
     import_ethereum_lists_addresses()
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()

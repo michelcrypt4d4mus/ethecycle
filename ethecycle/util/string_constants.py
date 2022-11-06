@@ -51,6 +51,16 @@ DATA_SOURCE = 'data_source'
 # Industry
 ALAMEDA = 'alameda'
 BINANCE = 'binance'
+
+SOCIAL_MEDIA_LINKS = [
+    'facebook',
+    'instagram',
+    'tiktok',
+    'twitter',
+    'youtube,'
+]
+
+# Wallet Categories
 BRIDGE = 'bridge'
 CATEGORY = 'category'
 CEFI = 'cefi'
@@ -61,6 +71,7 @@ DEX = 'dex'
 EXCHANGE = 'exchange'
 FTX = 'ftx'
 HACKERS = 'hackers'
+INDIVIDUAL = 'individual'
 MIXER = 'mixer'
 STABLECOIN = 'stablecoin'
 VAULTS = 'vaults'

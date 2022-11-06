@@ -39,3 +39,11 @@ def comma_format(number: Union[int, float]) -> str:
         return "{:,.2f}".format(number)
     else:
         return "{:,d}".format(number)
+
+
+def pct_str(numerator: Union[float, int], denominator: Union[float, int]) -> str:
+    return "{:.1f}%".format(pct(numerator, denominator))
+
+
+def pct(numerator: Union[float, int], denominator: Union[float, int]) -> float:
+    return 100 * float(numerator) / denominator

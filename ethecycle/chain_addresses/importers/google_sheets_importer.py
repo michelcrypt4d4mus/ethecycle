@@ -113,10 +113,6 @@ def _build_url(sheet_id: str, worksheet_name: str) -> str:
     return url
 
 
-def _count_rows_matching_pattern(series: pd.Series, _pattern: str) -> int:
-    return len([c for c in series if isinstance(c, str) and _pattern in c])
-
-
 def _guess_address_column(columns: List[str]) -> Optional[List[str]]:
     """Guess which col has the addresses."""
     ethereum_wallet_cols = [c for c in columns if ETHEREUM_ADDRESS_REGEX.match(c)]
@@ -134,7 +130,7 @@ def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
 
     for col in social_media_cols:
         social_media_url = _social_media_url(col)
-        row_count = _count_rows_matching_pattern(df[col], social_media_url)
+        row_count = len([c for c in df[col] if isinstance(c, str) and social_media_url in c])
         console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
 
         if pct(row_count, len(df)) > 95.0:

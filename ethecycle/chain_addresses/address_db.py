@@ -92,7 +92,7 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
     columns = db_conn.get_columns_names(table_name)
     row_tuples = [[row.get(c) for c in columns] for row in rows]
 
-    if True: #Config.debug:
+    if Config.debug:
         console.print(Panel("FIRST ROW TO INSERT", expand=False))
         pprint(rows[0])
 

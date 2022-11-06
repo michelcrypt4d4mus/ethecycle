@@ -55,6 +55,8 @@ BINANCE = 'binance'
 SOCIAL_MEDIA_LINKS = [
     'facebook',
     'instagram',
+    'linkedin',
+    'telegram',
     'tiktok',
     'twitter',
     'youtube,'

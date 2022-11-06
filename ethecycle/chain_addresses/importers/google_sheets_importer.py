@@ -20,6 +20,15 @@ GOOGLE_SHEETS = {
     '1QlbETkBQAgnSJth5Na2ypQL-RaE_b1tddBX1rqT5ZK8': [
         'Twitter Bounty',
         'Facebook Bounty',
+    ],
+    '1oF6vA71id2xDp8GTxY7xBMNz67ZpbwVDAzhDeIXtnzo': [
+        'Blogs & Media',
+        'Twitter',
+        'Facebook',
+        'Instagram',
+        'Youtube',
+        'LinkedIn',
+        'Translation'
     ]
 }
 
@@ -27,13 +36,12 @@ ARGS = {
     'tqx': 'out:csv',
 }
 
-ETHEREUM_ADDRESS_REGEX = re.compile('ethereum\\s+(wallet)?\\s*address', re.IGNORECASE)
+ETHEREUM_ADDRESS_REGEX = re.compile('eth(ereum)?\\s+(wallet)?\\s*address', re.IGNORECASE)
 SHEETS_URL = 'https://docs.google.com/spreadsheets/d/'
-MAX_ROWS = 5
+SOCIAL_MEDIA_PCT_CUTOFF = 88.0  # Min % of col matching a URL or @something style string
 
 
 def import_google_sheets() -> None:
-
     for sheet_id, worksheets in GOOGLE_SHEETS.items():
         for worksheet in worksheets:
             wallets: List[Wallet] = []
@@ -132,10 +140,10 @@ def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
 
     for col in social_media_cols:
         social_media_url = _social_media_url(col)
-        row_count = len([c for c in df[col] if isinstance(c, str) and social_media_url in c])
+        row_count = len([c for c in df[col] if isinstance(c, str) and (social_media_url in c or c.startswith('@'))])
         console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
 
-        if pct(row_count, len(df)) > 95.0:
+        if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:
             console.print(f"        CHOOSING '{col}'", style='color(143)')
             return col
 

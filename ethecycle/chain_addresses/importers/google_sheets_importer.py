@@ -20,7 +20,7 @@ GOOGLE_SHEETS = {
     '1QlbETkBQAgnSJth5Na2ypQL-RaE_b1tddBX1rqT5ZK8': [
         'Twitter Bounty',
         'Facebook Bounty',
-        #'Blog/Media-Final Sheet',  # Front slash problems
+        'Blog/Media-Final Sheet',
         'Blog and Media',
         'Signature Campaign',
         'Translations',
@@ -156,7 +156,7 @@ def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
             continue
 
         if col.lower().startswith('profile'):
-            row_count = len([c for c in df[col] if isinstance(c, str) and (c.startswith('https://') in c or c.startswith('@'))])
+            row_count = len([c for c in df[col] if isinstance(c, str) and (c.startswith('https://') or c.startswith('@'))])
             console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
 
             if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:

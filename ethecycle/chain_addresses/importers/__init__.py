@@ -11,8 +11,8 @@ TODO: Other possible sources:
     - https://www.bitcoinabuse.com/api/download/forever?api_token={API_TOKEN}
     - Searching for google sheets: 'blockchain addresses site:docs.google.com sheet'
 """
-from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection
+from ethecycle.config import Config
 
 from .coin_market_cap_repo_importer import import_coin_market_cap_repo_addresses
 from .cryptoscamdb_addresses_importer import import_cryptoscamdb_addresses

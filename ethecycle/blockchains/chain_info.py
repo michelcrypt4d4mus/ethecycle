@@ -2,7 +2,7 @@
 Abstract class to hold blockchain specific info (address lengths, token specifications, etc.).
 Handles lookups of address properties for tokens and wallets on the chain.
 """
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from inflection import underscore
 
@@ -15,14 +15,17 @@ from ethecycle.models.wallet import Wallet
 
 
 class ChainInfo:
-    # Should be populated with the categories that have been pulled for this blockchain
-    LABEL_CATEGORIES_SCRAPED_FROM_DUNE = []
-
-    # Addresses on this chain should start with one of these strings
-    ADDRESS_PREFIXES = []
+    # Addresses on this chain should start with one of these strings and have this length
+    ADDRESS_PREFIXES: List[str] = []
+    ADDRESS_LENGTH: int
+    # No chain should have an address standard shorter than this
+    MINIMUM_ADDRESS_LENGTH = 6
 
     # Default decimals for tokens on this chain
     DEFAULT_DECIMALS = 0
+
+    # Should be populated with the categories that have been pulled for this blockchain
+    LABEL_CATEGORIES_SCRAPED_FROM_DUNE: List[str] = []
 
     # Lazy load; should only be access through cls.token_addresses(), cls.wallet_label(), etc.
     _tokens_by_address: Dict[str, Token] = {}
@@ -99,10 +102,18 @@ class ChainInfo:
     @classmethod
     def is_valid_address(cls, address: str) -> bool:
         """True if address starts with a prefix in ADDRESS_PREFIXES (or if ADDRESS_PREFIXES is empty)."""
+        if isinstance(address, float) or len(address) <= cls.MINIMUM_ADDRESS_LENGTH:
+            return False
+
         if len(cls.ADDRESS_PREFIXES) == 0:
             return True
         else:
-            return any(address.startswith(prefix) for prefix in cls.ADDRESS_PREFIXES)
+            if not any(address.startswith(prefix) for prefix in cls.ADDRESS_PREFIXES):
+                return False
+            elif 'ADDRESS_LENGTH' not in dir(cls):
+                return True
+
+            return len(address) == cls.ADDRESS_LENGTH
 
     @classmethod
     def _get_token_by_address(cls, token_address: str):

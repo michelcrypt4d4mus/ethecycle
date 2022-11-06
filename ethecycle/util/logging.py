@@ -70,9 +70,11 @@ COLOR_THEME_DICT = {
     'bytes.title': BYTES_BRIGHTER,
     'bytes.decoded': BYTES_BRIGHTEST,
     'error': 'bright_red',
+    'possibility': 'color(132)',
 }
 
 COLOR_THEME = Theme(COLOR_THEME_DICT)
+INDENT_SPACES = 4
 console = Console(theme=COLOR_THEME, color_system='256')
 
 
@@ -91,6 +93,11 @@ def print_headline(headline: str) -> None:
     console.line(2)
     console.print(Panel(headline, style='reverse', width=60))
     console.line()
+
+
+def print_indented(msg: str, style: str = '', indent_level: int = 1) -> None:
+    indent = ' ' * INDENT_SPACES * indent_level
+    console.print(f"{indent}{msg}", style=style)
 
 
 def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:str = 'benchmark') -> float:

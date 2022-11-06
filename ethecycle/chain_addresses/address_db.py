@@ -14,11 +14,11 @@ from rich.pretty import pprint
 
 from ethecycle.models.token import Token
 from ethecycle.chain_addresses import db
-from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID,
-     DATA_SOURCES_TABLE_NAME, TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
+from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID, DATA_SOURCES_TABLE_NAME,
+     TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
 from ethecycle.util.list_helper import compare_lists
-from ethecycle.util.logging import console, log, print_dim
+from ethecycle.util.logging import console, log, print_dim, print_indented
 from ethecycle.util.string_constants import *
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
 from ethecycle.models.wallet import Wallet
@@ -87,7 +87,7 @@ def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
 
 def insert_rows(table_name: str, rows: DbRows) -> None:
     """Insert 'rows' into table named 'table_name'. Assumes all rows have the same data_source."""
-    print_dim(f"Writing {len(rows)} rows to table '{table_name}'...")
+    print_dim(f"Bulk writing {len(rows)} rows to table '{table_name}'...")
     db_conn = get_db_connection()
     columns = db_conn.get_columns_names(table_name)
     row_tuples = [[row.get(c) for c in columns] for row in rows]
@@ -102,8 +102,8 @@ def insert_rows(table_name: str, rows: DbRows) -> None:
         if Config.debug:
             console.print_exception()
 
-        console.print(f"{e} while bulk loading!", style='bright_red')
-        console.print("Cleaning up before switching to one at a time...", style='bright_white')
+        print_indented(f"{e} while bulk loading!", style='red dim')
+        print_indented("Cleaning up and switching to one at a time...", style='white dim')
         delete_rows_from_source(table_name, rows[0]['data_source'])
         _insert_one_at_a_time(table_name, row_tuples)
     finally:
@@ -167,7 +167,6 @@ def delete_rows_from_source(table_name: str, _data_source: str) -> None:
 
         console.print(f"Deleting {data_source_row_count} rows in '{table_name}' sourced from '{_data_source}'...", style='bytes')
         db_table.delete({DATA_SOURCE_ID: data_source_id})
-        console.print("Deleted!", style='bright_red')
 
 
 def is_table_in_database(table_name: str) -> bool:
@@ -207,7 +206,7 @@ def get_db_connection() -> sx.SQLite3x:
 
 def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
     """Insert 'rows' into table named 'table_name' one at a time for use as a fallback."""
-    console.print(f"Fallback write {len(rows)} rows to '{table_name}' one at a time...", style='bright_yellow')
+    console.print(f"Fallback write {len(rows)} rows to '{table_name}' one at a time...", style='yellow dim')
     rows_written = 0
     failed_writes = 0
     identical_writes = 0
@@ -251,7 +250,7 @@ def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
                     if not Config.suppress_chain_address_db_collision_warnings:
                         log.warning(f"Skipping because {type(e).__name__} error {e} on row {row}...")
 
-    print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} failures, {identical_writes} identical rows).")
+    print_dim(f"Wrote {rows_written} '{table_name}' rows one at a time ({failed_writes} collisions, {identical_writes} identical rows).")
 
 
 # https://stackoverflow.com/questions/71655300/python-sqlite3-how-to-check-if-connection-is-an-in-memory-database

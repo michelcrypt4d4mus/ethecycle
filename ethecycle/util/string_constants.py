@@ -11,6 +11,10 @@ BLOCK_NUMBER = 'block_number'
 CONTRACT = 'contract'
 ERC20 = 'ERC20'
 NFT = 'nft'
+SYMBOL = 'symbol'
+TOKEN_ADDRESS = 'token_address'
+TOKEN = 'token'
+TRANSACTION_HASH = 'transaction_hash'
 TXN = 'transaction'
 WALLET = 'wallet'
 
@@ -37,13 +41,9 @@ SOLANA = 'solana'
 TRON = 'tron'
 
 # Txn properties in the graph
+EXTRACTED_AT = 'extracted_at'
 NUM_TOKENS = 'num_tokens'
 SCANNER_URL = 'scanner_url'
-SYMBOL = 'symbol'
-TOKEN_ADDRESS = 'token_address'
-TOKEN = 'token'
-TRANSACTION_HASH = 'transaction_hash'
-EXTRACTED_AT = 'extracted_at'
 
 # Other column names
 DATA_SOURCE = 'data_source'
@@ -51,24 +51,31 @@ DATA_SOURCE = 'data_source'
 # Industry
 ALAMEDA = 'alameda'
 BINANCE = 'binance'
+USDT = 'USDT'
+USDT_ETHEREUM_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 
+# Social Media
 BITCOINTALK = 'bitcointalk'
 FACEBOOK = 'facebook'
 INSTAGRAM = 'instragram'
 LINKEDIN = 'linkedin'
+REDDIT = 'reddit'
 TELEGRAM = 'telegram'
 TIKTOK = 'tiktok'
 TWITTER = 'twitter'
 YOUTUBE = 'youtube'
 
+# Order matters when choosing label cols from GoogleSheetsImporter: higher cols are chosen first
+# For this reason we prefer more public orgs over less public ones.
 SOCIAL_MEDIA_ORGS = [
-    FACEBOOK,
-    INSTAGRAM,
     LINKEDIN,
-    TELEGRAM,
-    TIKTOK,
+    INSTAGRAM,
     TWITTER,
     YOUTUBE,
+    REDDIT,
+    TIKTOK,
+    FACEBOOK,
+    TELEGRAM,
     BITCOINTALK,
 ]
 
@@ -90,9 +97,19 @@ VAULTS = 'vaults'
 WALLET_PROVIDER = 'wallet provider'
 
 # Misc
+HTTPS = 'https://'
 JSON = 'json'
 NAME = 'name'
 
 # GraphML
 LABEL_E = 'labelE'
 LABEL_V = 'labelV'
+
+
+def social_media_url(col: str) -> str:
+    if col == BITCOINTALK:
+        tld = 'org'
+    else:
+        tld = 'com'
+
+    return f"{col}.{tld}"

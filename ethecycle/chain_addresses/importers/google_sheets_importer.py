@@ -19,6 +19,12 @@ from ethecycle.util.number_helper import pct, pct_str
 from ethecycle.util.string_constants import INDIVIDUAL, SOCIAL_MEDIA_LINKS
 
 GOOGLE_SHEETS = {
+    '1VY4YK06p_9Mn0tPlHoXO_N3KJZbwGB18uypXSQtk3Gc': [
+        'Twitter Master Sheet',
+        'Facebook Master Sheet',
+        'Telegram Groups',
+        'Signature',
+    ],
     '1SamWX8hjMLuMx7B03S4QTR6V_dCCkcXN5PBJJdLKjnw': [
         'Form Responses 1',
     ],
@@ -197,7 +203,7 @@ def _write_df_to_csv(df: pd.DataFrame, sheet_id: str, worksheet_name: str) -> No
     file_path = str(RAW_DATA_DIR.joinpath(file_basename))
     console.print(f"Writing sheet to CSV: '{file_path}'", style='dim')
 
-    if path.isfile(file_path):
+    if False and path.isfile(file_path):
         console.print(f"File already exists: '{file_path}', skipping...")
     else:
-        df.to_csv(file_path, encoding='utf-8', index=False, compression='gzip')
+        df.to_csv(file_path, index=False, compression='gzip')

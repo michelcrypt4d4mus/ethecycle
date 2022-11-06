@@ -10,9 +10,6 @@ TODO: Other possible sources:
     - https://raw.githubusercontent.com/GuillermoEscobero/fraud-in-ethereum/main/dark_addresses.yaml
     - https://www.bitcoinabuse.com/api/download/forever?api_token={API_TOKEN}
     - Searching for google sheets: 'blockchain addresses site:docs.google.com sheet'
-    - https://docs.google.com/spreadsheets/u/0/d/1oF6vA71id2xDp8GTxY7xBMNz67ZpbwVDAzhDeIXtnzo/htmlview
-    - https://docs.google.com/spreadsheets/d/1JljucXr5mJU1m2rA63NgRa7pwvmRtkIjjYHPVGpolZA/htmlview
-    - https://docs.google.com/spreadsheets/d/1QlbETkBQAgnSJth5Na2ypQL-RaE_b1tddBX1rqT5ZK8/edit#gid=941991872
 """
 from ethecycle.config import Config
 from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection

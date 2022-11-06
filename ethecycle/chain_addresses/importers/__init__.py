@@ -43,6 +43,7 @@ def rebuild_chain_addresses_db():
     import_ethereum_lists_addresses()
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()
+    import_google_sheets()
     import_hand_collated_addresses()
     import_my_ether_wallet_addresses()
     import_trust_wallet_repo()

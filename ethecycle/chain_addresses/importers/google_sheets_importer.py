@@ -33,10 +33,10 @@ MAX_ROWS = 5
 
 
 def import_google_sheets() -> None:
-    wallets: List[Wallet] = []
 
     for sheet_id, worksheets in GOOGLE_SHEETS.items():
         for worksheet in worksheets:
+            wallets: List[Wallet] = []
             url = _build_url(sheet_id, worksheet)
             df = pd.read_csv(url)
             df = df[[c for c in df if not c.startswith("Unnamed")]]
@@ -64,7 +64,7 @@ def import_google_sheets() -> None:
             mismatches_length = len(mismatches)
             social_media_col_label = _guess_social_media_column(column_names, df)
 
-            for (row_number, row) in df.iterrows():
+            for (_row_number, row) in df.iterrows():
                 wallets.append(_build_wallet(row, address_col_label, social_media_col_label, url))
 
             if Config.debug:
@@ -78,6 +78,8 @@ def import_google_sheets() -> None:
 
             valid_row_count = df_length - invalid_address_count - mismatches_length - df_nulls_length
             console.print(f"Total rows: {df_length}, VALID: {valid_row_count} ({invalid_addresses_count} invalid, {mismatches_length} mismatches, {df_nulls_length} nulls)")
+
+            insert_wallets_from_data_source(wallets)
 
 
 def _build_wallet(df_row: pd.Series, address_col_label: str, social_col_label: str, url: str) -> Wallet:

@@ -59,7 +59,8 @@ SOCIAL_MEDIA_LINKS = [
     'telegram',
     'tiktok',
     'twitter',
-    'youtube,'
+    'youtube,',
+    'bitcointalk',
 ]
 
 # Wallet Categories

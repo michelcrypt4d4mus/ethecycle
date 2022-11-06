@@ -20,6 +20,10 @@ GOOGLE_SHEETS = {
     '1QlbETkBQAgnSJth5Na2ypQL-RaE_b1tddBX1rqT5ZK8': [
         'Twitter Bounty',
         'Facebook Bounty',
+        #'Blog/Media-Final Sheet',  # Front slash problems
+        'Blog and Media',
+        'Signature Campaign',
+        'Translations',
     ],
     '1oF6vA71id2xDp8GTxY7xBMNz67ZpbwVDAzhDeIXtnzo': [
         'Blogs & Media',
@@ -36,7 +40,7 @@ ARGS = {
     'tqx': 'out:csv',
 }
 
-ETHEREUM_ADDRESS_REGEX = re.compile('eth(ereum)?\\s+(wallet)?\\s*address', re.IGNORECASE)
+ETHEREUM_ADDRESS_REGEX = re.compile('eth(ereum)?\\s+(wallet|address)', re.IGNORECASE)
 SHEETS_URL = 'https://docs.google.com/spreadsheets/d/'
 SOCIAL_MEDIA_PCT_CUTOFF = 88.0  # Min % of col matching a URL or @something style string
 
@@ -118,14 +122,14 @@ def _build_wallet(df_row: pd.Series, address_col_label: str, social_col_label: s
 def _build_url(sheet_id: str, worksheet_name: str) -> str:
     args = ARGS.copy()
     args.update({'sheet': worksheet_name})
-    url = f'{SHEETS_URL}{sheet_id}/gviz/tq?{urlencode(args)}'
+    url = f'{SHEETS_URL}{sheet_id}/gviz/tq?{urlencode(args).replace("/", "%%2F")}'
     console.print(f"Reading '{worksheet_name}' from '{url}'...")
     return url
 
 
 def _guess_address_column(columns: List[str]) -> Optional[List[str]]:
     """Guess which col has the addresses."""
-    ethereum_wallet_cols = [c for c in columns if ETHEREUM_ADDRESS_REGEX.match(c)]
+    ethereum_wallet_cols = [c for c in columns if ETHEREUM_ADDRESS_REGEX.search(c)]
 
     if len(ethereum_wallet_cols) > 0:
         return ethereum_wallet_cols
@@ -147,6 +151,18 @@ def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
             console.print(f"        CHOOSING '{col}'", style='color(143)')
             return col
 
+    for col in columns:
+        if not isinstance(col, str):
+            continue
+
+        if col.lower().startswith('profile'):
+            row_count = len([c for c in df[col] if isinstance(c, str) and (c.startswith('https://') in c or c.startswith('@'))])
+            console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
+
+            if pct(row_count, len(df)) > SOCIAL_MEDIA_PCT_CUTOFF:
+                console.print(f"        CHOOSING '{col}'", style='color(143)')
+                return col
+
     raise ValueError(f"No social media column identified!")
 
 
@@ -154,4 +170,8 @@ def _social_media_url(column: str) -> str:
     """Find which social media org and return e.g. twitter.com."""
     for social_media_org in SOCIAL_MEDIA_LINKS:
         if social_media_org in column.lower():
-            return f"{social_media_org}.com"
+            if social_media_org == 'bitcointalk':
+                return f"{social_media_org}.org"
+            else:
+                return f"{social_media_org}.com"
+

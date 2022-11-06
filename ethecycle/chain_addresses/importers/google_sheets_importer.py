@@ -2,6 +2,7 @@
 Read public sheets: https://medium.com/geekculture/2-easy-ways-to-read-google-sheets-data-using-python-9e7ef366c775#e4bb
 """
 import re
+from os import path
 
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.config import Config
 from ethecycle.models.wallet import Wallet
+from ethecycle.util.filesystem_helper import RAW_DATA_DIR
 from ethecycle.util.logging import console, log
 from ethecycle.util.number_helper import pct, pct_str
 from ethecycle.util.string_constants import INDIVIDUAL, SOCIAL_MEDIA_LINKS
@@ -66,6 +68,7 @@ def import_google_sheets() -> None:
             url = _build_url(sheet_id, worksheet)
             df = pd.read_csv(url)
             df = df[[c for c in df if not c.startswith("Unnamed")]]
+            _write_df_to_csv(df, sheet_id, worksheet)
             column_names = list(df.columns.values)
             df_length = len(df)
             invalid_address_count = 0
@@ -104,7 +107,6 @@ def import_google_sheets() -> None:
 
             valid_row_count = df_length - invalid_address_count - mismatches_length - df_nulls_length
             console.print(f"Total rows: {df_length}, VALID: {valid_row_count} ({invalid_addresses_count} invalid, {mismatches_length} mismatches, {df_nulls_length} nulls)")
-
             insert_wallets_from_data_source(wallets)
 
 
@@ -189,3 +191,13 @@ def _social_media_url(column: str) -> str:
             else:
                 return f"{social_media_org}.com"
 
+
+def _write_df_to_csv(df: pd.DataFrame, sheet_id: str, worksheet_name: str) -> None:
+    file_basename = f"{sheet_id}___{worksheet_name}.csv.gz".replace('/', '_')
+    file_path = str(RAW_DATA_DIR.joinpath(file_basename))
+    console.print(f"Writing sheet to CSV: '{file_path}'", style='dim')
+
+    if path.isfile(file_path):
+        console.print(f"File already exists: '{file_path}', skipping...")
+    else:
+        df.to_csv(file_path, encoding='utf-8', index=False, compression='gzip')

@@ -33,7 +33,6 @@ MAX_ROWS = 5
 
 
 def import_google_sheets() -> None:
-    sheet_dfs: List[pd.DataFrame] = []
     wallets: List[Wallet] = []
 
     for sheet_id, worksheets in GOOGLE_SHEETS.items():
@@ -54,26 +53,19 @@ def import_google_sheets() -> None:
             df_not_nulls_length = len(df)
             df_nulls_length = df_length - df_not_nulls_length
 
-            df['valid_address'] = df.apply(lambda r: Ethereum.is_valid_address(r[wallet_cols[0]]), axis=1)
+            address_col_label = wallet_cols[0]
+            df['valid_address'] = df.apply(lambda r: Ethereum.is_valid_address(address_col_label), axis=1)
             valid_address_df = df[df['valid_address']]
             valid_address_count = len(valid_address_df)
             invalid_addresses_count = df_not_nulls_length - valid_address_count
 
             wallet_cols_df = df[wallet_cols]
-            mismatches = wallet_cols_df[wallet_cols_df[wallet_cols[0]] != wallet_cols_df[wallet_cols[1]]]
+            mismatches = wallet_cols_df[wallet_cols_df[address_col_label] != wallet_cols_df[wallet_cols[-1]]]
             mismatches_length = len(mismatches)
-            social_media_cols = _guess_social_media_columns(column_names)
-            social_col = None
+            social_media_col_label = _guess_social_media_column(column_names, df)
 
-            for col in social_media_cols:
-                social_media_url = _social_media_url(col)
-                row_count = _count_rows_matching_pattern(df[col], social_media_url)
-                console.print(f"    {col}: {row_count} of {df_length} ({pct_str(row_count, df_length)}", style='color(155)')
-
-                if pct(row_count, df_length) > 95.0:
-                    console.print(f"        CHOOSING '{col}'", style='color(143)')
-                    social_col = col
-                    break
+            for (row_number, row) in df.iterrows():
+                wallets.append(_build_wallet(row, address_col_label, social_media_col_label, url))
 
             if Config.debug:
                 print(df.head())
@@ -82,38 +74,35 @@ def import_google_sheets() -> None:
                 console.print(df[wallet_cols].head())
                 console.print(f"\nMISMATCHES", style='blue')
                 console.print(mismatches)
-                console.print(f"SOCIAL COLS: {social_media_cols}", style='magenta')
-
-            for (row_number, _row) in df.iterrows():
-                row = _row.to_dict()
-                address = row[wallet_cols[0]].strip()
-
-                if isinstance(row[social_col], float) and np.isnan(row[social_col]):
-                    label = '?'
-                else:
-                    label = row[social_col].removeprefix('https://').removeprefix('www.').strip()
-
-                if not Ethereum.is_valid_address(address):
-                    console.print(f"Skipping address: {address}", style='red dim')
-                    invalid_address_count += 1
-                    continue
-
-                wallet = Wallet(
-                    address=address,
-                    chain_info=Ethereum,
-                    category=INDIVIDUAL,
-                    data_source=url,
-                    label=label
-                )
-
-                wallets.append(wallet)
-
-                if Config.debug:
-                    log.debug(f"SAMPLE ROW: {row}")
-                    console.print(wallet)
+                console.print(f"SOCIAL COL: {social_media_col_label}", style='magenta')
 
             valid_row_count = df_length - invalid_address_count - mismatches_length - df_nulls_length
             console.print(f"Total rows: {df_length}, VALID: {valid_row_count} ({invalid_addresses_count} invalid, {mismatches_length} mismatches, {df_nulls_length} nulls)")
+
+
+def _build_wallet(df_row: pd.Series, address_col_label: str, social_col_label: str, url: str) -> Wallet:
+    row = df_row.to_dict()
+    address = row[address_col_label].strip()
+    social_label = row[social_col_label]
+
+    if isinstance(social_label, float) and np.isnan(social_label):
+        label = '?'
+    else:
+        label = row[social_col_label].removeprefix('https://').removeprefix('www.').strip()
+
+    wallet = Wallet(
+        address=address,
+        chain_info=Ethereum,
+        category=INDIVIDUAL,
+        data_source=url,
+        label=label
+    )
+
+    if Config.debug:
+        log.debug(f"SAMPLE ROW: {row}")
+        console.print(wallet)
+
+    return wallet
 
 
 def _build_url(sheet_id: str, worksheet_name: str) -> str:
@@ -136,12 +125,23 @@ def _guess_address_column(columns: List[str]) -> Optional[List[str]]:
         return ethereum_wallet_cols
 
 
-def _guess_social_media_columns(columns: List[str]) -> Optional[List[str]]:
+def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
     """Guess which col has the addresses."""
-    return [
+    social_media_cols = [
         c for c in columns
         if any(social_media_org in c.lower() for social_media_org in SOCIAL_MEDIA_LINKS)
     ]
+
+    for col in social_media_cols:
+        social_media_url = _social_media_url(col)
+        row_count = _count_rows_matching_pattern(df[col], social_media_url)
+        console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
+
+        if pct(row_count, len(df)) > 95.0:
+            console.print(f"        CHOOSING '{col}'", style='color(143)')
+            return col
+
+    raise ValueError(f"No social media column identified!")
 
 
 def _social_media_url(column: str) -> str:

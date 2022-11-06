@@ -33,6 +33,13 @@ GOOGLE_SHEETS = {
         'Youtube',
         'LinkedIn',
         'Translation'
+    ],
+    '1JljucXr5mJU1m2rA63NgRa7pwvmRtkIjjYHPVGpolZA': [
+        'Facebook',
+        'Twitter',
+        'YouTube',
+        'Media',
+        'VK',
     ]
 }
 
@@ -155,7 +162,7 @@ def _guess_social_media_column(columns: List[str], df: pd.DataFrame) -> str:
         if not isinstance(col, str):
             continue
 
-        if col.lower().startswith('profile'):
+        if col.lower().startswith('profile') or col.lower().startswith('vk '):
             row_count = len([c for c in df[col] if isinstance(c, str) and (c.startswith('https://') or c.startswith('@'))])
             console.print(f"    {col}: {row_count} of {len(df)} ({pct_str(row_count, len(df))}", style='color(155)')
 

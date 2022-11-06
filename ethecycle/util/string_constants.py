@@ -52,15 +52,24 @@ DATA_SOURCE = 'data_source'
 ALAMEDA = 'alameda'
 BINANCE = 'binance'
 
+BITCOINTALK = 'bitcointalk'
+FACEBOOK = 'facebook'
+INSTAGRAM = 'instragram'
+LINKEDIN = 'linkedin'
+TELEGRAM = 'telegram'
+TIKTOK = 'tiktok'
+TWITTER = 'twitter'
+YOUTUBE = 'youtube'
+
 SOCIAL_MEDIA_LINKS = [
-    'facebook',
-    'instagram',
-    'linkedin',
-    'telegram',
-    'tiktok',
-    'twitter',
-    'youtube,',
-    'bitcointalk',
+    FACEBOOK,
+    INSTAGRAM,
+    LINKEDIN,
+    TELEGRAM,
+    TIKTOK,
+    TWITTER,
+    YOUTUBE,
+    BITCOINTALK,
 ]
 
 # Wallet Categories

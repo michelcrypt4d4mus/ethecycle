@@ -46,4 +46,6 @@ def pct_str(numerator: Union[float, int], denominator: Union[float, int]) -> str
 
 
 def pct(numerator: Union[float, int], denominator: Union[float, int]) -> float:
+    if denominator == 0:
+        return 0.0
     return 100 * float(numerator) / denominator

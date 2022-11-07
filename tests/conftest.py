@@ -2,6 +2,8 @@ from os import path
 
 import pytest
 
+from ethecycle.models.wallet import Wallet
+
 
 @pytest.fixture
 def txn_csv():
@@ -10,5 +12,5 @@ def txn_csv():
 
 @pytest.fixture(autouse=True, scope='session')
 def prep_db():
-    """TODO: Insert test lookups into DB"""
-    pass
+    """Pre-loads DB objects"""
+    Wallet.chain_addresses()

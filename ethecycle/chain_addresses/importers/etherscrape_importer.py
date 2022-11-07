@@ -7,7 +7,7 @@ from inflection import titleize
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.db.table_definitions import WALLETS_TABLE_NAME
-from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, get_lines
 from ethecycle.util.logging import log, print_address_import
 from ethecycle.models.wallet import Wallet
@@ -36,14 +36,14 @@ def import_etherscrape_chain_addresses() -> None:
                 raise ValueError(f"{address} is not a valid address! (line: {line}")
 
             address = address.lower()
-            label = titleize(line_label) if address != ETHERSCAN_DONATE_ADDRESS else ETHERSCAN_DONATE_LABEL
+            name = titleize(line_label) if address != ETHERSCAN_DONATE_ADDRESS else ETHERSCAN_DONATE_LABEL
 
             if address in wallet_addresses:
-                if wallet_addresses[address].label != label:
-                    wallet_addresses[address].label += f", {label}"
-                    log.debug(f"  Added label '{label}' to {address}. New label: {wallet_addresses[address].label}")
+                if wallet_addresses[address].name != name:
+                    wallet_addresses[address].name += f", {name}"
+                    log.debug(f"  Added label '{name}' to {address}. New label: {wallet_addresses[address].name}")
             else:
                 log.debug(f"  Processing address {address}...")
-                wallet_addresses[address] = Wallet(address, Ethereum, label, data_source=DATA_SOURCE)
+                wallet_addresses[address] = Wallet(address=address, chain_info=Ethereum, name=name, data_source=DATA_SOURCE)
 
-    insert_wallets_from_data_source(list(wallet_addresses.values()))
+    insert_addresses(list(wallet_addresses.values()))

@@ -3,22 +3,22 @@ Simple class to hold wallet info.
 TODO: maybe compute the date or block_number of first txion? Maybe better done in-graph...
 """
 from dataclasses import dataclass
-from datetime import datetime
+from functools import partial
 from random import randint
 from typing import Any, Dict, List, Optional, Type, Union
 
 from rich.text import Text
 
 #from ethecycle.blockchains.chain_info import ChainInfo # Circular import :(
+from ethecycle.models.address import Address
 from ethecycle.models.token import Token
-from ethecycle.models.transaction import Txn
+#from ethecycle.models.transaction import Txn
 from ethecycle.util.string_constants import *
-from ethecycle.util.string_helper import strip_and_set_empty_string_to_none
 
 NEO4J_WALLET_CSV_HEADER = [
     'address:ID',
     'blockchain',
-    'label',
+    'name',
     'category',
     'extracted_at:datetime',
 ]
@@ -51,70 +51,74 @@ WALLET_LABEL_COLORS = {
 UNKNOWN = Text('UNKNOWN', style='color(234)')
 
 
-@dataclass
-class Wallet:
-    address: str
-    chain_info: Type['ChainInfo']
-    label: Optional[str] = None
-    category: Optional[str] = None
-    data_source: Optional[str] = None
-    extracted_at: Optional[Union[datetime, str]] = None
-
+@dataclass(kw_only=True)
+class Wallet(Address):
     def __post_init__(self):
-        self.address = self.address.lower()
-        self.blockchain = self.chain_info.chain_string()
-        """Look up label and category if they were not provided."""
-        self.label = strip_and_set_empty_string_to_none(self.label)
-        self.category = strip_and_set_empty_string_to_none(self.category)
-        self.category = self.category.lower() if self.category else None
+        """Validate address"""
+        super().__post_init__()
 
-        if isinstance(self.extracted_at, datetime):
-            self.extracted_at = self.extracted_at.replace(microsecond=0).isoformat()
+        if self.address is None:
+            raise ValueError(f"Address is required for wallets: {self}")
 
     @classmethod
-    def from_token(cls, token: Token, chain_info: Type) -> 'Wallet':
-        """Alternate constructor to build a Wallet() object representation of a token address."""
+    def from_token(cls, token: 'Token') -> 'Wallet':
+        """Alternate constructor to build a Wallet object out of a Token object."""
         return cls(
             address=token.address,
-            chain_info=chain_info,
-            label=f"{token.symbol} Token",
+            chain_info=token.chain_info,
+            name=f"{token.symbol} Token",
             category=TOKEN,
             data_source=token.data_source,
             extracted_at=token.extracted_at
         )
 
     @classmethod
-    def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
-        """Extract wallet addresses from from and to addresses and add labels."""
-        wallet_addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
-        wallet_addresses.remove('')
-        wallet_addresses.add(MISSING_ADDRESS)
+    def extract_wallets_from_transactions(cls, txns: List['Txn']) -> List['Wallet']:
+        """
+        Construct Wallet objects out of the to/from addresses in a list of Txns and add labels.
+        Assumes all txns are from same blockchain.
+        """
+        addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
+        addresses.remove('')
+        addresses.add(MISSING_ADDRESS)
+        TokenWallet = partial(cls, blockchain=txns[0].blockchain, extracted_at=txns[0].extracted_at)
+        return [TokenWallet(address=a).load_name_and_category() for a in addresses]
 
-        return [
-            Wallet(address, chain_info, extracted_at=txns[0].extracted_at).load_labels()
-            for address in wallet_addresses
-        ]
+    @classmethod
+    def _after_load_callback(cls) -> None:
+        """Add the token addresses because tokens are wallets too."""
+        for token in Token.all():
+            cls._by_blockchain_address[token.blockchain][token.address] = cls.from_token(token)
 
-    def load_labels(self) -> 'Wallet':
+    def load_name_and_category(self) -> 'Wallet':
         """Loads label and category fields from chain_addresses.db. Returns self."""
-        self.label = self.label or self.chain_info.wallet_label(self.address)
-        self.category = self.category or self.chain_info.wallet_category(self.address)
+        if not self.blockchain or not self.address:
+            return self
+
+        self.name = self.name or type(self).name_at_address(self.blockchain, self.address)
+        self.category = self.category or type(self).category_at_address(self.blockchain, self.address)
         return self
 
     def to_neo4j_csv_row(self) -> List[Optional[str]]:
         """Generate Neo4J bulk load CSV row."""
         return [getattr(self, col) for col in WALLET_CSV_COLUMNS]
 
-    def to_address_db_row(self) -> Dict[str, Any]:
-        """Generate a dict we can insert as a row into the chain addresses DB."""
-        return {k: v for k, v in self.__dict__.items() if k != 'chain_info'}
+    def _category_style(self) -> str:
+        """Get a color for the wallet category."""
+        if self.category not in WALLET_LABEL_COLORS:
+            WALLET_LABEL_COLORS[str(self.category)] = randint(38, 229)
+
+        return f"color({WALLET_LABEL_COLORS[str(self.category)]})"
+
+    def __str__(self):
+        return self.__rich__().plain
 
     def __rich__(self):
         """rich text format string."""
         txt = Text('').append(self.address, 'bytes').append(': ', 'grey')
 
-        if self.label:
-            txt.append(self.label, 'color(229) bold')
+        if self.name:
+            txt.append(self.name, 'color(229) bold')
         else:
             txt.append_text(UNKNOWN)
 
@@ -126,13 +130,3 @@ class Wallet:
             txt.append_text(UNKNOWN)
 
         return txt.append(')', 'grey')
-
-    def _category_style(self) -> str:
-        """Get a color for the wallet category."""
-        if self.category not in WALLET_LABEL_COLORS:
-            WALLET_LABEL_COLORS[str(self.category)] = randint(38, 229)
-
-        return f"color({WALLET_LABEL_COLORS[str(self.category)]})"
-
-    def __str__(self):
-        return self.__rich__().plain

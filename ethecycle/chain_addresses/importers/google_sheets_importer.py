@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.config import Config
 from ethecycle.models.wallet import Wallet
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR
@@ -185,13 +185,13 @@ def import_google_sheets() -> None:
     for sheet_id, worksheets in ETHEREUM_SHEETS.items():
         for worksheet_name in worksheets:
             worksheet = GoogleWorksheet(sheet_id, worksheet_name, Ethereum)
-            insert_wallets_from_data_source(worksheet.extract_wallets())
+            insert_addresses(worksheet.extract_wallets())
             console.line(2)
 
     for sheet_id, worksheets in BITCOIN_SHEETS.items():
         for worksheet_name in worksheets:
             worksheet = GoogleWorksheet(sheet_id, worksheet_name, Bitcoin)
-            insert_wallets_from_data_source(worksheet.extract_wallets())
+            insert_addresses(worksheet.extract_wallets())
             console.line(2)
 
 
@@ -241,19 +241,19 @@ class GoogleWorksheet:
     def _build_wallet(self, df_row: pd.Series) -> Wallet:
         row = df_row.to_dict()
         address = row[self.address_col_label]
-        wallet_label = row[self.social_media_col_label]
+        wallet_name = row[self.social_media_col_label]
 
-        if isinstance(wallet_label, float) and np.isnan(wallet_label):
-            label = '?'
+        if isinstance(wallet_name, float) and np.isnan(wallet_name):
+            name = '?'
         else:
-            label = row[self.social_media_col_label].removeprefix(HTTPS).removeprefix('www.')
+            name = row[self.social_media_col_label].removeprefix(HTTPS).removeprefix('www.')
 
         wallet = Wallet(
             address=address,
             chain_info=Ethereum,
             category=INDIVIDUAL,
             data_source=self.url,
-            label=label
+            name=name
         )
 
         return wallet
@@ -408,6 +408,4 @@ class GoogleWorksheet:
 
         invalid_msg = ', '.join(invalid_row_msgs)
         valid_row_count = self.df_length - self.invalid_address_count - self.mismatch_count - self.null_address_count
-        if valid_row_count == 0:
-            import pdb;pdb.set_trace()
         console.print(f"Total rows: {self.df_length}, valid rows: {valid_row_count} ({invalid_msg})")

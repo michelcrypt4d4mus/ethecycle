@@ -8,6 +8,7 @@ from typing import Any, List, Optional
 from neo4j import GraphDatabase, Record
 from neo4j.graph import Graph
 from pandas import DataFrame
+from rich.panel import Panel
 from rich.text import Text
 
 from ethecycle.util.filesystem_helper import SCRIPTS_DIR
@@ -49,10 +50,10 @@ class Neo4j:
     def create_indexes(self):
         """Create indexes on txns and wallets."""
         with open(INDEX_CQL_FILE) as file:
-            idx_queries = [q for q in file.read().split(';') if not re.match('^\\s+$', q, re.DOTALL)]
+            idx_queries = [q.strip() for q in file.read().split(';') if not re.match('^\\s+$', q, re.DOTALL)]
 
         with self.driver.session().begin_transaction() as tx:
             for idx_query in idx_queries:
-                txt = Text("Creating index with query:\n", style='dim').append(idx_query, style='cyan')
-                console.print(txt)
+                console.print("Creating index with query:")
+                console.print(Panel(idx_query, style='cyan dim', expand=False))
                 tx.run(idx_query)

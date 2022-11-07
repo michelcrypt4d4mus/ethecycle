@@ -8,6 +8,10 @@ from ethecycle.models.transaction import Txn
 from ethecycle.util.logging import console
 from ethecycle.util.string_constants import *
 
+from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.models.token import Token
+from ethecycle.util.string_constants import ETHEREUM, USDT, USDT_ETHEREUM_ADDRESS
+
 from tests.models.conftest import EXTRACTION_TIMESTAMP_STR, TEST_TXN_HASH, TEST_TXN_LOG_LEVEL
 
 TOKEN_LAUNCHED_AT = datetime(2019, 10, 5, 18, 00)
@@ -50,3 +54,22 @@ def test_from_properties(token_of_the_beast):
         'url_reddit': 'http://reddit.com',
         'url_source_code': 'http://source_code.com',
     }
+
+
+def test_token_address():
+    with pytest.raises(ValueError):
+        Token.token_address('barfchain', USDT)
+
+    assert Token.token_address(ETHEREUM, USDT) == USDT_ETHEREUM_ADDRESS
+
+
+def test_token_decimals():
+    assert Token.token_decimals(ETHEREUM, 'BARF') == 0
+    usdt_address = Token.token_address(ETHEREUM, USDT)
+    assert Token.token_decimals(ETHEREUM, usdt_address) == 6
+
+
+def test_token_symbol():
+    assert Token.token_symbol('barfchain', USDT_ETHEREUM_ADDRESS) is None
+    usdt_address = Token.token_address(ETHEREUM, USDT)
+    assert Token.token_symbol(ETHEREUM, usdt_address) == USDT

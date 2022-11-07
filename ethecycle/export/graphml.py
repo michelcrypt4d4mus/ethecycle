@@ -12,14 +12,12 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from pympler.asizeof import asizeof
 
-from ethecycle.blockchains.blockchains import get_chain_info
+from ethecycle.models.blockchain import get_chain_info
 from ethecycle.config import Config
-#from ethecycle.graph import is_wallet_in_graph
 from ethecycle.models.transaction import Txn
 from ethecycle.util.logging import console, log
 from ethecycle.util.number_helper import MEGABYTE, size_string
 from ethecycle.util.string_constants import *
-from ethecycle.util.types import WalletTxns
 
 
 class GraphPropertyManager:

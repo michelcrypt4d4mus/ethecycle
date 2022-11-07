@@ -59,6 +59,7 @@ USDT_ETHEREUM_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 
 # Social Media
 BITCOINTALK = 'bitcointalk'
+DISCORD = 'discord'
 FACEBOOK = 'facebook'
 INSTAGRAM = 'instragram'
 LINKEDIN = 'linkedin'

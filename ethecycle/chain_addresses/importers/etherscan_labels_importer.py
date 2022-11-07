@@ -7,7 +7,7 @@ from rich.panel import Panel
 from rich.pretty import pprint
 
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.chain_addresses.etherscan import determine_category
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
@@ -43,7 +43,7 @@ def import_etherscan_labels_repo():
                 wallet = Wallet(
                     address=address,
                     chain_info=Ethereum,
-                    label=data[NAME],
+                    name=data[NAME],
                     category=category,
                     data_source=SOURCE_REPO.repo_url
                 )
@@ -56,4 +56,4 @@ def import_etherscan_labels_repo():
             console.print(Panel('CATEGORIZED'))
             pprint(sort_dict(label_counts))
 
-        insert_wallets_from_data_source(wallets)
+        insert_addresses(wallets)

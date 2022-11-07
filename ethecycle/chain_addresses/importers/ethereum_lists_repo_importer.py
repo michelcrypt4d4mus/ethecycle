@@ -6,10 +6,9 @@ from os import path
 from pathlib import Path
 from typing import List
 
-from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
+from ethecycle.blockchains.blockchains import CHAIN_IDS
 from ethecycle.models.token import Token
-from ethecycle.chain_addresses.address_db import (insert_tokens_from_data_source,
-     insert_wallets_from_data_source)
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
 from ethecycle.util.logging import console, log, print_address_import
@@ -65,7 +64,7 @@ def _import_ethereum_lists_tokens_addresses() -> None:
                 except KeyError as e:
                     log.warning(f"Error parsing '{token_info_json_file}': {e}")
 
-        insert_tokens_from_data_source(tokens)
+        insert_addresses(tokens)
 
 
 def _import_contract_addresses() -> None:
@@ -102,8 +101,8 @@ def _import_contract_addresses() -> None:
 
                     contract = Wallet(
                         address=Path(contract_json_file).stem,
-                        chain_info=get_chain_info(blockchain),
-                        label=f"{contract_info.get('project')}: {contract_info.get(NAME)}",
+                        blockchain=blockchain,
+                        name=f"{contract_info.get('project')}: {contract_info.get(NAME)}",
                         category=CONTRACT,
                         data_source=CONTRACTS_REPO.repo_url
                     )
@@ -112,4 +111,4 @@ def _import_contract_addresses() -> None:
                 except KeyError as e:
                     log.warning(f"Error parsing '{contract_json_file}': {e}")
 
-        insert_wallets_from_data_source(contracts)
+        insert_addresses(contracts)

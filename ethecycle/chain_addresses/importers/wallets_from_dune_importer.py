@@ -6,9 +6,8 @@ format in these files is a side effect of copy/pasting from the Dune web GUI.
 from os import path
 from typing import Dict, List
 
-from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.address_db import insert_wallets_from_data_source
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log, print_address_import
 from ethecycle.models.wallet import Wallet
@@ -25,7 +24,7 @@ def import_wallets_from_dune() -> None:
     for file in [f for f in files_in_dir(RAW_DATA_DIR) if f.endswith(WALLETS_FROM_DUNE_SUFFIX)]:
         wallets.extend(extract_wallets_from_file(file))
 
-    insert_wallets_from_data_source(wallets)
+    insert_addresses(wallets)
 
 
 def extract_wallets_from_file(file) -> List[Wallet]:
@@ -43,8 +42,8 @@ def extract_wallets_from_file(file) -> List[Wallet]:
         else:
             wallet_addresses[address] = Wallet(
                 address=address,
-                chain_info=get_chain_info(blockchain),
-                label=lines[i + 1],
+                blockchain=blockchain,
+                name=lines[i + 1],
                 category=lines[i + 2].lower(),
                 data_source=DATA_SOURCE
             )

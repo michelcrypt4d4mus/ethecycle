@@ -7,14 +7,13 @@ import json
 from collections import defaultdict
 from os import path
 from pathlib import Path
-from typing import List
+from typing import List, Type
 
 from rich.panel import Panel
 
-from ethecycle.blockchains.blockchains import CHAIN_IDS, get_chain_info
 from ethecycle.models.token import Token
-from ethecycle.chain_addresses.address_db import (insert_tokens_from_data_source,
-     insert_wallets_from_data_source)
+from ethecycle.chain_addresses.address_db import (insert_addresses,
+     insert_addresses)
 from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
@@ -71,8 +70,8 @@ def import_trust_wallet_repo():
             else:
                 log.info(f"    No validators assets dir in '{subdir}'...")
 
-        insert_tokens_from_data_source(tokens)
-        insert_wallets_from_data_source(wallets)
+        insert_addresses(tokens)
+        insert_addresses(wallets)
 
 
 def _get_tokens_for_chain(blockchain: str, tokens_dir: str) -> List[Token]:
@@ -133,8 +132,8 @@ def _get_validator_wallets_for_chain(blockchain: str, validators_dir: str) -> Li
         for validator in validators_info:
             wallet = Wallet(
                 address=validator['id'],
-                chain_info=get_chain_info(blockchain),
-                label=validator[NAME],
+                blockchain=blockchain,
+                name=validator[NAME],
                 category='validator',
                 data_source=SOURCE_REPO.repo_url
             )

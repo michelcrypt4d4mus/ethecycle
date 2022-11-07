@@ -5,9 +5,9 @@ import json
 from os import path
 from typing import List
 
-from ethecycle.models.token import Token
-from ethecycle.chain_addresses.address_db import insert_tokens_from_data_source
+from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
+from ethecycle.models.token import Token
 from ethecycle.util.logging import print_address_import, print_dim
 from ethecycle.util.string_constants import *
 
@@ -53,4 +53,4 @@ def _import_tokens_addresses():
 
                 tokens.append(token)
 
-        insert_tokens_from_data_source(tokens)
+        insert_addresses(tokens)

@@ -15,13 +15,17 @@ def quoted_join(_list: Iterable[Any], quote_char: str = "'", separator: str = ',
     return separator.join(quoted_list)
 
 
-def strip_and_set_empty_string_to_none(_str: Optional[str]) -> Optional[str]:
-    """Strip whitespace. Return None if resultant string is empty, otherwise return stripped string."""
+def strip_and_set_empty_string_to_none(_str: Optional[str], to_lowercase: bool = False) -> Optional[str]:
+    """Strip whitespace/optionally downcase. Return None if resultant string is empty, otherwise return stripped string."""
     if _str is None:
         return None
     elif isinstance(_str, str):
         stripped_str = _str.strip()
-        return None if len(stripped_str) == 0 else stripped_str
+
+        if len(stripped_str) == 0:
+            return None
+
+        return stripped_str.lower() if to_lowercase else stripped_str
     else:
         log.warning(f"'{_str}' is not a string")
         return _str

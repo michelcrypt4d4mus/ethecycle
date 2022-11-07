@@ -1,5 +1,4 @@
 import csv
-import time
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
@@ -8,9 +7,20 @@ from typing import List, Optional, Type, Union
 from rich.pretty import pprint
 from rich.text import Text
 
-from ethecycle.util.filesystem_helper import file_size_string
-from ethecycle.util.logging import console
-from ethecycle.util.string_constants import ADDRESS, FROM_ADDRESS, TO_ADDRESS, MISSING_ADDRESS
+from ethecycle.blockchains.chain_info import ChainInfo
+from ethecycle.models.token import Token
+from ethecycle.util.string_constants import *
+
+# Expected column order for source CSVs.
+RAW_TXN_DATA_CSV_COLS = [
+    TOKEN_ADDRESS,
+    FROM_ADDRESS,
+    TO_ADDRESS,
+    'value',  # num_tokens
+    TRANSACTION_HASH,
+    LOG_INDEX,
+    BLOCK_NUMBER
+]
 
 # Columns for Neo4j import
 NEO4J_TXN_CSV_COLS = [
@@ -47,11 +57,11 @@ class Txn():
     extracted_at: Optional[Union[datetime, str]] = None
 
     def __post_init__(self):
-        # Some txns have multiple internal transfers so append log_index to achieve uniqueness
+        """Some txns have multiple internal transfers so append log_index to achieve a unique ID."""
         self.blockchain = self.chain_info.chain_string()
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
-        self.symbol = self.chain_info.token_symbol(self.token_address)
-        self.num_tokens = float(self.csv_value) / 10 ** self.chain_info.token_decimals(self.token_address)
+        self.symbol = Token.token_symbol(self.blockchain, self.token_address)
+        self.num_tokens = float(self.csv_value) / 10 ** Token.token_decimals(self.blockchain, self.token_address)
         self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
         self.scanner_url = self.chain_info.scanner_url(self.transaction_hash)
@@ -70,15 +80,27 @@ class Txn():
         return row
 
     @classmethod
-    def extract_from_csv(cls, csv_path: str, chain_info: Type['ChainInfo'], extracted_at: str) -> List['Txn']:
+    def extract_from_csv(
+            cls,
+            csv_path: str,
+            chain_info: Type['ChainInfo'],
+            extracted_at: str,
+            token: Optional['str']
+        ) -> List['Txn']:
         """Load txions from a headerless CSV to list of Txn objects."""
-        start_file_time = time.perf_counter()
-        msg = Text('Loading ').append(chain_info.chain_string(), style='color(112)').append(' chain ')
-        console.print(msg.append(f"transactions from '").append(csv_path, 'green').append("'..."))
-        console.print(f"   {file_size_string(csv_path)}", style='dim')
-
         with open(csv_path, newline='') as csvfile:
-            return [Txn(*(row + [chain_info, extracted_at])) for row in csv.reader(csvfile, delimiter=',')]
+            txns = [Txn(*(row + [chain_info])) for row in csv.reader(csvfile, delimiter=',')]
+
+        # Fill in extracted_at so all records in same job have same timestamp
+        for txn in txns:
+            txn.extracted_at = extracted_at
+
+        # Optionally filter for a singly token symbol
+        if token:
+            token_address = Token.token_address(chain_info.chain_string(), token)
+            txns = [txn for txn in txns if txn.token_address == token_address]
+
+        return txns
 
     @classmethod
     def count_col_vals(cls, txns: List['Txn'], col: str) -> None:

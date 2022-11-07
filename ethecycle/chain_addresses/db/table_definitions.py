@@ -61,9 +61,9 @@ TABLE_DEFINITIONS = [
     TableDefinition(
         WALLETS_TABLE_NAME,
         {
-            ADDRESS: sx.TEXT,
+            ADDRESS: [sx.TEXT, sx.NOT_NULL],
             BLOCKCHAIN: sx.TEXT,
-            'label': sx.TEXT,
+            'name': sx.TEXT,
             'category': sx.TEXT,
             DATA_SOURCE_ID: [sx.INTEGER, sx.NOT_NULL],
             EXTRACTED_AT: [sx.DATE, sx.NOT_NULL]
@@ -73,12 +73,12 @@ TABLE_DEFINITIONS = [
     TableDefinition(
         TOKENS_TABLE_NAME,
         {
-            SYMBOL: [sx.TEXT, sx.NOT_NULL],
+            ADDRESS: sx.TEXT,
+            BLOCKCHAIN: sx.TEXT,
             'name': sx.TEXT,
             'category': sx.TEXT,
-            BLOCKCHAIN: sx.TEXT,
+            SYMBOL: [sx.TEXT, sx.NOT_NULL],
             'token_type': sx.TEXT,
-            ADDRESS: sx.TEXT,
             'decimals': sx.INTEGER,
             'is_active': sx.BOOL,
             'is_scam': sx.BOOL,

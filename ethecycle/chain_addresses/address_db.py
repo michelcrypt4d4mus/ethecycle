@@ -16,12 +16,12 @@ from ethecycle.chain_addresses import db
 from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID, DATA_SOURCES_TABLE_NAME,
      TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
-from ethecycle.models.token import Token
+#from ethecycle.models.token import Token
 from ethecycle.util.list_helper import compare_lists
 from ethecycle.util.logging import console, log, print_dim, print_indented
 from ethecycle.util.string_constants import *
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
-from ethecycle.models.wallet import Wallet
+#from ethecycle.models.wallet import Wallet
 
 DbRows = List[Dict[str, Any]]
 
@@ -37,122 +37,44 @@ def table_connection(table_name):
     try:
         yield db[table_name]
     except Exception as e:
-        console.print_exception()
-        console.print(f"Exception while connected to '{table_name}'...")
+        console.print(f"Exception {e} while connected to '{table_name}'...")
         raise e
     finally:
-        log.debug(f"Closing DB connection to {table_name}...")
-
         # Hold connection open for big inserts bc writing is slow.
         if not Config.skip_load_from_db:
             db.disconnect()
 
 
-@contextmanager
-def wallets_table():
-    """Returns connection to wallets data table."""
-    with table_connection(WALLETS_TABLE_NAME) as wallets_table:
-        yield wallets_table
-
-
-@contextmanager
-def tokens_table():
-    """Returns connection to tokens data table."""
-    with table_connection(TOKENS_TABLE_NAME) as tokens_table:
-        yield tokens_table
-
-
-def load_wallets(chain_info: 'ChainInfo') -> List[Wallet]:
-    """Load wallets (and tokens - tokens have wallet addresses) from the database."""
-    token_wallets = [Wallet.from_token(token, chain_info) for token in load_tokens(chain_info)]
-    column_names = [c for c in Wallet.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
-
-    with wallets_table() as table:
-        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info.chain_string())
-
-    db_rows = [dict(zip(column_names, row)) for row in db_rows]
-    return token_wallets + [Wallet(chain_info=chain_info, **row) for row in _coalesce_rows(db_rows)]
-
-
-def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
-    """Load known tokens from addresses DB for a chain."""
-    column_names = [c for c in Token.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
-
-    with tokens_table() as table:
-        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info.chain_string())
-
-    rows = [dict(zip(column_names, row)) for row in db_rows]
-    return [Token(**row) for row in _coalesce_rows(rows)]
-
-
-def insert_rows(table_name: str, rows: DbRows) -> None:
+def insert_addresses(objs: List['Address']) -> None:
     """Insert 'rows' into table named 'table_name'. Assumes all rows have the same data_source."""
-    print_dim(f"Bulk writing {len(rows)} rows to table '{table_name}'...")
-    db_conn = get_db_connection()
-    columns = db_conn.get_columns_names(table_name)
-    row_tuples = [[row.get(c) for c in columns] for row in rows]
+    if len(objs) == 0:
+        print_dim("Nothing to write...")
+        return
 
-    if Config.debug:
-        console.print(Panel("FIRST ROW TO INSERT", expand=False))
-        pprint(rows[0])
+    db_conn = get_db_connection()
+    table_name = objs[0].table_name()
+    data_source = objs[0].data_source
+    columns = db_conn.get_columns_names(table_name)
+    print_dim(f"Bulk writing {len(objs)} rows to table '{table_name}'...")
+    _delete_rows_from_source(table_name, data_source)
+    row_tuples = [[row.get(c) for c in columns] for row in _to_db_dicts(objs)]
 
     try:
         db_conn.insertmany(table_name, row_tuples)
     except IntegrityError as e:
-        if Config.debug:
-            console.print_exception()
-
-        print_indented(f"{e} while bulk loading!", style='red dim')
+        print_indented(f"{e} bulk loading!", style='red dim')
         print_indented("Cleaning up and switching to one at a time...", style='white dim')
-        delete_rows_from_source(table_name, rows[0]['data_source'])
+        _delete_rows_from_source(table_name, data_source)
         _insert_one_at_a_time(table_name, row_tuples)
     finally:
         # Hold connection open for big inserts bc writing is slow.
         if not Config.skip_load_from_db:
             db_conn.disconnect()
 
-    print_dim(f"Finished writing {len(rows)} rows to '{table_name}'.")
+    print_dim(f"Finished writing {len(objs)} rows to '{table_name}'.")
 
 
-def insert_wallets_from_data_source(wallets: List[Wallet]) -> None:
-    """Update all rows from a given data_source (assumes all 'wallets' have same data_source)"""
-    _prepare_rows(wallets)
-    delete_rows_from_source(WALLETS_TABLE_NAME, wallets[0].data_source)
-    insert_rows(WALLETS_TABLE_NAME, [wallet.to_address_db_row() for wallet in wallets])
-
-
-def insert_tokens_from_data_source(tokens: List[Token]) -> None:
-    """Update all rows from a given data_source (assumes all 'tokens' have same data_source)"""
-    _prepare_rows(tokens)
-    delete_rows_from_source(TOKENS_TABLE_NAME, tokens[0].data_source)
-    insert_rows(TOKENS_TABLE_NAME, [token.__dict__ for token in tokens])
-
-
-def _prepare_rows(objs: Union[List[Token], List[Wallet]]) -> None:
-    """Validate all rows have same data_source. Set 'extracted_at' and 'data_source_id' fields."""
-    if len(objs) == 0:
-        return
-
-    data_source = objs[0].data_source
-
-    if data_source is None or not isinstance(data_source, str):
-        raise ValueError(f"Invalid data_source field for {objs[0]}!")
-
-    extracted_at = current_timestamp_iso8601_str()
-    data_source_id = _get_or_create_data_source_id(data_source)
-
-    for obj in objs:
-        if obj.data_source != data_source:
-            raise ValueError(f"Insertion have mismatched data_sources: '{obj.data_source}' != '{data_source}'")
-
-        obj.extracted_at = obj.extracted_at or extracted_at
-        obj.data_source_id = data_source_id
-
-        if 'extra_fields' in dir(obj) and obj.extra_fields is not None:
-            obj.extra_fields = json.dumps(obj.extra_fields)
-
-
-def delete_rows_from_source(table_name: str, _data_source: str) -> None:
+def _delete_rows_from_source(table_name: str, _data_source: str) -> None:
     """Delete all rows where _data_source arg is the data_source col. (Allows updates by reloading entire source)"""
     data_source_id = _get_or_create_data_source_id(_data_source)
 
@@ -190,7 +112,7 @@ def drop_and_recreate_tables() -> None:
 
 
 def get_db_connection() -> sx.SQLite3x:
-    """Make sure db._db is built / connected and that the tables h`ave been created."""
+    """Make sure db._db is built / connected and that the tables have been created."""
     if db._db is None:
         db._db = sx.SQLite3x(path=db.CHAIN_ADDRESSES_DB_PATH)
 
@@ -202,6 +124,56 @@ def get_db_connection() -> sx.SQLite3x:
             table_definition.create_table(db._db)
 
     return db._db
+
+
+def coalesce_rows(rows: DbRows) -> DbRows:
+    """Assemble the best data for each address by combining the data_sources in the DB."""
+    if len(rows) == 0:
+        return rows
+
+    cols = list(rows[0].keys())
+    coalesced_rows: Dict[str, Dict[str, Any]] = {}
+
+    for row in rows:
+        address = row[ADDRESS]
+
+        # If the address is not in the coalesced_rows yet just add it and go to next row
+        if address not in coalesced_rows:
+            #log.debug(f"Initializing {address} with data from {row['data_source_id']}")
+            coalesced_rows[address] = row
+            continue
+
+        # Otherwise fill in any missing fields in the coalesced row with data from 'row'
+        coalesced_row = coalesced_rows[address]
+
+        for col in cols:
+            #log.debug(f"Updating {address}: {col} with '{row[col]}' from {row['data_source_id']}...")
+            coalesced_row[col] = coalesced_row.get(col) or row.get(col)
+
+    return list(coalesced_rows.values())
+
+
+def _to_db_dicts(objs: List['Address']) -> List[Dict[str, Any]]:
+    """Validate all rows have same data_source. Set 'extracted_at' and 'data_source_id' fields. Make dicts."""
+    data_source = objs[0].data_source
+
+    if data_source is None or not isinstance(data_source, str):
+        raise ValueError(f"Invalid data_source field for {objs[0]}!")
+
+    extracted_at = current_timestamp_iso8601_str()
+    data_source_id = _get_or_create_data_source_id(data_source)
+
+    for obj in objs:
+        if obj.data_source != data_source:
+            raise ValueError(f"Insertion have mismatched data_sources: '{obj.data_source}' != '{data_source}'")
+
+        obj.extracted_at = obj.extracted_at or extracted_at
+        obj.data_source_id = data_source_id
+
+        if 'extra_fields' in dir(obj) and obj.extra_fields is not None:
+            obj.extra_fields = json.dumps(obj.extra_fields)
+
+    return [obj.__dict__ for obj in objs]
 
 
 def _insert_one_at_a_time(table_name: str, rows: List[List[Any]]) -> None:
@@ -288,29 +260,3 @@ def _load_table(table_name: str) -> List[Dict[str, Any]]:
     log.debug(f"Table '{table_name}' has columns:\n  {column_names}\nrows: {rows}")
     return [dict(zip(column_names, row)) for row in rows]
 
-
-def _coalesce_rows(rows: DbRows) -> DbRows:
-    """Assemble the best data for each address by combining the data_sources in the DB."""
-    if len(rows) == 0:
-        return rows
-
-    cols = list(rows[0].keys())
-    coalesced_rows: Dict[str, Dict[str, Any]] = {}
-
-    for row in rows:
-        address = row[ADDRESS]
-
-        # If the address is not in the coalesced_rows yet just add it and go to next row
-        if address not in coalesced_rows:
-            #log.debug(f"Initializing {address} with data from {row['data_source_id']}")
-            coalesced_rows[address] = row
-            continue
-
-        # Otherwise fill in any missing fields in the coalesced row with data from 'row'
-        coalesced_row = coalesced_rows[address]
-
-        for col in cols:
-            #log.debug(f"Updating {address}: {col} with '{row[col]}' from {row['data_source_id']}...")
-            coalesced_row[col] = coalesced_row.get(col) or row.get(col)
-
-    return list(coalesced_rows.values())

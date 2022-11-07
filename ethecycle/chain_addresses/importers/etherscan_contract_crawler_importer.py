@@ -8,7 +8,7 @@ from typing import List, Type
 from ethecycle.blockchains.binance_smart_chain import BinanceSmartChain
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.chain_addresses.address_db import (insert_wallets_from_data_source)
+from ethecycle.chain_addresses.address_db import (insert_addresses)
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.util.filesystem_helper import files_in_dir
 from ethecycle.util.logging import console, log, print_address_import
@@ -26,7 +26,7 @@ def import_ethereum_contract_crawler_addresses():
         wallets.extend(_import_contracts(path.join(root_dir, 'contracts'), Ethereum))
         wallets.extend(_import_contracts(path.join(root_dir, 'bsc_contracts'), BinanceSmartChain))
 
-    insert_wallets_from_data_source(wallets)
+    insert_addresses(wallets)
 
 
 def _import_contracts(contracts_dir: str, chain_info: Type[ChainInfo]) -> List[Wallet]:
@@ -43,7 +43,7 @@ def _import_contracts(contracts_dir: str, chain_info: Type[ChainInfo]) -> List[W
             try:
                 wallets.append(
                     Wallet(
-                        label=contract['Contract Name'],
+                        name=contract['Contract Name'],
                         address=contract['Address'],
                         chain_info=chain_info,
                         category=CONTRACT,

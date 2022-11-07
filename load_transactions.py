@@ -5,24 +5,31 @@ from os import path
 
 from rich.columns import Columns
 from rich.panel import Panel
+from rich.text import Text
 from rich_argparse_plus import RichHelpFormatterPlus
 
-from ethecycle.blockchains.blockchains import BLOCKCHAINS
 from ethecycle.config import Config
+from ethecycle.models.blockchain import BLOCKCHAINS
+from ethecycle.models.token import Token
 from ethecycle.neo4j import Neo4j
 from ethecycle.transaction_loader import load_into_neo4j
-from ethecycle.util.logging import console, set_log_level
+from ethecycle.util.filesystem_helper import files_in_dir
+from ethecycle.util.logging import ask_for_confirmation, console, set_log_level
 from ethecycle.util.number_helper import MEGABYTE
 from ethecycle.util.string_constants import DEBUG, ETHEREUM
 
+INCREMENTAL_LOAD_WARNING = Text("\nYou selected incremental import which probably doesn't work.\n", style='red')
+INCREMENTAL_LOAD_WARNING.append('  Did you forget the --drop option?', style='bright_red')
 SPLIT_BIG_FILES_THRESHOLD = 100 * MEGABYTE
 LIST_TOKEN_SYMBOLS = '--list-token-symbols'
 DEFAULT_DEBUG_LINES = 5
 
+Token.chain_addresses()  # Force load from DB
+
 CONFIGURED_TOKENS = set([
-    token
-    for chain_info in BLOCKCHAINS.values()
-    for token in chain_info.token_symbols().keys()
+    symbol
+    for _blockchain, symbol_tokens in Token._by_blockchain_symbol.items()
+    for symbol in symbol_tokens.keys()
 ])
 
 
@@ -77,6 +84,8 @@ if args.debug:
 
 if args.drop:
     Config.drop_database = True
+else:
+    ask_for_confirmation(INCREMENTAL_LOAD_WARNING)
 
 if args.extract_only:
     Config.extract_only = True
@@ -84,8 +93,19 @@ if args.extract_only:
 if args.token and args.token not in CONFIGURED_TOKENS:
     raise ValueError(f"'{args.token}' is not a known symbol. Try --list-token-symbols to see options.")
 
-# Actual loading happens here
-load_into_neo4j(args.csv_path, args.blockchain, args.token, preserve_csvs=args.preserve_csvs)
+if args.preserve_csvs:
+    Config.preserve_csvs = True
+
+# Make sure we are passing a list of paths and not just a single path
+if path.isfile(args.csv_path):
+    txn_csvs = [args.csv_path]
+elif path.isdir(args.csv_path):
+    console.print(f"Directory detected, loading all files from '{args.csv_path}'...", style='bright_cyan')
+    txn_csvs = files_in_dir(args.csv_path)
+else:
+    raise ValueError(f"'{args.csv_path}' is not a filesystem path")
+
+load_into_neo4j(txn_csvs, args.blockchain, args.token)
 
 if args.drop:
     Neo4j().create_indexes()

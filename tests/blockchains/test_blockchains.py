@@ -1,5 +1,8 @@
 
-from ethecycle.blockchains.blockchains import *
+from ethecycle.models.blockchain import guess_chain_info_from_address
+from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.blockchains.bitcoin import Bitcoin
+from ethecycle.blockchains.tron import Tron
 
 
 def test_guess_chain_info_from_address():

@@ -10,12 +10,11 @@ from rich.pretty import pprint
 from rich.table import Table
 from rich.text import Text
 
-from ethecycle.blockchains.blockchains import get_chain_info, guess_chain_info_from_address
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.config import Config
-from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME
-from ethecycle.chain_addresses.address_db import DbRows, insert_tokens_from_data_source
+from ethecycle.chain_addresses.address_db import DbRows, insert_addresses
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
+from ethecycle.models.blockchain import guess_chain_info_from_address
 from ethecycle.models.token import Token
 from ethecycle.util.filesystem_helper import files_in_dir
 from ethecycle.util.logging import console, log, print_address_import
@@ -88,7 +87,7 @@ def import_coin_market_cap_repo_addresses() -> None:
                     tokens.append(Token.from_properties(chain_token))
 
         #_print_debug_table(tokens)
-        insert_tokens_from_data_source(tokens)
+        insert_addresses(tokens)
 
 
 def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
@@ -101,16 +100,16 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
         pprint(token_data)
 
     row = {
-        k: v
+        k: v.strip() if v is not None else None
         for k, v in token_data.items()
         if k in ['category', 'name', SYMBOL]
     }
 
+    row['data_source'] = SOURCE_REPO.repo_url
     row['launched_at'] = token_data.get('dateLaunched')
     row['coin_market_cap_id'] = token_data.get('id')
     row['listed_on_coin_market_cap_at'] = token_data.get('dateAdded')
     row['coin_market_cap_watchers'] = token_data.get('watchCount')
-    row['data_source'] = SOURCE_REPO.repo_url
 
     # Boolean fields
     status = token_data.get(STATUS)
@@ -128,9 +127,10 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
 
         row[IS_ACTIVE] = False
 
+    # Discord and telegram get their own "chat" entries; everything else goes in the extra_fields hash
     if URLS in token_data and CHAT in token_data[URLS] and token_data[URLS][CHAT]:
         chat_urls = token_data[URLS][CHAT]
-        row['url_telegram'] = next((u for u in chat_urls if '/t.me/' in u or 'telegram' in u), None)
+        row['url_telegram'] = next((u for u in chat_urls if '/t.me/' in u or TELEGRAM in u), None)
         row['url_discord'] = next((u for u in chat_urls if '/discord.' in u), None)
 
         token_data[URLS][CHAT] = [
@@ -144,8 +144,8 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
         elif len(urls) == 1:
             row[f"url_{url_type}"] = urls[0]
         elif url_type == 'explorer':
+            # Prefer etherscan over others (?)
             token_url = next((url for url in urls if TOKEN in url), None)
-            token_url = token_url or next((url for url in urls if TOKEN in url), None)
 
             if token_url:
                 row[URL_EXPLORER] = token_url
@@ -158,8 +158,6 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
 
     # Short circuit if there's no chain (AKA 'platform') or address info
     if PLATFORMS not in token_data:
-        log.debug(f"No platforms found for {row}")
-
         if row.get(URL_EXPLORER) and 'etherscan' in row[URL_EXPLORER]:
             # Parse the missing address from the URL if we possible
             log.debug(f"Using address for {row[SYMBOL]} from {URL_EXPLORER}...")
@@ -177,10 +175,8 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
             log.debug(token_data)
 
         if ADDRESS in row:
-            blockchain_guess = guess_chain_info_from_address(row[ADDRESS])
-
-            if blockchain_guess:
-                row[BLOCKCHAIN] = blockchain_guess.chain_string()
+            row['chain_info'] = guess_chain_info_from_address(row[ADDRESS])
+            log.debug(f"No 'platforms' property. Attempted to guess chain for {row}")
 
         return [row]
 
@@ -189,21 +185,15 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
     tokens_with_chain_data = []
 
     for chain in chains:
-        token_with_chain = row.copy()
         blockchain = underscore(chain['contractPlatform'])
-
-        if blockchain.startswith(BINANCE):
-            blockchain = BINANCE_SMART_CHAIN
-
-        if Config.debug:
-            console.print(f"BLOCKCHAIN: '{blockchain}'", style='bright_red')
+        token_with_chain = row.copy()
 
         token_with_chain.update({
-            BLOCKCHAIN: blockchain,
+            BLOCKCHAIN: BINANCE_SMART_CHAIN if blockchain.startswith(BINANCE) else blockchain,
             ADDRESS: chain[CONTRACT_ADDRESS]
         })
 
-        # TODO: Lowercasing eth addresses should be unnecessary once we use the Token() class.
+        # TODO: Lowercasing eth addresses should be unnecessary once we use the Token class.
         if token_with_chain[ADDRESS].startswith(Ethereum.ADDRESS_PREFIXES[0]):
             token_with_chain[ADDRESS] = token_with_chain[ADDRESS].lower()
 

@@ -10,7 +10,7 @@ TEST_ENV_CANARY = 'cat /data/.keep_data'
 
 
 def test_neo4j_load():
-    _run_with_args('-d', '-D', TXN_CSV)
+    _run_with_args('-d', TXN_CSV)
 
 
 def _run_with_args(*args) -> str:

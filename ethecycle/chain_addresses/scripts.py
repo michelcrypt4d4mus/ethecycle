@@ -41,7 +41,7 @@ def generate_ethereum_dune_labels_query():
     print(query)
 
 
-def generate_dune_analytics_where_clause(substrings: List[str]) -> List[Dict[str, Any]]:
+def generate_dune_analytics_where_clause(blockchain: str, substrings: List[str]) -> List[Dict[str, Any]]:
     """Generate WHERE fragment to build a dune analytics query against wallets whose names contain 'name_match'."""
     selects = [ADDRESS, NAME]
     wheres = [f"{NAME} LIKE '%{substring}%'" for substring in substrings]

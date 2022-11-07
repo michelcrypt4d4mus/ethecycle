@@ -246,7 +246,7 @@ def _get_or_create_data_source_id(data_source: str) -> int:
         return row['id']
 
     with table_connection(DATA_SOURCES_TABLE_NAME) as table:
-        table.insert(data_source=data_source, created_at=current_timestamp_iso8601_str())
+        table.insert(data_source=data_source, extracted_at=current_timestamp_iso8601_str())
         return table.select_all(WHERE=table[DATA_SOURCE] == data_source)[0][0]
 
 
@@ -258,4 +258,3 @@ def _load_table(table_name: str) -> List[Dict[str, Any]]:
 
     log.debug(f"Table '{table_name}' has columns:\n  {column_names}\nrows: {rows}")
     return [dict(zip(column_names, row)) for row in rows]
-

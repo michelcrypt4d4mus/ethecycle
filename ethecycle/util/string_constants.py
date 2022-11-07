@@ -46,6 +46,7 @@ TRON = 'tron'
 # Txn properties in the graph
 EXTRACTED_AT = 'extracted_at'
 NUM_TOKENS = 'num_tokens'
+ORGANIZATION = 'organization'
 SCANNER_URL = 'scanner_url'
 
 # Other column names

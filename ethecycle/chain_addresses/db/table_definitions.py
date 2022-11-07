@@ -55,7 +55,7 @@ TABLE_DEFINITIONS = [
         {
             'id': [sx.INTEGER, sx.PRIMARY_KEY],
             DATA_SOURCE: [sx.TEXT, sx.NOT_NULL, sx.UNIQUE],
-            'created_at': [sx.DATE, sx.NOT_NULL]
+            EXTRACTED_AT: [sx.DATE, sx.NOT_NULL]
         }
     ),
     TableDefinition(
@@ -63,8 +63,11 @@ TABLE_DEFINITIONS = [
         {
             ADDRESS: [sx.TEXT, sx.NOT_NULL],
             BLOCKCHAIN: sx.TEXT,
-            'name': sx.TEXT,
-            'category': sx.TEXT,
+            NAME: sx.TEXT,
+            CATEGORY: sx.TEXT,
+            'organization': sx.TEXT,
+            'extra_fields': sx.BLOB,  # JSON blob with any other params worth saving
+            'comment': sx.TEXT,
             DATA_SOURCE_ID: [sx.INTEGER, sx.NOT_NULL],
             EXTRACTED_AT: [sx.DATE, sx.NOT_NULL]
         },
@@ -75,8 +78,9 @@ TABLE_DEFINITIONS = [
         {
             ADDRESS: sx.TEXT,
             BLOCKCHAIN: sx.TEXT,
-            'name': sx.TEXT,
-            'category': sx.TEXT,
+            NAME: sx.TEXT,
+            CATEGORY: sx.TEXT,
+            'organization': sx.TEXT,
             SYMBOL: [sx.TEXT, sx.NOT_NULL],
             'token_type': sx.TEXT,
             'decimals': sx.INTEGER,
@@ -86,6 +90,7 @@ TABLE_DEFINITIONS = [
             'url_explorer': sx.TEXT,
             'listed_on_coin_market_cap_at': sx.DATE,
             'extra_fields': sx.BLOB,  # JSON blob with any other params worth saving
+            'comment': sx.TEXT,
             DATA_SOURCE_ID: [sx.INTEGER, sx.NOT_NULL],
             'extracted_at': [sx.DATE, sx.NOT_NULL]
         },

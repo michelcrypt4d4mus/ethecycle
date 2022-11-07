@@ -101,6 +101,8 @@ VAULTS = 'vaults'
 WALLET_PROVIDER = 'wallet provider'
 
 # Misc
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
+ALPHABET_UPPER = ALPHABET.upper()
 HTTPS = 'https://'
 JSON = 'json'
 NAME = 'name'

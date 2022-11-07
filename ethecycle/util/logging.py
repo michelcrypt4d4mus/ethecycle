@@ -96,8 +96,7 @@ def print_headline(headline: str) -> None:
 
 
 def print_indented(msg: str, style: str = '', indent_level: int = 1) -> None:
-    indent = ' ' * INDENT_SPACES * indent_level
-    console.print(f"{indent}{msg}", style=style)
+    console.print(f"{indent_whitespace(indent_level)}{msg}", style=style)
 
 
 def print_benchmark(msg: str, start_time: float, indent_level: int = 1, style:str = 'benchmark') -> float:
@@ -119,3 +118,7 @@ def ask_for_confirmation(msg: Text) -> None:
 
     if input().lower() != 'y':
         exit()
+
+
+def indent_whitespace(indent_level: int = 1):
+    return ' ' * INDENT_SPACES * indent_level

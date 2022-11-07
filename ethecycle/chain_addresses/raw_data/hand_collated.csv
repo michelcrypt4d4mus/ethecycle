@@ -1,9 +1,38 @@
-address,blockchain,name,category
-0x8d08aAd4b2BAc2bB761aC4781CF62468C9ec47b4,ethereum,Deribit Hotwallet Exploiter 2,hackers
-0xb0606f433496bf66338b8ad6b6d51fc4d84a44cd,ethereum,Deribit Hotwallet Exploiter,hackers
-bc1qw5g8lw4kzltpdcraehy2dt6dqda8080xd6vhl4kg4wwsypwerg9s3x6pvk,bitcoin,Deribit Hotwallet Exploiter,hackers
-0x54dda22ae140edb605c73073eabb6f4aea2fc237,ethereum,Celsius/FTX/Alameda (Rumored),cex
-0x4147640a60b427B915e6925d9f6268438cFEfC39,ethereum,jeville.eth,individual
-0xae9a30FdC0caA2eb8624756f1725f75283Aaa343,ethereum,zhangxing.eth,individual
-0xd9d93951896b4ef97d251334ef2a0e39f6f6d7d7,ethereum,Binance Wallet for FTX Token ($FTT),cex
-CesomLhDYDPsNe4s9JkD8ezRZtyCepMgPEU62BEdhRQ7,solana,FTX (Rumored because of massive $SRM holdings),cex
+address,blockchain,name,category,comment
+0x8d08aAd4b2BAc2bB761aC4781CF62468C9ec47b4,ethereum,Deribit Hotwallet Exploiter 2,hackers,
+0xb0606f433496bf66338b8ad6b6d51fc4d84a44cd,ethereum,Deribit Hotwallet Exploiter,hackers,
+bc1qw5g8lw4kzltpdcraehy2dt6dqda8080xd6vhl4kg4wwsypwerg9s3x6pvk,bitcoin,Deribit Hotwallet Exploiter,hackers,
+0x54dda22ae140edb605c73073eabb6f4aea2fc237,ethereum,Celsius/FTX/Alameda (Rumored),cex,
+0x4147640a60b427B915e6925d9f6268438cFEfC39,ethereum,jeville.eth,individual,
+0xae9a30FdC0caA2eb8624756f1725f75283Aaa343,ethereum,zhangxing.eth,individual,
+0xd9d93951896b4ef97d251334ef2a0e39f6f6d7d7,ethereum,Binance Wallet for FTX Token ($FTT),cex,
+CesomLhDYDPsNe4s9JkD8ezRZtyCepMgPEU62BEdhRQ7,solana,FTX (Rumored because of massive $SRM holdings),cex,
+0xe31a9498a22493ab922bc0eb240313a46525ee0a,ethereum,Alameda Research A,fund,"https://dune.com/queries/1542008"
+0x712d0f306956a6a4b4f9319ad9b9de48c5345996,ethereum,Alameda Research B,fund,"https://dune.com/queries/1542008"
+0x93c08a3168fc469f3fc165cd3a471d19a37ca19e,ethereum,Alameda Research C,fund,"https://dune.com/queries/1542008"
+0xca436e14855323927d6e6264470ded36455fc8bd,ethereum,Alameda Research D,fund,"https://dune.com/queries/1542008"
+0x83a127952d266a6ea306c40ac62a4a70668fe3bd,ethereum,Alameda Research E,fund,"https://dune.com/queries/1542008"
+0xc5ed2333f8a2c351fca35e5ebadb2a82f5d254c3,ethereum,Alameda Research F,fund,"https://dune.com/queries/1542008"
+0x89183c0a8965c0299997be9af700a801bdccc2da,ethereum,Alameda Research G,fund,"https://dune.com/queries/1542008"
+0xe5d0ef77aed07c302634dc370537126a2cd26590,ethereum,Alameda Research H,fund,"https://dune.com/queries/1542008"
+0x5d13f4bf21db713e17e04d711e0bf7eaf18540d6,ethereum,Alameda Research I,fund,"https://dune.com/queries/1542008"
+0x882a812d75aee53efb8a144f984b258b6c4807f0,ethereum,Alameda Research J,fund,"https://dune.com/queries/1542008"
+0xbefe4f86f189c1c817446b71eb6ac90e3cb68e60,ethereum,Alameda Research K,fund,"https://dune.com/queries/1542008"
+0xb78e90e2ec737a2c0a24d68a0e54b410fff3bd6b,ethereum,Alameda Research L,fund,"https://dune.com/queries/1542008"
+0x964d9d1a532b5a5daeacbac71d46320de313ae9c,ethereum,Alameda Research M,fund,"https://dune.com/queries/1542008"
+0xfa453aec042a837e4aebbadab9d4e25b15fad69d,ethereum,Alameda Research N,fund,"https://dune.com/queries/1542008"
+0x4deb3edd991cfd2fcdaa6dcfe5f1743f6e7d16a6,ethereum,Alameda Research O,fund,"https://dune.com/queries/1542008"
+0x477573f212a7bdd5f7c12889bd1ad0aa44fb82aa,ethereum,Alameda Research P,fund,"https://dune.com/queries/1542008"
+0xce31190a03fc3c5f23167e88e75066824823222d,ethereum,Alameda Research Q,fund,"https://dune.com/queries/1542008"
+0x60009b78da046ac64ef789c29ca05b79cdf73c10,ethereum,Alameda Research R,fund,"https://dune.com/queries/1542008"
+0x73c0ae50756c7921d1f32ada71b8e50c5de7ff9c,ethereum,Alameda Research S,fund,"https://dune.com/queries/1542008"
+0x60ae578abdfded1fb0555f54148fdd7b400a34ed,ethereum,Alameda Research T,fund,"https://dune.com/queries/1542008"
+0xa726c00cda1f60aaab19bc095d02a46556837f31,ethereum,Alameda Research U,fund,"https://dune.com/queries/1542008"
+0x0c0fe4e0236480e16b679ee1fd0c5247f9cf35f0,ethereum,Alameda Research V,fund,"https://dune.com/queries/1542008"
+0x0f4ee9631f4be0a63756515141281a3e2b293bbe,ethereum,Alameda Research W,fund,"https://dune.com/queries/1542008"
+0x97137466bc8018531795217f0ecc4ba24dcba5c1,ethereum,Alameda Research X,fund,"https://dune.com/queries/1542008"
+0x84d34f4f83a87596cd3fb6887cff8f17bf5a7b83,ethereum,Alameda Research Y,fund,"https://dune.com/queries/1542008"
+0x78835265ac857bf3420830c71987b1a55f73c2dc,ethereum,Alameda Research Z,fund,"https://dune.com/queries/1542008"
+0x4c8cfe078a5b989cea4b330197246ced82764c63,ethereum,Alameda Research AA,fund,"https://dune.com/queries/1542008"
+0x073dca8acbc11ffb0b5ae7ef171e4c0b065ffa47,ethereum,Alameda Research BB,fund,"https://dune.com/queries/1542008"
+0x3507e4978e0eb83315d20df86ca0b976c0e40ccb,ethereum,Alameda Research CC,fund,"https://dune.com/queries/1542008"

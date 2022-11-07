@@ -11,7 +11,7 @@ from inflection import pluralize, titleize, underscore
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.chain_addresses.address_db import table_connection, coalesce_rows
 from ethecycle.models.blockchain import get_chain_info
-from ethecycle.util.logging import log
+from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_helper import strip_and_set_empty_string_to_none
 from ethecycle.util.string_constants import *
 
@@ -64,6 +64,7 @@ class Address:
     def chain_addresses(cls) -> Dict[str, Dict[str, 'Address']]:
         """Lazy load records from the database and activate _after_load_callback()."""
         if not cls.has_loaded_data_from_chain_address_db:
+            print_dim(f"Loading '{cls.__name__}' chain address data...")
             cls._by_blockchain_address = defaultdict(lambda: dict())
             column_names = [c for c in cls.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
 
@@ -81,6 +82,7 @@ class Address:
                 cls._by_blockchain_address[obj.blockchain][obj.address] = obj
 
             cls._after_load_callback()
+            console.print("    Complete!", style='green dim')
             cls.has_loaded_data_from_chain_address_db = True
 
         return cls._by_blockchain_address
@@ -98,12 +100,17 @@ class Address:
     @classmethod
     def get_address_property(cls, blockchain: str, address: str, property: str) -> Optional[Any]:
         """Get named property if there's an object at the 'address'."""
-        address_obj = cls.chain_addresses()[blockchain].get(address)
+        address_obj = cls.at_address(blockchain, address)
 
         if address_obj is None or property not in dir(address_obj):
             return None
 
         return getattr(address_obj, property)
+
+    @classmethod
+    def at_address(cls, blockchain: str, address: str) -> Optional['Address']:
+        """Get named property if there's an object at the 'address'."""
+        return cls.chain_addresses()[blockchain.lower()].get(address.lower())
 
     @classmethod
     def _after_load_callback(cls):

@@ -5,3 +5,5 @@ def test_strip_and_set_empty_string_to_none():
     assert strip_and_set_empty_string_to_none('   w ') == 'w'
     assert strip_and_set_empty_string_to_none('     ') is None
     assert strip_and_set_empty_string_to_none(5.5) == 5.5
+    assert strip_and_set_empty_string_to_none('   WWW ') == 'WWW'
+    assert strip_and_set_empty_string_to_none('   WWW ', to_lowercase=True) == 'www'

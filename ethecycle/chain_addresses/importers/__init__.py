@@ -33,6 +33,8 @@ def rebuild_chain_addresses_db():
     """Drop all tables and rebuild from source data."""
     Config.skip_load_from_db = True
     drop_and_recreate_tables()
+    # Import hand collated results first so they have priority
+    import_hand_collated_addresses()
     import_hardcoded_addresses()
     import_coin_market_cap_repo_addresses()
     import_cryptoscamdb_addresses()
@@ -41,7 +43,6 @@ def rebuild_chain_addresses_db():
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()
     import_google_sheets()
-    import_hand_collated_addresses()
     import_my_ether_wallet_addresses()
     import_trust_wallet_repo()
     import_wallets_from_dune()

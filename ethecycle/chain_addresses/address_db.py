@@ -13,8 +13,7 @@ from rich.panel import Panel
 from rich.pretty import pprint
 
 from ethecycle.chain_addresses import db
-from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID, DATA_SOURCES_TABLE_NAME,
-     TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
+from ethecycle.chain_addresses.db.table_definitions import DATA_SOURCE_ID, DATA_SOURCES_TABLE_NAME, TABLE_DEFINITIONS
 from ethecycle.config import Config
 #from ethecycle.models.token import Token
 from ethecycle.util.list_helper import compare_lists
@@ -255,7 +254,7 @@ def _load_table(table_name: str) -> List[Dict[str, Any]]:
     """Load whole table into list of dicts."""
     with table_connection(table_name) as table:
         column_names = table.get_columns_names()
-        rows = table.select_all()
+        rows = table.select_all(ORDER_BY=EXTRACTED_AT)
 
     log.debug(f"Table '{table_name}' has columns:\n  {column_names}\nrows: {rows}")
     return [dict(zip(column_names, row)) for row in rows]

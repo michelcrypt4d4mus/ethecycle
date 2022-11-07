@@ -17,9 +17,10 @@ from ethecycle.models.wallet import Wallet
 class ChainInfo:
     # Addresses on this chain should start with one of these strings and have this length
     ADDRESS_PREFIXES: List[str] = []
-    ADDRESS_LENGTH: int
-    # No chain should have an address standard shorter than this
+
+    # No chain has an address standard shorter 6 chars. Subclasses can define ADDRESS_LENGTH to be more specific.
     MINIMUM_ADDRESS_LENGTH = 6
+    ADDRESS_LENGTH: int
 
     # Default decimals for tokens on this chain
     DEFAULT_DECIMALS = 0
@@ -61,8 +62,8 @@ class ChainInfo:
         """Returns dict mapping token address to Token obj for this chain."""
         if len(cls._tokens_by_address) == 0 and not Config.skip_load_from_db and not cls._loaded_tokens:
             tokens = load_tokens(cls)
-            cls._tokens_by_symbol = {token.symbol: token for token in tokens}
             cls._tokens_by_address = {token.address: token for token in tokens}
+            cls._tokens_by_symbol = {token.symbol: token for token in tokens}
             cls._loaded_tokens = True
 
         return cls._tokens_by_address

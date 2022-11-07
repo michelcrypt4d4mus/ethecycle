@@ -6,13 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
-from rich.panel import Panel
-from rich.pretty import pprint
 from rich.text import Text
-
-from ethecycle.config import Config
-from ethecycle.util.logging import console
-from ethecycle.util.string_constants import ADDRESS, SYMBOL
 
 
 @dataclass

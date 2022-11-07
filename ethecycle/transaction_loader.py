@@ -50,10 +50,10 @@ def load_into_neo4j(txn_csvs: List[str], blockchain: str, token: Optional[str] =
         with stop_database() as context:
             _import_to_neo4j(bulk_load_shell_command)
 
-    clean_up(neo4j_csvs)
+    _clean_up(neo4j_csvs)
 
 
-def clean_up(neo4j_csvs: List[Neo4jCsvs]) -> None:
+def _clean_up(neo4j_csvs: List[Neo4jCsvs]) -> None:
     """Remove CSVs that were successfully loaded and other maintenance"""
     console.line()
 

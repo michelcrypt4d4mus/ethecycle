@@ -12,11 +12,11 @@ import sqllex as sx
 from rich.panel import Panel
 from rich.pretty import pprint
 
-from ethecycle.models.token import Token
 from ethecycle.chain_addresses import db
 from ethecycle.chain_addresses.db.table_definitions import (DATA_SOURCE_ID, DATA_SOURCES_TABLE_NAME,
      TOKENS_TABLE_NAME, WALLETS_TABLE_NAME, TABLE_DEFINITIONS)
 from ethecycle.config import Config
+from ethecycle.models.token import Token
 from ethecycle.util.list_helper import compare_lists
 from ethecycle.util.logging import console, log, print_dim, print_indented
 from ethecycle.util.string_constants import *
@@ -68,7 +68,7 @@ def load_wallets(chain_info: 'ChainInfo') -> List[Wallet]:
     column_names = [c for c in Wallet.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
 
     with wallets_table() as table:
-        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info._chain_str())
+        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info.chain_string())
 
     db_rows = [dict(zip(column_names, row)) for row in db_rows]
     return token_wallets + [Wallet(chain_info=chain_info, **row) for row in _coalesce_rows(db_rows)]
@@ -79,7 +79,7 @@ def load_tokens(chain_info: 'ChainInfo') -> List[Token]:
     column_names = [c for c in Token.__dataclass_fields__.keys() if c not in COLUMNS_TO_NOT_LOAD]
 
     with tokens_table() as table:
-        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info._chain_str())
+        db_rows = table.select_all(SELECT=column_names, WHERE=table[BLOCKCHAIN] == chain_info.chain_string())
 
     rows = [dict(zip(column_names, row)) for row in db_rows]
     return [Token(**row) for row in _coalesce_rows(rows)]

@@ -37,7 +37,7 @@ def show_chain_addresses():
         console.print(wallet)
 
     formatted = comma_format(len(Ethereum.known_wallets().keys()))
-    console.print(f"\n\n    {formatted} wallet labels found for {Ethereum._chain_str()}.")
+    console.print(f"\n\n    {formatted} wallet labels found for {Ethereum.chain_string()}.")
     console.line(2)
 
 
@@ -46,5 +46,5 @@ def show_tokens():
         console.print(token)
 
     formatted = comma_format(len(Ethereum.token_addresses().keys()))
-    console.print(f"\n\n    {formatted} tokens found for {Ethereum._chain_str()}.")
+    console.print(f"\n\n    {formatted} tokens found for {Ethereum.chain_string()}.")
     console.line(2)

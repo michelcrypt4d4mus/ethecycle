@@ -3,13 +3,16 @@ DEBUG = 'DEBUG'
 
 # Address stuff
 ADDRESS = 'address'
+FROM_ADDRESS = 'from_address'
 MISSING_ADDRESS = 'no_address'
+TO_ADDRESS = 'to_address'
 
 # Chain stuff
 BLOCKCHAIN = 'blockchain'
 BLOCK_NUMBER = 'block_number'
 CONTRACT = 'contract'
 ERC20 = 'ERC20'
+LOG_INDEX = 'log_index'
 NFT = 'nft'
 SYMBOL = 'symbol'
 TOKEN_ADDRESS = 'token_address'

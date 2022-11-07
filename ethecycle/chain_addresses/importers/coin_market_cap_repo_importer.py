@@ -180,7 +180,7 @@ def _explode_token_blockchain_rows(token_data: Dict[str, Any]) -> DbRows:
             blockchain_guess = guess_chain_info_from_address(row[ADDRESS])
 
             if blockchain_guess:
-                row[BLOCKCHAIN] = blockchain_guess._chain_str()
+                row[BLOCKCHAIN] = blockchain_guess.chain_string()
 
         return [row]
 

@@ -40,7 +40,7 @@ class ChainInfo:
     def token_address(cls, token_symbol: str) -> str:
         """Lookup a contract's chain address by the symbol."""
         if token_symbol not in cls.token_symbols():
-            raise ValueError(f"No '{cls._chain_str()}' address found for {token_symbol}!")
+            raise ValueError(f"No '{cls.chain_string()}' address found for {token_symbol}!")
 
         return cls.token_symbols()[token_symbol].address
 
@@ -124,7 +124,7 @@ class ChainInfo:
         return cls.known_wallets().get(wallet_address)
 
     @classmethod
-    def _chain_str(cls) -> str:
+    def chain_string(cls) -> str:
         """Returns lowercased version of class name (which should be the name of the blockchain)."""
         return underscore(cls.__name__)
 
@@ -133,4 +133,4 @@ class ChainInfo:
         if 'SHORT_NAME' in dir(cls):
             return cls.SHORT_NAME
         else:
-            return cls._chain_str()
+            return cls.chain_string()

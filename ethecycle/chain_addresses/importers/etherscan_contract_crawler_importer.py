@@ -30,7 +30,7 @@ def import_ethereum_contract_crawler_addresses():
 
 
 def _import_contracts(contracts_dir: str, chain_info: Type[ChainInfo]) -> List[Wallet]:
-    console.print(f"Importing {chain_info._chain_str()}...", style='dim')
+    console.print(f"Importing {chain_info.chain_string()}...", style='dim')
     wallets: List[Wallet] = []
 
     for file in [f for f in files_in_dir(contracts_dir, JSON)]: # if f.startswith('contracts_')]

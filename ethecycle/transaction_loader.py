@@ -13,19 +13,20 @@ from ethecycle.config import Config
 from ethecycle.export.neo4j_csv import HEADER, Neo4jCsvs
 from ethecycle.models.transaction import Txn
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, file_size_string, files_in_dir
+from ethecycle.util.logging import ask_for_confirmation, console, log, print_benchmark
 from ethecycle.util.neo4j_helper import admin_load_bash_command, import_to_neo4j
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
-from ethecycle.util.logging import ask_for_confirmation, console, log, print_benchmark
+from ethecycle.util.string_constants import *
 
 # Expected column order for source CSVs.
 RAW_TXN_DATA_CSV_COLS = [
-    'token_address',
-    'from_address',
-    'to_address',
+    TOKEN_ADDRESS,
+    FROM_ADDRESS,
+    TO_ADDRESS,
     'value',  # num_tokens
-    'transaction_hash',
-    'log_index',
-    'block_number'
+    TRANSACTION_HASH,
+    LOG_INDEX,
+    BLOCK_NUMBER
 ]
 
 INCREMENTAL_LOAD_WARNING = Text("\nYou selected incremental import which probably doesn't work.\n", style='red')
@@ -41,7 +42,10 @@ def load_into_neo4j(
         token: Optional[str] = None,
         preserve_csvs: Optional[bool] = False
     ) -> None:
-    """ETL that loads chain txion CSVs into Neo4j."""
+    """
+    ETL that loads chain txion CSVs into Neo4j, optionally filtered for 'token' arg.
+    CSVs will be deleted after successful load unless the 'preserve_csvs' arg is set to True.
+    """
     if not Config.drop_database:
         ask_for_confirmation(INCREMENTAL_LOAD_WARNING)
 
@@ -54,9 +58,14 @@ def load_into_neo4j(
         raise ValueError(f"'{txn_csv_path}' is not a filesystem path")
 
     start_time = time.perf_counter()
-    neo4j_csvs = [Neo4jCsvs(HEADER)] + [_extract_and_transform(txn_csv, blockchain, token) for txn_csv in txn_csvs]
+    extracted_at = current_timestamp_iso8601_str()
+
+    neo4j_csvs = [Neo4jCsvs(HEADER)] + [
+        _extract_and_transform(txn_csv, blockchain, extracted_at, token)
+        for txn_csv in txn_csvs
+    ]
+
     print_benchmark(f"\nProcessed {len(txn_csvs)} CSVs", start_time, indent_level=0, style='yellow')
-    
     bulk_load_shell_command = admin_load_bash_command(neo4j_csvs)
 
     if Config.extract_only:
@@ -82,9 +91,8 @@ def load_into_neo4j(
     console.line(2)
 
 
-def extract_transactions(csv_path: str, blockchain: str, token: Optional[str] = None) -> List[Txn]:
+def extract_transactions(csv_path: str, blockchain: str, extracted_at: str, token: Optional[str] = None) -> List[Txn]:
     """Load txions from a CSV to list of Txn objects optionally filtered for 'token' records only."""
-    extracted_at = current_timestamp_iso8601_str()
     chain_info = get_chain_info(blockchain)
     token_address = None
 
@@ -107,10 +115,10 @@ def extract_transactions(csv_path: str, blockchain: str, token: Optional[str] = 
         ]
 
 
-def _extract_and_transform(csv_path: str, blockchain: str, token: Optional[str] = None) -> Neo4jCsvs:
+def _extract_and_transform(csv_path: str, blockchain: str, extracted_at: str, token: Optional[str] = None) -> Neo4jCsvs:
     """Extract transactions and transform to Neo4j bulk load CSVs"""
     start_file_time = time.perf_counter()
-    txns = extract_transactions(csv_path, blockchain, token)
+    txns = extract_transactions(csv_path, blockchain, extracted_at, token)
     duration = print_benchmark('Extracted data from source CSV', start_file_time)
     neo4j_csvs = Neo4jCsvs(txns, blockchain)
     print_benchmark(f"Generated CSVs for {path.dirname(csv_path)}", start_file_time + duration)

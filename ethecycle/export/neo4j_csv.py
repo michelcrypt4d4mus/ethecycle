@@ -20,7 +20,7 @@ from ethecycle.util.neo4j_helper import EDGE_LABEL, HEADER, NODE_LABEL
 from ethecycle.util.logging import print_benchmark
 from ethecycle.util.string_constants import ETHEREUM
 from ethecycle.models.transaction import TXN_CSV_HEADER
-from ethecycle.models.wallet import WALLET_CSV_HEADER, Wallet
+from ethecycle.models.wallet import NEO4J_WALLET_CSV_HEADER, Wallet
 
 
 class Neo4jCsvs:
@@ -80,4 +80,4 @@ class Neo4jCsvs:
 
         with open(self.wallet_csv_path, 'w') as file:
             csv_writer = csv.writer(file)
-            csv_writer.writerow(WALLET_CSV_HEADER)
+            csv_writer.writerow(NEO4J_WALLET_CSV_HEADER)

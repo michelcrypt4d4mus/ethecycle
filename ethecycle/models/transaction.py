@@ -6,13 +6,10 @@ from typing import List, Optional, Type, Union
 from rich.pretty import pprint
 from rich.text import Text
 
-from ethecycle.util.string_constants import ADDRESS, MISSING_ADDRESS
-
-FROM_ADDRESS = 'from_address'
-TO_ADDRESS = 'to_address'
+from ethecycle.util.string_constants import ADDRESS, FROM_ADDRESS, TO_ADDRESS, MISSING_ADDRESS
 
 # Columns for Neo4j import
-TXN_CSV_COLS = [
+NEO4J_TXN_CSV_COLS = [
     'transaction_id',  # Combination of transaction_hash and log_index
     'blockchain',
     'token_address',
@@ -29,8 +26,8 @@ NEO4J_RELATIONSHIP_COLS = {
     TO_ADDRESS: ':END_ID',
 }
 
-TXN_CSV_HEADER = [NEO4J_RELATIONSHIP_COLS.get(col, col) for col in TXN_CSV_COLS]
-TXN_CSV_FIELDS = [col.split(':')[0] for col in TXN_CSV_COLS]
+TXN_CSV_HEADER = [NEO4J_RELATIONSHIP_COLS.get(col, col) for col in NEO4J_TXN_CSV_COLS]
+TXN_CSV_FIELDS = [col.split(':')[0] for col in NEO4J_TXN_CSV_COLS]
 
 
 @dataclass
@@ -47,7 +44,7 @@ class Txn():
 
     def __post_init__(self):
         # Some txns have multiple internal transfers so append log_index to achieve uniqueness
-        self.blockchain = self.chain_info._chain_str()
+        self.blockchain = self.chain_info.chain_string()
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
         self.symbol = self.chain_info.token_symbol(self.token_address)
         self.num_tokens = float(self.csv_value) / 10 ** self.chain_info.token_decimals(self.token_address)

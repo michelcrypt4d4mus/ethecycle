@@ -9,11 +9,13 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from rich.text import Text
 
+#from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.models.token import Token
 from ethecycle.models.transaction import Txn
 from ethecycle.util.string_constants import *
+from ethecycle.util.string_helper import strip_and_set_empty_string_to_none
 
-WALLET_CSV_HEADER = [
+NEO4J_WALLET_CSV_HEADER = [
     'address:ID',
     'blockchain',
     'label',
@@ -21,7 +23,7 @@ WALLET_CSV_HEADER = [
     'extracted_at:datetime',
 ]
 
-WALLET_CSV_COLUMNS = [col.split(':')[0] for col in WALLET_CSV_HEADER]
+WALLET_CSV_COLUMNS = [col.split(':')[0] for col in NEO4J_WALLET_CSV_HEADER]
 
 # For pretty printing
 WALLET_LABEL_COLORS = {
@@ -52,16 +54,18 @@ UNKNOWN = Text('UNKNOWN', style='color(234)')
 @dataclass
 class Wallet:
     address: str
-    chain_info: Type
+    chain_info: Type['ChainInfo']
     label: Optional[str] = None
     category: Optional[str] = None
     data_source: Optional[str] = None
     extracted_at: Optional[Union[datetime, str]] = None
 
     def __post_init__(self):
-        """Look up label and category if they were not provided."""
         self.address = self.address.lower()
-        self.blockchain = self.chain_info._chain_str()
+        self.blockchain = self.chain_info.chain_string()
+        """Look up label and category if they were not provided."""
+        self.label = strip_and_set_empty_string_to_none(self.label)
+        self.category = strip_and_set_empty_string_to_none(self.category)
         self.category = self.category.lower() if self.category else None
 
         if isinstance(self.extracted_at, datetime):
@@ -69,7 +73,7 @@ class Wallet:
 
     @classmethod
     def from_token(cls, token: Token, chain_info: Type) -> 'Wallet':
-        """Alternate constructor to build a Wallet() object representation of a token."""
+        """Alternate constructor to build a Wallet() object representation of a token address."""
         return cls(
             address=token.address,
             chain_info=chain_info,

@@ -56,20 +56,20 @@ def test_from_properties(token_of_the_beast):
     }
 
 
-def test_token_address():
+def test_token_address(prep_db):
     with pytest.raises(ValueError):
         Token.token_address('barfchain', USDT)
 
     assert Token.token_address(ETHEREUM, USDT) == USDT_ETHEREUM_ADDRESS
 
 
-def test_token_decimals():
+def test_token_decimals(prep_db):
     assert Token.token_decimals(ETHEREUM, 'BARF') == 0
     usdt_address = Token.token_address(ETHEREUM, USDT)
     assert Token.token_decimals(ETHEREUM, usdt_address) == 6
 
 
-def test_token_symbol():
+def test_token_symbol(prep_db):
     assert Token.token_symbol('barfchain', USDT_ETHEREUM_ADDRESS) is None
     usdt_address = Token.token_address(ETHEREUM, USDT)
     assert Token.token_symbol(ETHEREUM, usdt_address) == USDT

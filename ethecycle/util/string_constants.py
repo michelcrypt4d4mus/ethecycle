@@ -53,6 +53,7 @@ SCANNER_URL = 'scanner_url'
 DATA_SOURCE = 'data_source'
 
 # Industry
+AAVE = 'aave'
 ALAMEDA = 'alameda'
 BINANCE = 'binance'
 USDT = 'USDT'
@@ -84,6 +85,11 @@ SOCIAL_MEDIA_ORGS = [
     BITCOINTALK,
 ]
 
+social_media_url = lambda org: f"{org}.org" if org == BITCOINTALK else f"{org}.com"
+SOCIAL_MEDIA_URLS = [social_media_url(org) for org in SOCIAL_MEDIA_ORGS] + [
+    'youtu.be'
+]
+
 # Wallet Categories
 BRIDGE = 'bridge'
 CATEGORY = 'category'
@@ -113,10 +119,3 @@ LABEL_E = 'labelE'
 LABEL_V = 'labelV'
 
 
-def social_media_url(col: str) -> str:
-    if col == BITCOINTALK:
-        tld = 'org'
-    else:
-        tld = 'com'
-
-    return f"{col}.{tld}"

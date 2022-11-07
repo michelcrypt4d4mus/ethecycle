@@ -85,6 +85,7 @@ Some reasonable guesses as to useful ways to index transactions can be found [he
 * Get a shell on the test env Python ETL container: `scripts/docker/python_etl/test_shell.sh`
 * Get a shell on the Neo4j container: `scripts/docker/neo4j/shell.sh`
 * Generate `.env.neo4j` file ([example](.env.neo4j.example)) with Neo4j official recommendations: `scripts/docker/neo4j/generate_.neo4j.env_file.sh -h`
+* Build images with fresh build of chain address DB: `REBUILD_CHAIN_ADDRESS_DB=freshly_built_address_db docker-compose build` (you can also change the value in `.env` but this is quicker)
 
 #### On the Container
 * Display the wallet tags: `show_chain_addresses`

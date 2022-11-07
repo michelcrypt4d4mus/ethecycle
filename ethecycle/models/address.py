@@ -26,6 +26,7 @@ class Address:
     chain_info: Optional[Type['ChainInfo']] = None
     name: Optional[str] = None
     category: Optional[str] = None
+    organization: Optional[str] = None
     data_source: Optional[str] = None
     extracted_at: Optional[Union[datetime, str]] = None
 

@@ -1,5 +1,6 @@
 """
-Contains address_db table definitions.
+Contains address_db table definitions. Note that the 'tokens' and 'wallets' tables share a number
+of columns to facilitate multi table inheritance.
 """
 
 from dataclasses import dataclass, field

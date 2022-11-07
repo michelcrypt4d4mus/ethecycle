@@ -13,7 +13,7 @@ TEST_TXN_HASH = '0x666_TRANSACTION_HASHING_OF_THE_BEAST_666'
 TEST_TXN_LOG_LEVEL = '777'
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(scope='session')
 def ethereum_of_the_beast(prep_db, token_of_the_beast):
     """Add token to Ethereum ChainInfo in memory."""
     Token.chain_addresses()[ETHEREUM][token_of_the_beast.address] = token_of_the_beast
@@ -21,8 +21,8 @@ def ethereum_of_the_beast(prep_db, token_of_the_beast):
     return Ethereum
 
 
-@pytest.fixture(autouse=True, scope='session')
-def wallet_1() -> Wallet:
+@pytest.fixture(scope='session')
+def wallet_1(prep_db) -> Wallet:
     return Wallet(
         address='0xPHAT_WALLET_ADDRESS_1',
         chain_info=Ethereum,
@@ -33,7 +33,7 @@ def wallet_1() -> Wallet:
     )
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(scope='session')
 def wallet_2() -> Wallet:
     return Wallet(
         address='0xPHAT_WALLET_ADDRESS_2',
@@ -45,7 +45,7 @@ def wallet_2() -> Wallet:
     )
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(scope='session')
 def token_of_the_beast() -> Token:
     return Token(
         chain_info=Ethereum,
@@ -59,7 +59,7 @@ def token_of_the_beast() -> Token:
     )
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(scope='session')
 def transaction_of_the_beast(ethereum_of_the_beast, token_of_the_beast, wallet_1, wallet_2) -> Txn:
     return Txn(
         token_address=token_of_the_beast.address,

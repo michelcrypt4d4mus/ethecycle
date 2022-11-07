@@ -11,6 +11,7 @@ from ethecycle.chain_addresses import github_data_source
 from ethecycle.chain_addresses.importers.coin_market_cap_repo_importer import import_coin_market_cap_repo_addresses
 from ethecycle.chain_addresses.importers.cryptoscamdb_addresses_importer import import_cryptoscamdb_addresses
 from ethecycle.chain_addresses.importers.etherscrape_importer import import_etherscrape_chain_addresses
+from ethecycle.chain_addresses.importers.google_sheets_importer import import_google_sheets
 from ethecycle.chain_addresses.importers.hardcoded_addresses_importer import import_hardcoded_addresses
 from ethecycle.chain_addresses.importers.my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
 from ethecycle.chain_addresses.importers.trustwallet_assets_importer import import_trust_wallet_repo
@@ -41,3 +42,4 @@ def test_slow_importers():
     import_coin_market_cap_repo_addresses()
     import_my_ether_wallet_addresses()
     import_trust_wallet_repo()
+    import_google_sheets()

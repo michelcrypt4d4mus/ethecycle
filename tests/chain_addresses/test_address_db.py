@@ -10,5 +10,5 @@ def test_get_or_create_data_source_id():
     assert data_source_id == _get_or_create_data_source_id(TEST_DATA_SOURCE)
 
 
-def test_known_wallets():
+def test_known_wallets(prep_db):
     assert Wallet.name_at_address(Ethereum.chain_string(), '0x6eff3372fa352b239bb24ff91b423a572347000d') == 'BIKI.com'

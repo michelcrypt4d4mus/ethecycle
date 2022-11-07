@@ -22,6 +22,6 @@ def test_from_token(token_of_the_beast):
     assert token_wallet.extracted_at == token_of_the_beast.extracted_at
 
 
-def test_token_name_at_wallet_address():
+def test_token_name_at_wallet_address(prep_db):
     name = Wallet.name_at_address(ETHEREUM, USDT_ETHEREUM_ADDRESS).lower()
     assert 'tether' in name or 'usdt' in name

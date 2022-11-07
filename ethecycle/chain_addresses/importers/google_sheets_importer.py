@@ -21,7 +21,8 @@ from ethecycle.util.filesystem_helper import RAW_DATA_DIR
 from ethecycle.util.logging import console, log, print_indented
 from ethecycle.util.number_helper import pct, pct_str
 from ethecycle.util.string_constants import (BITCOINTALK, FACEBOOK, HTTPS, INDIVIDUAL,
-     SOCIAL_MEDIA_ORGS, social_media_url)
+     SOCIAL_MEDIA_ORGS, SOCIAL_MEDIA_URLS, social_media_url)
+from ethecycle.util.string_helper import has_as_substring
 
 ETHEREUM_SHEETS = {
     '1I30YwfcqO7r7hP63hKdJM1BaaqAWiFfz_biIk2fyouM': [
@@ -247,6 +248,9 @@ class GoogleWorksheet:
             name = '?'
         else:
             name = row[self.social_media_col_label].removeprefix(HTTPS).removeprefix('www.')
+
+            if has_as_substring(name, SOCIAL_MEDIA_URLS) and '?' in name:
+                name = name.split('?')[0].strip()
 
         wallet = Wallet(
             address=address,

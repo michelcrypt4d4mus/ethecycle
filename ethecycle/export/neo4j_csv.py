@@ -7,7 +7,6 @@ Docs: https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-a
 Data types: int, long, float, double, boolean, byte, short, char, string, point, date,
             localtime, time, localdatetime, datetime, duration
 """
-import csv
 import time
 from os import path
 from typing import List, Type, Union
@@ -54,10 +53,6 @@ class Neo4jCsvs:
         self._write_csv(self.txn_csv_path, txns)
         print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
 
-    def _write_csv(self, csv_path: str, objs: Union[List[Txn], List[Wallet]]) -> None:
-        """Write objs to csv_path"""
-        write_list_of_lists_to_csv(csv_path, [obj.to_neo4j_csv_row() for obj in objs])
-
     # NOTE: Had bizarre issues with this on macOS... removed WALLET_header.csv but could not write to
     #       Wallet_header.csv until I did a `touch /ethecycle/Wallet_header.csv`.
     #       I assume it has something to do w/macOS's lack of case sensitivity.
@@ -65,3 +60,7 @@ class Neo4jCsvs:
         """Write single row CSVs with header info for nodes and edges."""
         write_list_of_lists_to_csv(self.txn_csv_path, [NEO4J_TXN_CSV_HEADER])
         write_list_of_lists_to_csv(self.wallet_csv_path, [NEO4J_WALLET_CSV_HEADER])
+
+    def _write_csv(self, csv_path: str, objs: Union[List[Txn], List[Wallet]]) -> None:
+        """Write objs to csv_path"""
+        write_list_of_lists_to_csv(csv_path, [obj.to_neo4j_csv_row() for obj in objs])

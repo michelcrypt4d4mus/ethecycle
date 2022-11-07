@@ -32,7 +32,7 @@ class ChainInfo:
     _tokens_by_symbol: Dict[str, Token] = {}
     _wallet_labels: Dict[str, Wallet] = {}
 
-    # Use flags to prevent repeatedly reloading data on chains where we have no info
+    # Use flags to prevent repeatedly reloading data on chains where we have no info in the DB
     _loaded_tokens = False
     _loaded_wallets = False
 

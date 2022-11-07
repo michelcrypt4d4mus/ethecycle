@@ -10,21 +10,19 @@ Data types: int, long, float, double, boolean, byte, short, char, string, point,
 import csv
 import time
 from os import path
-from typing import List, Union
+from typing import List, Type, Union
 
 from ethecycle.blockchains.blockchains import get_chain_info
-
-from ethecycle.models.transaction import Txn
+from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.models.transaction import NEO4J_TXN_CSV_HEADER, Txn
+from ethecycle.models.wallet import NEO4J_WALLET_CSV_HEADER, Wallet
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
 from ethecycle.util.neo4j_helper import EDGE_LABEL, HEADER, NODE_LABEL
 from ethecycle.util.logging import print_benchmark
-from ethecycle.util.string_constants import ETHEREUM
-from ethecycle.models.transaction import TXN_CSV_HEADER
-from ethecycle.models.wallet import NEO4J_WALLET_CSV_HEADER, Wallet
 
 
 class Neo4jCsvs:
-    def __init__(self, txns: Union[List[Txn], str], blockchain: str = ETHEREUM) -> None:
+    def __init__(self, txns: Union[List[Txn], str], chain_info: Type['ChainInfo'] = Ethereum) -> None:
         """
         Generate Neo4j CSV files for the Neo4j bulk loader.
         If 'txns' is the string 'header' the CSVs are single row header files.
@@ -34,7 +32,7 @@ class Neo4jCsvs:
         build_csv_path = lambda label: path.join(OUTPUT_DIR, f"{label}_{csv_basename}.csv")
         self.wallet_csv_path = build_csv_path(NODE_LABEL)
         self.txn_csv_path = build_csv_path(EDGE_LABEL)
-        self.blockchain = blockchain
+        self.chain_info = chain_info
 
         if txns == HEADER:
             self._write_header_csvs()
@@ -48,26 +46,21 @@ class Neo4jCsvs:
 
     def _write_txn_and_wallet_csvs(self, txns: List[Txn]) -> None:
         """Break out wallets and txions into two CSV files for nodes and edges for Neo4j bulk loader."""
-        chain_info = get_chain_info(self.blockchain)
-        start_time = time.perf_counter()
-
         # Wallet nodes
-        with open(self.wallet_csv_path, 'w') as csvfile:
-            csv_writer = csv.writer(csvfile)
-
-            for wallet in Wallet.extract_wallets_from_transactions(txns, chain_info):
-                csv_writer.writerow(wallet.to_neo4j_csv_row())
-
+        start_time = time.perf_counter()
+        self._write_csv(self.wallet_csv_path, Wallet.extract_wallets_from_transactions(txns, self.chain_info))
         duration_from_start = print_benchmark('Wrote wallet CSV', start_time, indent_level=2)
-
         # Transaction edges
-        with open(self.txn_csv_path, 'w') as csvfile:
+        self._write_csv(self.txn_csv_path, txns)
+        print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
+
+    def _write_csv(self, csv_path: str, objs: Union[List[Txn], List[Wallet]]) -> None:
+        """Write objs to csv_path"""
+        with open(csv_path, 'w') as csvfile:
             csv_writer = csv.writer(csvfile)
 
-            for txn in txns:
-                csv_writer.writerow(txn.to_neo4j_csv_row())
-
-        print_benchmark('Wrote txn CSV', start_time + duration_from_start, indent_level=2)
+            for obj in objs:
+                csv_writer.writerow(obj.to_neo4j_csv_row())
 
     # NOTE: Had bizarre issues with this on macOS... removed WALLET_header.csv but could not write to
     #       Wallet_header.csv until I did a `touch /ethecycle/Wallet_header.csv`.
@@ -76,7 +69,7 @@ class Neo4jCsvs:
         """Write single row CSVs with header info for nodes and edges."""
         with open(self.txn_csv_path, 'w') as csvfile:
             csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(TXN_CSV_HEADER)
+            csv_writer.writerow(NEO4J_TXN_CSV_HEADER)
 
         with open(self.wallet_csv_path, 'w') as file:
             csv_writer = csv.writer(file)

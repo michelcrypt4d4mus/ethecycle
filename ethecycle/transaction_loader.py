@@ -1,10 +1,9 @@
 """
 Load transactions from CSV as python lists and/or directly into the graph database.
 """
-import csv
 import time
 from os import path, remove
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from rich.text import Text
 
@@ -12,7 +11,7 @@ from ethecycle.blockchains.blockchains import get_chain_info
 from ethecycle.config import Config
 from ethecycle.export.neo4j_csv import HEADER, Neo4jCsvs
 from ethecycle.models.transaction import Txn
-from ethecycle.util.filesystem_helper import OUTPUT_DIR, file_size_string, files_in_dir
+from ethecycle.util.filesystem_helper import OUTPUT_DIR, files_in_dir
 from ethecycle.util.logging import ask_for_confirmation, console, log, print_benchmark
 from ethecycle.util.neo4j_helper import admin_load_bash_command, import_to_neo4j
 from ethecycle.util.time_helper import current_timestamp_iso8601_str
@@ -59,9 +58,10 @@ def load_into_neo4j(
 
     start_time = time.perf_counter()
     extracted_at = current_timestamp_iso8601_str()
+    chain_info = get_chain_info(blockchain)
 
     neo4j_csvs = [Neo4jCsvs(HEADER)] + [
-        _extract_and_transform(txn_csv, blockchain, extracted_at, token)
+        _extract_and_transform(txn_csv, chain_info, extracted_at, token)
         for txn_csv in txn_csvs
     ]
 
@@ -91,35 +91,16 @@ def load_into_neo4j(
     console.line(2)
 
 
-def extract_transactions(csv_path: str, blockchain: str, extracted_at: str, token: Optional[str] = None) -> List[Txn]:
-    """Load txions from a CSV to list of Txn objects optionally filtered for 'token' records only."""
-    chain_info = get_chain_info(blockchain)
-    token_address = None
-
-    if not (token is None or token in chain_info.token_addresses()):
-        raise ValueError(f"Address for '{token}' token not found.")
-
-    msg = Text('Loading ').append(blockchain, style='color(112)').append(' chain ')
-
-    if token:
-        msg.append(token + ' ', style='color(207)')
-        token_address = chain_info.token_address(token)
-
-    console.print(msg.append(f"transactions from '").append(csv_path, 'green').append("'..."))
-    console.print(f"   {file_size_string(csv_path)}", style='dim')
-
-    with open(csv_path, newline='') as csvfile:
-        return [
-            Txn(*(row + [chain_info, extracted_at])) for row in csv.reader(csvfile, delimiter=',')
-            if row[0] != 'token_address' and (token is None or row[0] == token_address)
-        ]
-
-
-def _extract_and_transform(csv_path: str, blockchain: str, extracted_at: str, token: Optional[str] = None) -> Neo4jCsvs:
+def _extract_and_transform(csv_path: str, chain_info: Type['ChainInfo'], extracted_at: str, token: Optional[str] = None) -> Neo4jCsvs:
     """Extract transactions and transform to Neo4j bulk load CSVs"""
     start_file_time = time.perf_counter()
-    txns = extract_transactions(csv_path, blockchain, extracted_at, token)
+    txns = Txn.extract_from_csv(csv_path, chain_info, extracted_at)
+
+    if token:
+        token_address = chain_info.token_address(token)
+        txns = [txn for txn in txns if txn.token_address == token_address]
+
     duration = print_benchmark('Extracted data from source CSV', start_file_time)
-    neo4j_csvs = Neo4jCsvs(txns, blockchain)
+    neo4j_csvs = Neo4jCsvs(txns, chain_info)
     print_benchmark(f"Generated CSVs for {path.dirname(csv_path)}", start_file_time + duration)
     return neo4j_csvs

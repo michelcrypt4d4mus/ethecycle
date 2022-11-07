@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from rich.text import Text
 
-#from ethecycle.blockchains.chain_info import ChainInfo
+#from ethecycle.blockchains.chain_info import ChainInfo # Circular import :(
 from ethecycle.models.token import Token
 from ethecycle.models.transaction import Txn
 from ethecycle.util.string_constants import *
@@ -83,6 +83,18 @@ class Wallet:
             extracted_at=token.extracted_at
         )
 
+    @classmethod
+    def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
+        """Extract wallet addresses from from and to addresses and add labels."""
+        wallet_addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
+        wallet_addresses.remove('')
+        wallet_addresses.add(MISSING_ADDRESS)
+
+        return [
+            Wallet(address, chain_info, extracted_at=txns[0].extracted_at).load_labels()
+            for address in wallet_addresses
+        ]
+
     def load_labels(self) -> 'Wallet':
         """Loads label and category fields from chain_addresses.db. Returns self."""
         self.label = self.label or self.chain_info.wallet_label(self.address)
@@ -124,15 +136,3 @@ class Wallet:
 
     def __str__(self):
         return self.__rich__().plain
-
-    @classmethod
-    def extract_wallets_from_transactions(cls, txns: List[Txn], chain_info: Type) -> List['Wallet']:
-        """Extract wallet addresses from from and to addresses and add labels."""
-        wallet_addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
-        wallet_addresses.remove('')
-        wallet_addresses.add(MISSING_ADDRESS)
-
-        return [
-            Wallet(address, chain_info, extracted_at=txns[0].extracted_at).load_labels()
-            for address in wallet_addresses
-        ]

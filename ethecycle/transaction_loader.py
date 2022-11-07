@@ -84,7 +84,7 @@ def load_into_neo4j(
     if preserve_csvs:
         console.print(f"Successfully loaded CSVs left in '{OUTPUT_DIR}' and not deleted.", style='color(93)')
     else:
-        for loaded_csv in [csv_file for neo_csvs in neo4j_csvs for csv_file in neo_csvs.generated_csvs()]:
+        for loaded_csv in [csv_file for neo_csvs in neo4j_csvs for csv_file in neo_csvs.generated_csvs]:
             log.debug(f"Deleting successfully loaded CSV: {loaded_csv}")
             remove(loaded_csv)
 

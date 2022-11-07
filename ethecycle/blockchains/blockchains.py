@@ -104,7 +104,7 @@ CHAIN_IDS = {
 }
 
 
-def get_chain_info(blockchain: str):
+def get_chain_info(blockchain: str) -> Type[ChainInfo]:
     """Return the ChainInfo subclass for 'blockchain' or create default ChainInfo on the fly."""
     if blockchain not in BLOCKCHAINS:
         log.warning(f"Using default ChainInfo for unknown blockchain '{blockchain}'.")

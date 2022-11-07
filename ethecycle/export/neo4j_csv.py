@@ -12,17 +12,19 @@ import time
 from os import path
 from typing import List, Type, Union
 
-from ethecycle.blockchains.blockchains import get_chain_info
+from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.models.transaction import NEO4J_TXN_CSV_HEADER, Txn
 from ethecycle.models.wallet import NEO4J_WALLET_CSV_HEADER, Wallet
+from ethecycle.util.csv_helper import write_list_of_lists_to_csv
 from ethecycle.util.filesystem_helper import OUTPUT_DIR, timestamp_for_filename
-from ethecycle.util.neo4j_helper import EDGE_LABEL, HEADER, NODE_LABEL
 from ethecycle.util.logging import print_benchmark
+from ethecycle.util.neo4j_helper import EDGE_LABEL, HEADER, NODE_LABEL
+
 
 
 class Neo4jCsvs:
-    def __init__(self, txns: Union[List[Txn], str], chain_info: Type['ChainInfo'] = Ethereum) -> None:
+    def __init__(self, txns: Union[List[Txn], str], chain_info: Type[ChainInfo] = Ethereum) -> None:
         """
         Generate Neo4j CSV files for the Neo4j bulk loader.
         If 'txns' is the string 'header' the CSVs are single row header files.
@@ -40,9 +42,7 @@ class Neo4jCsvs:
             # Don't make txns a property of the instance (pass them as arg) so GC can reclaim the memory later.
             self._write_txn_and_wallet_csvs(txns)
 
-    def generated_csvs(self) -> List[str]:
-        """Paths of generated CSVs"""
-        return [self.wallet_csv_path, self.txn_csv_path]
+        self.generated_csvs = [self.wallet_csv_path, self.txn_csv_path]
 
     def _write_txn_and_wallet_csvs(self, txns: List[Txn]) -> None:
         """Break out wallets and txions into two CSV files for nodes and edges for Neo4j bulk loader."""
@@ -56,21 +56,12 @@ class Neo4jCsvs:
 
     def _write_csv(self, csv_path: str, objs: Union[List[Txn], List[Wallet]]) -> None:
         """Write objs to csv_path"""
-        with open(csv_path, 'w') as csvfile:
-            csv_writer = csv.writer(csvfile)
-
-            for obj in objs:
-                csv_writer.writerow(obj.to_neo4j_csv_row())
+        write_list_of_lists_to_csv(csv_path, [obj.to_neo4j_csv_row() for obj in objs])
 
     # NOTE: Had bizarre issues with this on macOS... removed WALLET_header.csv but could not write to
     #       Wallet_header.csv until I did a `touch /ethecycle/Wallet_header.csv`.
     #       I assume it has something to do w/macOS's lack of case sensitivity.
     def _write_header_csvs(self) -> None:
         """Write single row CSVs with header info for nodes and edges."""
-        with open(self.txn_csv_path, 'w') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(NEO4J_TXN_CSV_HEADER)
-
-        with open(self.wallet_csv_path, 'w') as file:
-            csv_writer = csv.writer(file)
-            csv_writer.writerow(NEO4J_WALLET_CSV_HEADER)
+        write_list_of_lists_to_csv(self.txn_csv_path, [NEO4J_TXN_CSV_HEADER])
+        write_list_of_lists_to_csv(self.wallet_csv_path, [NEO4J_WALLET_CSV_HEADER])

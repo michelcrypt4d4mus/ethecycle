@@ -1,15 +1,18 @@
 """
 String utilities.
 """
+import re
 from typing import Any, Callable, Iterable, List, Optional
 from urllib.parse import parse_qs
 
 from ethecycle.util.logging import log
-from ethecycle.util.string_constants import HTTPS, SOCIAL_MEDIA_URLS
+from ethecycle.util.string_constants import ALPHABET_UPPER, HTTPS, SOCIAL_MEDIA_URLS
 
 FACEBOOK_PROFILE_PHP = 'facebook.com/profile.php'
 MAX_WALLET_NAME_LENGTH = 60
 HALF_MAX_WALLET_NAME_LENGTH = int(MAX_WALLET_NAME_LENGTH / 2) - 5
+USD_REGEX = re.compile('^\\$?[\\d,]+(?:\\.\\d{2})?$')
+INTEGER_REGEX = re.compile('^[\\d,]$')
 
 
 def quoted_join(_list: Iterable[Any], quote_char: str = "'", separator: str = ', ', func: Callable = str) -> str:
@@ -63,6 +66,29 @@ def extract_wallet_name(name: str) -> str:
     return name
 
 
-def has_as_substring(search_string: str, substrings: List[str]) -> bool:
+def has_as_substring(search_string: str, substrings: List[str], ignore_case: bool = False) -> bool:
     """Returns True if any members of 'substrings' appear in 'search_string'."""
+    if ignore_case:
+        substrings = [s.lower() for s in substrings]
+        search_string = search_string.lower()
+
     return any(substring in search_string for substring in substrings)
+
+
+def get_nth_alphabet_char(n: int) -> str:
+    """Wraps to AA, BB, then AAA, etc."""
+    result = divmod(n, 26)
+    char = ALPHABET_UPPER[result[1]]
+    return char * (result[0] + 1)
+
+
+def append_nth_alphabet_char(_str: str, n: int) -> str:
+    return f"{_str} {get_nth_alphabet_char(n)}"
+
+
+def is_usd(_str: str) -> bool:
+    return USD_REGEX.match(_str) is not None
+
+
+def is_integer(_str: str) -> bool:
+    return INTEGER_REGEX.match(_str) is not None

@@ -61,13 +61,13 @@ def get_lines(file_path: str, comment_char: Optional[str] = '#') -> List[str]:
     """Get lines from text or gzip file optionally skipping lines starting with comment_char."""
     if file_path.endswith(GZIP_EXTENSION):
         with gzip.open(file_path, 'rb') as file:
-            lines = [line.decode().rstrip() for line in file]
+            lines = [line.decode() for line in file]
     else:
         with open(file_path, 'r') as file:
             lines = file.readlines()
 
     if comment_char:
-        lines = [line for line in lines if not line.startswith(comment_char)]
+        lines = [line.strip() for line in lines if not line.startswith(comment_char)]
 
     return lines
 

@@ -1,3 +1,5 @@
+import re
+
 ETHECYCLE = 'ethecyle'
 DEBUG = 'DEBUG'
 
@@ -21,9 +23,10 @@ TRANSACTION_HASH = 'transaction_hash'
 TXN = 'transaction'
 WALLET = 'wallet'
 
-# Tokens
+# Token symbols
 USDT = 'USDT'
 WETH = 'WETH'
+TOKEN_REGEX = re.compile('^[A-Z]+$')
 
 # Blockchains
 ARBITRUM = 'arbitrum'
@@ -113,6 +116,7 @@ ALPHABET_UPPER = ALPHABET.upper()
 HTTPS = 'https://'
 JSON = 'json'
 NAME = 'name'
+WTF = '???'
 
 # GraphML
 LABEL_E = 'labelE'

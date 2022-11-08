@@ -20,6 +20,7 @@ from .ethereum_lists_repo_importer import import_ethereum_lists_addresses
 from .etherscan_labels_importer import import_etherscan_labels_repo
 from .etherscan_contract_crawler_importer import import_ethereum_contract_crawler_addresses
 from .etherscrape_importer import import_etherscrape_chain_addresses
+from .ftx_major_partners_importer import import_ftx_biggest_trading_partners
 from .google_sheets_importer import import_google_sheets
 from .hand_collated_address_importer import import_hand_collated_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
@@ -42,6 +43,7 @@ def rebuild_chain_addresses_db():
     import_ethereum_lists_addresses()
     import_etherscan_labels_repo()
     import_etherscrape_chain_addresses()
+    import_ftx_biggest_trading_partners()
     import_google_sheets()
     import_my_ether_wallet_addresses()
     import_trust_wallet_repo()

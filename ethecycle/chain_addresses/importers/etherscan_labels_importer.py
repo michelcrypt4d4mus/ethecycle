@@ -8,7 +8,7 @@ from rich.pretty import pprint
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.address_db import insert_addresses
-from ethecycle.chain_addresses.etherscan import determine_category
+from ethecycle.chain_addresses.config.etherscan import determine_category
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
 from ethecycle.util.dict_helper import sort_dict

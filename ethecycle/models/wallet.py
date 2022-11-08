@@ -115,7 +115,7 @@ class Wallet(Address):
 
     def __rich__(self):
         """rich text format string."""
-        txt = Text('').append(self.address, 'bytes').append(': ', 'grey')
+        txt = Text('', style='white').append(self.address, 'magenta dim').append(': ', 'grey')
 
         if self.name:
             txt.append(self.name, 'color(229) bold')
@@ -128,5 +128,8 @@ class Wallet(Address):
             txt.append(self.category, style=self._category_style())
         else:
             txt.append_text(UNKNOWN)
+
+        if self.organization:
+            txt.append(' [').append(self.organization, style='color(123)').append(']')
 
         return txt.append(')', 'grey')

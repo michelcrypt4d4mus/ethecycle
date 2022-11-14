@@ -21,15 +21,15 @@ eth_txns AS (
     `to` AS to_address,
     NULL AS contract_address,
     date_trunc('minute', block_time) AS block_minute,
-    SUM(value / 1e18) AS amount,
-    COUNT(*) AS txn_cnt
+    SUM(value / 1e18) AS txn_value,
+    COUNT(*) AS txn_count
   FROM ethereum.transactions
     INNER JOIN address AS from_address ON from_address.address = transactions.`from`
      LEFT JOIN address AS to_address ON to_address.address == transactions.`to`
   WHERE success
     AND block_time >= '{{recent_outbound_cutoff_time}}'
     AND to_address.address IS NULL  -- Negative join
-    AND success
+  GROUP BY 1,2,3,4,5
 ),
 
 erc20_txns AS (
@@ -42,10 +42,10 @@ erc20_txns AS (
     SUM(value) AS txn_value,
     COUNT(*) AS txn_count
   FROM erc20_ethereum.evt_Transfer
-    INNER JOIN address AS from_address ON from_address.address = transactions.`from`
-     LEFT JOIN address AS to_address ON to_address.address == transactions.`to`
+    INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
+     LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
   WHERE evt_block_time > '{{recent_outbound_cutoff_time}}'
-  GROUP BY 1,2,3,4
+  GROUP BY 1,2,3,4,5
 ),
 
 txns AS (
@@ -69,7 +69,7 @@ prices_by_minute AS (
 
 
 SELECT
-  txns.minute AS minute_txn_sent_at,
+  txns.block_minute AS minute_txn_sent_at,
 
   CASE
     WHEN usd.contract_address IS NULL THEN
@@ -78,7 +78,7 @@ SELECT
       usd.symbol
     END AS symbol,
 
-  prices_by_minute.price * (txn_value / power(10, prices_by_minute.decimals)) AS amount_usd,
+  prices_by_minute.avg_price * (txn_value / power(10, prices_by_minute.decimals)) AS amount_usd,
   from_address,
   LEFT(get_labels(from_address), 35) AS from_label_short,
   to_address,
@@ -91,9 +91,9 @@ FROM txns
   INNER JOIN prices_by_minute
           ON prices_by_minute.price_minute = txns.block_minute
          AND (
-            prices_by_minute.contract_address = outbound_txns.contract_address
+            prices_by_minute.contract_address = txns.contract_address
             OR
-            prices_by_minute.contract_address IS NULL AND outbound_txns.contract_address IS NULL
+            prices_by_minute.contract_address IS NULL AND txns.contract_address IS NULL
          )
-WHERE prices_by_minute.price * (txn_value / power(10, prices_by_minute.decimals)) > {{minimum_txn_usd}}
+WHERE prices_by_minute.avg_price * (txn_value / power(10, prices_by_minute.decimals)) > {{minimum_txn_usd}}
 ORDER BY 1 DESC

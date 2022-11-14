@@ -45,6 +45,7 @@ erc20_txns AS (
     INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
      LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
   WHERE evt_block_time > '{{recent_outbound_cutoff_time}}'
+    AND to_address.address IS NULL  -- Negative join
   GROUP BY 1,2,3,4,5
 ),
 
@@ -72,10 +73,10 @@ SELECT
   txns.block_minute AS minute_txn_sent_at,
 
   CASE
-    WHEN usd.contract_address IS NULL THEN
+    WHEN prices_by_minute.contract_address IS NULL THEN
       'eth'
     ELSE
-      usd.symbol
+      prices_by_minute.symbol
     END AS symbol,
 
   prices_by_minute.avg_price * (txn_value / power(10, prices_by_minute.decimals)) AS amount_usd,

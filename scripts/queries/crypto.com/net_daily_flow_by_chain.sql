@@ -14,6 +14,7 @@ WITH address AS (
   ) AS t(address, label)
 ),
 
+
 ethereum_token_flow AS (
   with erc20_token_flow AS (
     SELECT
@@ -75,8 +76,8 @@ ethereum_token_flow AS (
       symbol,
       avg(price) AS avg_price
     FROM prices.usd
-    where blockchain = 'ethereum'
-      and minute >= '{{net_flow_start_date}}'
+    WHERE blockchain = 'ethereum'
+      AND minute >= '{{net_flow_start_date}}'
     GROUP BY 1, 2, 3, 4
   )
 
@@ -86,8 +87,8 @@ ethereum_token_flow AS (
     p.symbol,
     SUM(amount / power(10, p.decimals)) AS amount,
     SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
+    SUM(CASE WHEN amount >= 0 THEN (amount * p.avg_price) / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
+    SUM(CASE WHEN amount < 0 THEN (amount * p.avg_price) / power(10, p.decimals) ELSE 0 END) AS outbound_usd
   FROM erc20_token_flow AS erc20
     INNER JOIN price AS p
             ON erc20.token_address = p.token_address
@@ -103,326 +104,19 @@ ethereum_token_flow AS (
     'ETH' AS symbol,
     SUM(amount) AS amount,
     SUM(amount * avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price END) AS outbound_usd
+    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price ELSE 0 END) AS inbound_usd,
+    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price ELSE 0 END) AS outbound_usd
   FROM eth_flow AS e
     INNER JOIN price AS p
             ON e.block_minute = p.price_minute
            AND p.symbol = 'WETH'
   GROUP BY 1, 2, 3
-),
-
-
-
-polygon_token_flow AS (
-  with erc20_token_flow AS (
-    SELECT
-      'polygon' AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      -value AS amount
-    FROM erc20_polygon.evt_Transfer
-      INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-       LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE to_address.address IS NULL  -- Negative join
-      AND evt_block_time >= '{{net_flow_start_date}}'
-
-    UNION ALL
-
-    SELECT
-      'polygon' AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      value AS amount
-    FROM erc20_polygon.evt_Transfer
-      INNER JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-       LEFT JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-    WHERE from_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-  ),
-
-  price AS (
-    SELECT
-      date_trunc('minute', minute) AS price_minute,
-      contract_address AS token_address,
-      decimals,
-      symbol,
-      avg(price) AS avg_price
-    FROM prices.usd
-    WHERE blockchain = 'polygon'
-      AND minute >= '{{net_flow_start_date}}'
-    GROUP BY 1, 2, 3, 4
-  )
-
-  SELECT
-    blockchain,
-    date_trunc('day', block_minute) AS block_date,
-    p.symbol,
-    SUM(amount / power(10, p.decimals)) AS amount,
-    SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  FROM erc20_token_flow AS erc20
-    INNER JOIN price AS p
-            ON erc20.token_address = p.token_address
-           AND erc20.block_minute = p.price_minute
-  GROUP BY 1, 2, 3
-),
-
-
-optimism_token_flow AS (
-  with erc20_token_flow AS (
-    SELECT
-      'optimism'  AS blockchain,
-      contract_address AS token_address,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      -value AS amount
-    FROM erc20_optimism.evt_Transfer
-      INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-       LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE to_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-
-    UNION ALL
-
-    SELECT
-      'optimism'  AS blockchain,
-      contract_address AS token_address,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      value AS amount
-    FROM erc20_optimism.evt_Transfer
-      INNER JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-       LEFT JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-    WHERE from_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-  ),
-
-  price AS (
-    SELECT
-      date_trunc('minute', minute) AS price_minute,
-      contract_address AS token_address,
-      decimals,
-      symbol,
-      avg(price) AS avg_price
-    FROM prices.usd
-    where blockchain = 'optimism'
-      and minute >= '{{net_flow_start_date}}'
-    GROUP BY 1, 2, 3, 4
-  )
-
-  SELECT
-    blockchain,
-    date_trunc('day', block_minute) AS block_date,
-    p.symbol,
-    SUM(amount / power(10, p.decimals)) AS amount,
-    SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  from erc20_token_flow AS erc20
-    INNER JOIN price AS p
-            on erc20.token_address = p.token_address
-           and erc20.block_minute = p.price_minute
-  group by 1, 2, 3
-),
-
-
-
-arbitrum_token_flow AS (
-  with erc20_token_flow AS (
-    SELECT
-      'arbitrum'  AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      -value AS amount
-    FROM erc20_arbitrum.evt_Transfer
-      INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-       LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE to_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-
-    UNION ALL
-
-    SELECT
-      'arbitrum'  AS blockchain,
-      contract_address AS token_address,
-          evt_block_time,
-          date_trunc('minute', evt_block_time) AS block_minute,
-          value AS amount
-    FROM erc20_arbitrum.evt_Transfer
-       LEFT JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-      INNER JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE from_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-  ),
-
-  price AS (
-    SELECT
-      date_trunc('minute', minute) AS price_minute,
-      contract_address AS token_address,
-      decimals,
-      symbol,
-      avg(price) AS avg_price
-    FROM prices.usd
-    where blockchain = 'arbitrum'
-      and minute >= '{{net_flow_start_date}}'
-    GROUP BY 1, 2, 3, 4
-  )
-
-  SELECT
-    blockchain,
-    date_trunc('day', block_minute) AS block_date,
-    p.symbol,
-    SUM(amount / power(10, p.decimals)) AS amount,
-    SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  from erc20_token_flow AS erc20
-    INNER JOIN price AS p
-            on erc20.token_address = p.token_address
-           and erc20.block_minute = p.price_minute
-  group by 1, 2, 3
-),
-
-
-
-
-bnb_token_flow AS (
-  with erc20_token_flow AS (
-    SELECT
-      'bnb'  AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      -value AS amount
-    FROM erc20_bnb.evt_Transfer
-      INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-       LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE to_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-
-    UNION ALL
-
-    SELECT
-      'bnb'  AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      value AS amount
-    FROM erc20_bnb.evt_Transfer
-       LEFT JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-      INNER JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE from_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-  ),
-
-  price AS (
-    SELECT
-      date_trunc('minute', minute) AS price_minute,
-      contract_address AS token_address,
-      decimals,
-      symbol,
-      avg(price) AS avg_price
-    FROM prices.usd
-    where blockchain = 'bnb'
-      and minute >= '{{net_flow_start_date}}'
-    GROUP BY 1, 2, 3, 4
-  )
-
-  SELECT
-    blockchain,
-    date_trunc('day', block_minute) AS block_date,
-    p.symbol,
-    SUM(amount / power(10, p.decimals)) AS amount,
-    SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  from erc20_token_flow AS erc20
-    INNER JOIN price AS p
-            on erc20.token_address = p.token_address
-           and erc20.block_minute = p.price_minute
-  group by 1, 2, 3
-),
-
-
-
-avalanche_token_flow AS (
-  with erc20_token_flow AS (
-    SELECT
-      'avalanche'  AS blockchain,
-      contract_address AS token_address,
-      evt_block_time,
-      date_trunc('minute', evt_block_time) AS block_minute,
-      -value AS amount
-    FROM erc20_avalanche_c.evt_Transfer
-      INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-       LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE to_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-
-    UNION ALL
-
-    SELECT
-      'avalanche'  AS blockchain,
-      contract_address AS token_address,
-          evt_block_time,
-          date_trunc('minute', evt_block_time) AS block_minute,
-          value AS amount
-    FROM erc20_avalanche_c.evt_Transfer
-       LEFT JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-      INNER JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
-    WHERE from_address.address IS NULL  -- Negative join
-      and evt_block_time >= '{{net_flow_start_date}}'
-  ),
-
-  price AS (
-    SELECT
-      date_trunc('minute', minute) AS price_minute,
-      contract_address AS token_address,
-      decimals,
-      symbol,
-      avg(price) AS avg_price
-    FROM prices.usd
-    where blockchain = 'avalanche_c'
-      and minute >= '{{net_flow_start_date}}'
-    GROUP BY 1, 2, 3, 4
-  )
-
-  SELECT
-    blockchain,
-    date_trunc('day', block_minute) AS block_date,
-    p.symbol,
-    SUM(amount / power(10, p.decimals)) AS amount,
-    SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  from erc20_token_flow AS erc20
-    INNER JOIN price AS p
-            on erc20.token_address = p.token_address
-           and erc20.block_minute = p.price_minute
-  where p.token_address is not null
-  group by 1, 2, 3
-),
-
-
-final AS (
-  SELECT * from ethereum_token_flow
-  UNION ALL
-  SELECT * from polygon_token_flow
-  UNION ALL
-  SELECT * from optimism_token_flow
-  UNION ALL
-  SELECT * FROM arbitrum_token_flow
-  UNION ALL
-  SELECT * FROM bnb_token_flow
-  UNION ALL
-  SELECT * FROM avalanche_token_flow
 )
+
 
 SELECT
   block_date,
+  symbol,
   SUM(amount_usd) AS total_net_usd,
   SUM(inbound_usd) AS inbound_usd,
   SUM(outbound_usd) AS outbound_usd,
@@ -432,9 +126,9 @@ SELECT
   SUM(CASE WHEN blockchain = 'arbitrum' THEN COALESCE(amount_usd, 0) ELSE 0 END) AS arbitrum_net_usd,
   SUM(CASE WHEN blockchain = 'bnb' THEN COALESCE(amount_usd, 0) ELSE 0 END) AS bnb_net_usd,
   SUM(CASE WHEN blockchain = 'avalanche' THEN COALESCE(amount_usd, 0) ELSE 0 END) AS avalanche_net_usd
-from final
-where symbol is not null
+FROM ethereum_token_flow
+WHERE symbol is not null
   and amount is not null
   --and amount not between -1 and 1
-group by 1
-order by 1 desc
+group by 1,2
+order by 1 desc, 2

@@ -11,9 +11,9 @@ CesomLhDYDPsNe4s9JkD8ezRZtyCepMgPEU62BEdhRQ7,solana,FTX (Rumored because of mass
 0x712d0f306956a6a4b4f9319ad9b9de48c5345996,ethereum,Alameda Research B,fund,"https://dune.com/queries/1542008"
 0x93c08a3168fc469f3fc165cd3a471d19a37ca19e,ethereum,Alameda Research C,fund,"https://dune.com/queries/1542008"
 0xca436e14855323927d6e6264470ded36455fc8bd,ethereum,Alameda Research D,fund,"https://dune.com/queries/1542008"
-0x83a127952d266a6ea306c40ac62a4a70668fe3bd,ethereum,Alameda Research E,fund,"https://dune.com/queries/1542008"
+0x83a127952d266a6ea306c40ac62a4a70668fe3bd,ethereum,Alameda Research FTX Deposit,fund,Larry Cermak Alameda list
 0xc5ed2333f8a2c351fca35e5ebadb2a82f5d254c3,ethereum,Alameda Research F,fund,"https://dune.com/queries/1542008"
-0x89183c0a8965c0299997be9af700a801bdccc2da,ethereum,Alameda Research G,fund,"https://dune.com/queries/1542008"
+0x89183c0a8965c0299997be9af700a801bdccc2da,ethereum,Alameda Research G,fund,Alameda Research (FTX Deposit)
 0xe5d0ef77aed07c302634dc370537126a2cd26590,ethereum,Alameda Research H,fund,"https://dune.com/queries/1542008"
 0x5d13f4bf21db713e17e04d711e0bf7eaf18540d6,ethereum,Alameda Research I,fund,"https://dune.com/queries/1542008"
 0x882a812d75aee53efb8a144f984b258b6c4807f0,ethereum,Alameda Research J,fund,"https://dune.com/queries/1542008"
@@ -24,21 +24,69 @@ CesomLhDYDPsNe4s9JkD8ezRZtyCepMgPEU62BEdhRQ7,solana,FTX (Rumored because of mass
 0x4deb3edd991cfd2fcdaa6dcfe5f1743f6e7d16a6,ethereum,Alameda Research O,fund,"https://dune.com/queries/1542008"
 0x477573f212a7bdd5f7c12889bd1ad0aa44fb82aa,ethereum,Alameda Research P,fund,"https://dune.com/queries/1542008"
 0xce31190a03fc3c5f23167e88e75066824823222d,ethereum,Alameda Research Q,fund,"https://dune.com/queries/1542008"
-0x60009b78da046ac64ef789c29ca05b79cdf73c10,ethereum,Alameda Research R,fund,"https://dune.com/queries/1542008"
+0x60009b78da046ac64ef789c29ca05b79cdf73c10,ethereum,Alameda Research R,fund,Larry Cermak Alameda list
 0x73c0ae50756c7921d1f32ada71b8e50c5de7ff9c,ethereum,Alameda Research S,fund,"https://dune.com/queries/1542008"
 0x60ae578abdfded1fb0555f54148fdd7b400a34ed,ethereum,Alameda Research T,fund,"https://dune.com/queries/1542008"
 0xa726c00cda1f60aaab19bc095d02a46556837f31,ethereum,Alameda Research U,fund,"https://dune.com/queries/1542008"
-0x0c0fe4e0236480e16b679ee1fd0c5247f9cf35f0,ethereum,Alameda Research V,fund,"https://dune.com/queries/1542008"
+0x0c0fe4e0236480e16b679ee1fd0c5247f9cf35f0,ethereum,Alameda Research (Huobi deposit),fund,Larry Cermak Alameda list
 0x0f4ee9631f4be0a63756515141281a3e2b293bbe,ethereum,Alameda Research W,fund,"https://dune.com/queries/1542008"
 0x97137466bc8018531795217f0ecc4ba24dcba5c1,ethereum,Alameda Research X,fund,"https://dune.com/queries/1542008"
 0x84d34f4f83a87596cd3fb6887cff8f17bf5a7b83,ethereum,Alameda Research Y,fund,"https://dune.com/queries/1542008"
 0x78835265ac857bf3420830c71987b1a55f73c2dc,ethereum,Alameda Research Z,fund,"https://dune.com/queries/1542008"
 0x4c8cfe078a5b989cea4b330197246ced82764c63,ethereum,Alameda Research AA,fund,"https://dune.com/queries/1542008"
 0x073dca8acbc11ffb0b5ae7ef171e4c0b065ffa47,ethereum,Alameda Research BB,fund,"https://dune.com/queries/1542008"
-0x3507e4978e0eb83315d20df86ca0b976c0e40ccb,ethereum,Alameda Research CC,fund,"https://dune.com/queries/1542008"
+0x3507e4978e0eb83315d20df86ca0b976c0e40ccb,ethereum,Alameda Research (Binance Deposit),fund,Larry Cermak Alameda list
 0xd628f7c481c7dd87f674870bec5d7a311fb1d9a2,ethereum,Genesis Trading: OTC Desk,cex,
 0x0548f59fee79f8832c299e01dca5c76f034f558e,ethereum,Genesis Trading: OTC Desk 2,cex,
 0xa00b0540f43e00a634d016a31b0a39d95170e6bf,ethereum,dupstepnerd.eth,individual,
 0x6d21266DfcF5541BEE9F67c4837AAa72b3BF9303,ethereum,Genesis Trading?,cex,First xfer of 5K ETH on Genesis OTC desk wallet
 0x0392f641B8195290a85A8d66944a9ad11C3E4029,ethereum,FTX?,cex,Wallet moves millions of USDT and USDC to FTX
 0xe7E6c88Ad1BAb6508a251B7995f44fB1C5E3dCF7,ethereum,Hiveon: Spreader,mining,
+0xb5c068D3Ef6c91A24cdA27d10817bdb46Ea64760,ethereum,Circle? FTX?,stablecoin,Mostly moving money between Circle and FTX
+bc1qmxjefnuy06v345v6vhwpwt05dztztmx4g3y7wp,bitcoin,USA Federal Government,government,https://twitter.com/FractalEncrypt/status/1590004606398263297
+0xC87D701c45040EACB75a7A2893bAf277642Aa0db,ethereum,@DeFiSniper,individual,Twitter Bot
+0xC87D701c45040EACB75a7A2893bAf277642Aa0db,ethereum,@DeFiSniper,individual,Twitter Bot
+0xfD35B0870B4125E1280eFdaB2d4ba44Fe9c378f4,ethereum,@algodtrading,individual,
+0x26C5A34Bc8398fbD395b518ffAb27724D7CC9617,ethereum,@algodtrading?,individual,wallet receiving FTX funds 3 days after bankruptcy
+0x26C5A34Bc8398fbD395b518ffAb27724D7CC9617,binance_smart_chain,@algodtrading?,individual,wallet receiving FTX funds 3 days after bankruptcy
+0x7abe0ce388281d2acf297cb089caef3819b13448,ethereum,FTX.US,cex,
+0x72A53cDBBcc1b9efa39c834A540550e23463AAcB,ethereum,crypto.com Cold Wallet 1,cex,
+0x7758e507850da48cd47df1fb5f875c23e3340c50,ethereum,crypto.com Cold Wallet 2,cex,
+0xcffad3200574698b78f32232aa9d63eabd290703,ethereum,crypto.com Cold Wallet 3,cex,
+0x6262998Ced04146fA42253a5C0AF90CA02dfd2A3,ethereum,crypto.com Cold Wallet 4,cex,
+
+bc1qpy4jwethqenp4r7hqls660wy8287vw0my32lmy,bitcoin,crypto.com Cold Wallet 1,cex,
+3LhhDLBVWBZChNQv8Dn4nDKFnCyojG1FqN,bitcoin,crypto.com Cold Wallet 1,cex,
+3QsGsAXQ4rqRNvh5pEW55hf3F9PEyb7rVq,bitcoin,crypto.com Cold Wallet 1,cex,
+bc1qr4dl5wa7kl8yu792dceg9z5knl2gkn220lk7a9,bitcoin,crypto.com Cold Wallet 1,cex,
+bc1q4c8n5t00jmj8temxdgcc3t32nkg2wjwz24lywv,bitcoin,crypto.com Cold Wallet 1,cex,
+14m3sd9HCCFJW4LymahJCKMabAxTK4DAqW,bitcoin,crypto.com Cold Wallet 1,cex,
+0x55FE002aefF02F77364de339a1292923A15844B8,ethereum,Circle USDC,stablecoin
+0xe31a9498a22493ab922bc0eb240313a46525ee0a	Alameda Research
+0x712d0f306956a6a4b4f9319ad9b9de48c5345996	Alameda Research
+0x93c08a3168fc469f3fc165cd3a471d19a37ca19e	Alameda Research
+0xca436e14855323927d6e6264470ded36455fc8bd	Alameda Research
+0xc5ed2333f8a2c351fca35e5ebadb2a82f5d254c3	Alameda Research
+0xe5d0ef77aed07c302634dc370537126a2cd26590	Alameda Research
+0x5d13f4bf21db713e17e04d711e0bf7eaf18540d6	Alameda Research
+0x882a812d75aee53efb8a144f984b258b6c4807f0	Alameda Research
+0xbefe4f86f189c1c817446b71eb6ac90e3cb68e60	Alameda Research
+0xb78e90e2ec737a2c0a24d68a0e54b410fff3bd6b	Alameda Research
+0x964d9d1a532b5a5daeacbac71d46320de313ae9c	Alameda Research
+0xfa453aec042a837e4aebbadab9d4e25b15fad69d	Alameda Research
+0x4deb3edd991cfd2fcdaa6dcfe5f1743f6e7d16a6	Alameda Research
+0x477573f212a7bdd5f7c12889bd1ad0aa44fb82aa	Alameda Research
+0xce31190a03fc3c5f23167e88e75066824823222d	Alameda Research
+0x73c0ae50756c7921d1f32ada71b8e50c5de7ff9c	Alameda Research
+0x60ae578abdfded1fb0555f54148fdd7b400a34ed	Alameda Research
+0xa726c00cda1f60aaab19bc095d02a46556837f31	Alameda Research
+0xa6e683d5dccce898f16bb48071f08f2304c8ba09	Alameda Research
+0x0f4ee9631f4be0a63756515141281a3e2b293bbe	Alameda Research
+0x97137466bc8018531795217f0ecc4ba24dcba5c1	Alameda Research
+0x84d34f4f83a87596cd3fb6887cff8f17bf5a7b83	Alameda Research
+0x78835265ac857bf3420830c71987b1a55f73c2dc	Alameda Research
+0x4c8cfe078a5b989cea4b330197246ced82764c63	Alameda Research
+0x7cc549cdef7248c11a84d718fd25eafb57d8d614	Alameda Research
+0x073dca8acbc11ffb0b5ae7ef171e4c0b065ffa47	Alameda Research
+0x3507e4978e0eb83315d20df86ca0b976c0e40ccb	Alameda Research (Binance Deposit)
+

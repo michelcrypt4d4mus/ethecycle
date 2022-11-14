@@ -66,7 +66,7 @@ ethereum_token_flow as (
       INNER JOIN address AS to_address ON to_address.address == transactions.`to`
     WHERE from_address.address IS NULL  -- Negative join
       AND success
-      and evt_block_time >= '{{net_flow_start_date}}'
+      and block_time >= '{{net_flow_start_date}}'
   ),
 
   price as (

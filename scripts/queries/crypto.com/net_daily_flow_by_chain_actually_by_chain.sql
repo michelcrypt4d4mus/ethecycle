@@ -48,6 +48,7 @@ prices_by_minute AS (
   SELECT * FROM prices_polygon
 ),
 
+
 ethereum_flow AS (
   SELECT
     'ethereum'  AS blockchain,
@@ -63,7 +64,7 @@ ethereum_flow AS (
   UNION ALL
 
   SELECT
-    'ethereum'  AS blockchain,
+    'ethereum' AS blockchain,
     contract_address,
     date_trunc('minute', evt_block_time) AS block_minute,
     value AS amount
@@ -83,7 +84,7 @@ ethereum_flow AS (
     -value / 1e18                AS amount
   from ethereum.transactions
     INNER JOIN address AS from_address ON from_address.address = transactions.`from`
-      LEFT JOIN address AS to_address ON to_address.address == transactions.`to`
+     LEFT JOIN address AS to_address ON to_address.address == transactions.`to`
   WHERE to_address.address IS NULL  -- Negative join
     AND success
     and block_time >= '{{net_flow_start_date}}'
@@ -97,26 +98,11 @@ ethereum_flow AS (
     value / 1e18                  AS amount
   from ethereum.transactions
     INNER JOIN address AS to_address ON to_address.address == transactions.`to`
-      LEFT JOIN address AS from_address ON from_address.address = transactions.`from`
+     LEFT JOIN address AS from_address ON from_address.address = transactions.`from`
   WHERE from_address.address IS NULL  -- Negative join
     AND success
     and block_time >= '{{net_flow_start_date}}'
 ),
-
-  -- SELECT
-  --   blockchain,
-  --   date_trunc('day', block_minute) AS block_minute,
-  --   contract_address,
-  --   p.symbol,
-    -- SUM(amount / power(10, p.decimals)) AS amount,
-    -- SUM(amount / power(10, p.decimals) * p.avg_price) AS amount_usd,
-    -- SUM(CASE WHEN amount >= 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS inbound_usd,
-    -- SUM(CASE WHEN amount < 0 THEN amount * p.avg_price / power(10, p.decimals) ELSE 0 END) AS outbound_usd
-  -- FROM erc20_token_flow AS erc20
-  -- WHERE p.token_address is not null
-  -- GROUP BY 1, 2, 3
-
--- ),
 
 
 polygon_token_flow AS (
@@ -150,14 +136,6 @@ final AS (
   SELECT * from ethereum_flow
   UNION ALL
   SELECT * from polygon_token_flow
-  -- UNION ALL
-  -- SELECT * from optimism_token_flow
-  -- UNION ALL
-  -- SELECT * FROM arbitrum_token_flow
-  -- UNION ALL
-  -- SELECT * FROM bnb_token_flow
-  -- UNION ALL
-  -- SELECT * FROM avalanche_token_flow
 )
 
 SELECT

@@ -76,7 +76,7 @@ ethereum_token_flow AS (
       symbol,
       avg(price) AS avg_price
     FROM prices.usd
-    WHERE blockchain = 'ethereum'
+    WHERE (blockchain = 'ethereum' OR blockchain IS NULL)
       AND minute >= '{{net_flow_start_date}}'
     GROUP BY 1, 2, 3, 4
   )

@@ -84,31 +84,33 @@ prices_polygon AS (
   UNION ALL
 
   SELECT
-    'polygon'
-    block_minute,
+    'polygon',
+    usd.minute,
     '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619' AS contract_address,
-    6 AS decimals,
-    'USDC' AS symbol,
-    1.0 AS avg_price
-  FROM txn_minutes
-  GROUP BY 1,2,3,4,5,6
-
+    usd.decimals,
+    usd.symbol,
+    avg(price) AS avg_price
+  FROM prices.usd
+    INNER JOIN txn_minutes
+            ON txn_minutes.block_minute = usd.minute
+  WHERE symbol = 'WETH'
+  GROUP BY 1,2,3,4,5
 ),
 
 txns_with_prices AS (
-    SELECT
-      txns.blockchain,
-      txns.contract_address,
-      prices_polygon.symbol,
-      block_minute,
-      amount AS token_count_raw,
-      amount / power(10, prices_polygon.decimals) AS token_count,
-      amount / power(10, prices_polygon.decimals) * prices_polygon.avg_price as amount_usd
-    FROM txns
-      LEFT JOIN prices_polygon
-             ON prices_polygon.contract_address = txns.contract_address
-            AND prices_polygon.price_minute = txns.block_minute
-            AND prices_polygon.blockchain = txns.blockchain
+  SELECT
+    txns.blockchain,
+    txns.contract_address,
+    prices_polygon.symbol,
+    block_minute,
+    amount AS token_count_raw,
+    amount / power(10, prices_polygon.decimals) AS token_count,
+    amount / power(10, prices_polygon.decimals) * prices_polygon.avg_price as amount_usd
+  FROM txns
+    LEFT JOIN prices_polygon
+            ON prices_polygon.contract_address = txns.contract_address
+          AND prices_polygon.price_minute = txns.block_minute
+          AND prices_polygon.blockchain = txns.blockchain
 )
 
 SELECT

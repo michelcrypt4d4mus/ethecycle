@@ -85,7 +85,7 @@ prices_polygon AS (
 
   SELECT
     'polygon',
-    usd.minute,
+    date_trunc('minute', usd.minute) AS block_minute,
     '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619' AS contract_address,
     usd.decimals,
     usd.symbol,

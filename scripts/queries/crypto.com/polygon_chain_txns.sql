@@ -15,6 +15,7 @@ WITH address AS (
 ),
 
 txns AS (
+  -- Outbound tokens
   SELECT
     'polygon' AS blockchain,
     contract_address,
@@ -28,6 +29,7 @@ txns AS (
 
   UNION ALL
 
+  -- Inbound tokens
   SELECT
     'polygon' AS blockchain,
     contract_address,
@@ -41,6 +43,7 @@ txns AS (
   LIMIT 1000
 ),
 
+-- Reduce to a list of minutes we need prices for
 txn_minutes AS (
     SELECT
       block_minute
@@ -63,6 +66,7 @@ prices_polygon_raw AS (
   GROUP BY 1, 2, 3, 4, 5
 ),
 
+-- Add WETH and USDC to polygon prices
 prices_polygon AS (
   -- Prices on Polygon chain
   SELECT *
@@ -83,6 +87,7 @@ prices_polygon AS (
 
   UNION ALL
 
+  -- Add WETH
   SELECT
     'polygon',
     usd.minute,

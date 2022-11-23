@@ -22,7 +22,7 @@ txns AS (
     -value AS amount
   FROM erc20_polygon.evt_Transfer
     INNER JOIN address AS from_address ON from_address.address = evt_Transfer.`from`
-    LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
+     LEFT JOIN address AS to_address ON to_address.address == evt_Transfer.`to`
   WHERE to_address.address IS NULL  -- Negative join
     AND evt_block_time >= '{{net_flow_start_date}}'
 
@@ -63,11 +63,27 @@ prices_polygon_raw AS (
   GROUP BY 1, 2, 3, 4, 5
 ),
 
+weth_prices AS (
+  SELECT
+    'polygon',
+    date_trunc('minute', usd.minute) AS price_minute,
+    '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619' AS contract_address,
+    usd.decimals,
+    usd.symbol,
+    avg(price) AS avg_price
+  FROM prices.usd
+    INNER JOIN txn_minutes
+            ON txn_minutes.block_minute = usd.minute
+  WHERE symbol = 'WETH'
+    AND (blockchain = 'ethereum' OR blockchain IS NULL)
+  GROUP BY 1,2,3,4,5
+),
+
 prices_polygon AS (
   -- Prices on Polygon chain
-  SELECT *
-  FROM prices_polygon_raw
-
+  SELECT * FROM prices_polygon_raw
+  UNION ALL
+  SELECT * FROM weth_prices
   UNION ALL
 
   -- Add USDC at $1
@@ -80,22 +96,6 @@ prices_polygon AS (
     1.0 AS avg_price
   FROM txn_minutes
   GROUP BY 1,2,3,4,5,6
-
-  UNION ALL
-
-  SELECT
-    'polygon',
-    date_trunc('minute', usd.minute) AS block_minute,
-    '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619' AS contract_address,
-    usd.decimals,
-    usd.symbol,
-    avg(price) AS avg_price
-  FROM prices.usd
-    INNER JOIN txn_minutes
-            ON txn_minutes.block_minute = usd.minute
-  WHERE symbol = 'WETH'
-    AND (blockchain = 'ethereum' OR blockchain IS NULL)
-  GROUP BY 1,2,3,4,5
 ),
 
 txns_with_prices AS (
@@ -109,18 +109,19 @@ txns_with_prices AS (
     amount / power(10, prices_polygon.decimals) * prices_polygon.avg_price as amount_usd
   FROM txns
     LEFT JOIN prices_polygon
-            ON prices_polygon.contract_address = txns.contract_address
+           ON prices_polygon.contract_address = txns.contract_address
           AND prices_polygon.price_minute = txns.block_minute
           AND prices_polygon.blockchain = txns.blockchain
 )
 
 SELECT
   DATE(block_minute) AS date,
+  CASE WHEN symbol IS NULL THEN block_minute ELSE 'KNOWN SYMBOL' END AS block_minute,
   CASE WHEN symbol IS NULL THEN contract_address ELSE 'KNOWN SYMBOL' END AS contract_address,
   SUM(amount_usd) AS total_net_usd,
   SUM(token_count) AS token_count
 FROM txns_with_prices
 WHERE token_count_raw is not null
   --and amount not between -1 and 1
-GROUP BY 1,2
-ORDER BY 1 desc,2
+GROUP BY 1,2,3
+ORDER BY 1 DESC,2

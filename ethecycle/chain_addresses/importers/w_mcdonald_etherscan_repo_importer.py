@@ -5,9 +5,9 @@ from typing import List
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
+from ethecycle.models.wallet import Wallet
 from ethecycle.util.logging import print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('W-McDonald/etherscan')
 

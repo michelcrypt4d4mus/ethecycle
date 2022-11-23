@@ -4,23 +4,19 @@ Details: https://developer.trustwallet.com/assets/repository_details
 """
 
 import json
-from collections import defaultdict
 from os import path
-from pathlib import Path
-from typing import List, Type
+from typing import List
 
 from rich.panel import Panel
 
-from ethecycle.models.token import Token
-from ethecycle.chain_addresses.address_db import (insert_addresses,
-     insert_addresses)
-from ethecycle.chain_addresses.db.table_definitions import TOKENS_TABLE_NAME, WALLETS_TABLE_NAME
+from ethecycle.chain_addresses.address_db import insert_addresses, insert_addresses
 from ethecycle.chain_addresses.github_data_source import GithubDataSource
 from ethecycle.config import Config
-from ethecycle.util.filesystem_helper import files_in_dir, subdirs_of_dir
+from ethecycle.models.token import Token
+from ethecycle.models.wallet import Wallet
+from ethecycle.util.filesystem_helper import subdirs_of_dir
 from ethecycle.util.logging import console, log, print_address_import
 from ethecycle.util.string_constants import *
-from ethecycle.models.wallet import Wallet
 
 SOURCE_REPO = GithubDataSource('trustwallet/assets', 'trustwallet_assets')
 

@@ -12,13 +12,13 @@ from rich.text import Text
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.config import Config
+from ethecycle.models.wallet import Wallet
 from ethecycle.util.filesystem_helper import GZIP_EXTENSION, get_lines
 from ethecycle.util.logging import console, log
 from ethecycle.util.number_helper import comma_format_str, usd_string
 from ethecycle.util.string_constants import ALAMEDA, ETHEREUM, FTX, ETHEREUM
 from ethecycle.util.string_helper import (is_integer, is_usd, has_as_substring,
      strip_and_set_empty_string_to_none)
-from ethecycle.models.wallet import Wallet
 
 
 class DuneCopyPasteReader:

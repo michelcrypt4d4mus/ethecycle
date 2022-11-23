@@ -2,8 +2,8 @@
 Contains hardcoded chain address data.
 """
 from ethecycle.blockchains.ethereum import Ethereum
-from ethecycle.models.token import Token
 from ethecycle.chain_addresses.address_db import insert_addresses
+from ethecycle.models.token import Token
 from ethecycle.util.logging import print_address_import
 from ethecycle.util.string_constants import ETHEREUM
 

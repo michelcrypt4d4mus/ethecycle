@@ -66,7 +66,7 @@ prices_polygon_raw AS (
 weth_prices AS (
   SELECT
     'polygon',
-    date_trunc('minute', usd.minute) AS price_minute,
+    DATE(usd.minute) AS weth_price_date,
     '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619' AS contract_address,
     usd.decimals,
     usd.symbol,
@@ -82,8 +82,7 @@ weth_prices AS (
 prices_polygon AS (
   -- Prices on Polygon chain
   SELECT * FROM prices_polygon_raw
-  UNION ALL
-  SELECT * FROM weth_prices
+
   UNION ALL
 
   -- Add USDC at $1
@@ -106,12 +105,15 @@ txns_with_prices AS (
     block_minute,
     amount AS token_count_raw,
     amount / power(10, prices_polygon.decimals) AS token_count,
-    amount / power(10, prices_polygon.decimals) * prices_polygon.avg_price as amount_usd
+    amount / power(10, prices_polygon.decimals) * COALESCE(prices_polygon.avg_price, weth_prices.avg_price) AS amount_usd
   FROM txns
     LEFT JOIN prices_polygon
            ON prices_polygon.contract_address = txns.contract_address
           AND prices_polygon.price_minute = txns.block_minute
           AND prices_polygon.blockchain = txns.blockchain
+    LEFT JOIN weth_prices
+           ON txns.contract_address = '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'
+          AND weth_prices.weth_price_date = date(block_minute)
 )
 
 SELECT

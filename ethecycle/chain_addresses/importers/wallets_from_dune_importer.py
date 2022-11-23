@@ -8,9 +8,9 @@ from typing import Dict, List
 
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.chain_addresses.address_db import insert_addresses
+from ethecycle.models.wallet import Wallet
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR, files_in_dir, get_lines
 from ethecycle.util.logging import log, print_address_import
-from ethecycle.models.wallet import Wallet
 
 DATA_SOURCE = 'https://dune.com/crypto_oracle/wallets'
 WALLETS_FROM_DUNE_SUFFIX = '_wallets_from_dune.txt.gz'

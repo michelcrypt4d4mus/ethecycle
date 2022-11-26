@@ -72,8 +72,6 @@ weth_prices AS (
     usd.symbol,
     avg(price) AS avg_price
   FROM prices.usd
-    INNER JOIN txn_minutes
-            ON txn_minutes.block_minute = usd.minute
   WHERE symbol = 'WETH'
     AND usd.minute >= (SELECT MIN(block_minute) FROM txn_minutes)
     AND (blockchain = 'ethereum' OR blockchain IS NULL)
@@ -105,16 +103,16 @@ txns_with_prices AS (
     prices_polygon.symbol,
     block_minute,
     amount AS token_count_raw,
-    amount / power(10, prices_polygon.decimals) AS token_count,
-    amount / power(10, prices_polygon.decimals) * COALESCE(prices_polygon.avg_price, weth_prices.avg_price) AS amount_usd
+    amount / power(10, COALESCE(prices_polygon.decimals, weth_prices.decimals)) AS token_count,
+    amount / power(10, COALESCE(prices_polygon.decimals, weth_prices.decimals)) * COALESCE(prices_polygon.avg_price, weth_prices.avg_price) AS amount_usd
   FROM txns
     LEFT JOIN prices_polygon
            ON prices_polygon.contract_address = txns.contract_address
           AND prices_polygon.price_minute = txns.block_minute
           AND prices_polygon.blockchain = txns.blockchain
     LEFT JOIN weth_prices
-           ON txns.contract_address = '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'
-          AND weth_prices.weth_price_date = date(block_minute)
+           ON lower(txns.contract_address) = '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'
+          AND DATE(weth_prices.weth_price_date) = DATE(block_minute)
 )
 
 SELECT

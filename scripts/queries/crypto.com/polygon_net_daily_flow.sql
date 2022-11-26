@@ -75,6 +75,7 @@ weth_prices AS (
     INNER JOIN txn_minutes
             ON txn_minutes.block_minute = usd.minute
   WHERE symbol = 'WETH'
+    AND usd.minute >= (SELECT MIN(block_minute) FROM txn_minutes)
     AND (blockchain = 'ethereum' OR blockchain IS NULL)
   GROUP BY 1,2,3,4,5
 ),
@@ -121,9 +122,10 @@ SELECT
   CASE WHEN symbol IS NULL THEN block_minute ELSE 'KNOWN SYMBOL' END AS block_minute,
   CASE WHEN symbol IS NULL THEN contract_address ELSE 'KNOWN SYMBOL' END AS contract_address,
   SUM(amount_usd) AS total_net_usd,
-  SUM(token_count) AS token_count
+  SUM(token_count) AS token_count,
+  SUM(token_count_raw) AS token_count_raw
 FROM txns_with_prices
-WHERE token_count_raw is not null
+WHERE token_count_raw IS NOT NULL
   --and amount not between -1 and 1
 GROUP BY 1,2,3
 ORDER BY 1 DESC,2

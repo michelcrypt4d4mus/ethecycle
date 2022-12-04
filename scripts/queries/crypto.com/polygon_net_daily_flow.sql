@@ -100,8 +100,10 @@ txns_with_prices AS (
   SELECT
     txns.blockchain,
     txns.contract_address,
-    prices_polygon.symbol,
+    COALESCE(prices_polygon.symbol, weth_prices.symbol) AS symbol,
     block_minute,
+    -- weth_prices.symbol AS weth_symbol,
+    -- weth_prices.decimals AS weth_decimals,
     amount AS token_count_raw,
     amount / power(10, COALESCE(prices_polygon.decimals, weth_prices.decimals)) AS token_count,
     amount / power(10, COALESCE(prices_polygon.decimals, weth_prices.decimals)) * COALESCE(prices_polygon.avg_price, weth_prices.avg_price) AS amount_usd
@@ -119,11 +121,13 @@ SELECT
   DATE(block_minute) AS date,
   CASE WHEN symbol IS NULL THEN block_minute ELSE 'KNOWN SYMBOL' END AS block_minute,
   CASE WHEN symbol IS NULL THEN contract_address ELSE 'KNOWN SYMBOL' END AS contract_address,
+--   weth_symbol,
+--   weth_decimals,
   SUM(amount_usd) AS total_net_usd,
   SUM(token_count) AS token_count,
   SUM(token_count_raw) AS token_count_raw
 FROM txns_with_prices
 WHERE token_count_raw IS NOT NULL
   --and amount not between -1 and 1
-GROUP BY 1,2,3
+GROUP BY 1,2,3 --,4,5
 ORDER BY 1 DESC,2

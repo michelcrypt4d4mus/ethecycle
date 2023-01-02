@@ -47,7 +47,7 @@ GROUP BY 1
 ORDER BY 2 DESC;
 
 
--- Current balances
+-- Current balances should be the sum total of all inbound txns minus all outbound txns and fees
 WITH sent_amounts AS (
   SELECT
     from_address,

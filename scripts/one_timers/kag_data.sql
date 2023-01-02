@@ -15,7 +15,7 @@ CREATE TABLE kag_txns (
 
 
 \copy kag_txns
-  FROM '/Users/syblius/Downloads/KAG.csv'
+  FROM '/Users/uz0r/Downloads/KAG.csv'
     CSV
     HEADER
     DELIMITER ',';

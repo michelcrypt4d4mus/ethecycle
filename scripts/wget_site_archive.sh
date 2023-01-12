@@ -15,7 +15,6 @@ wget \
     --random-wait \
     --recursive \
     --no-parent \
-    --warc-file=docs.strikeprotocols.com \
-    --domains=docs.strikeprotocols.com \
-    --level=5 https://docs.strikeprotocols.com
-
+    --warc-file=riotplatforms.com \
+    --domains=riotplatforms.com \
+    --level=5 https://www.riotplatforms.com/

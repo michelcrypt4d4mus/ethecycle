@@ -24,6 +24,7 @@ from .ftx_major_partners_importer import import_ftx_biggest_trading_partners
 from .google_sheets_importer import import_google_sheets
 from .hand_collated_address_importer import import_hand_collated_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
+from .okx_proof_of_reserves_importer import import_okx_addresses
 from .my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
 from .trustwallet_assets_importer import import_trust_wallet_repo
 from .wallets_from_dune_importer import import_wallets_from_dune
@@ -34,7 +35,8 @@ def rebuild_chain_addresses_db():
     """Drop all tables and rebuild from source data."""
     Config.skip_load_from_db = True
     drop_and_recreate_tables()
-    # Import hand collated results first so they have priority
+
+    # Import hand collated results first so they have priority when loading wallet labels
     import_hand_collated_addresses()
     import_hardcoded_addresses()
     import_coin_market_cap_repo_addresses()
@@ -46,6 +48,7 @@ def rebuild_chain_addresses_db():
     import_ftx_biggest_trading_partners()
     import_google_sheets()
     import_my_ether_wallet_addresses()
+    import_okx_addresses()
     import_trust_wallet_repo()
     import_wallets_from_dune()
     import_w_mcdonald_etherscan_addresses()

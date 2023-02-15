@@ -1,9 +1,13 @@
 # Building the chain_addresses.db file is slow and hard to cache correctly.
-# Once it has been built if you copy it to 'scripts/docker/container_files/chain_addresses_sqlite.db'
-# and set REBUILD_CHAIN_ADDRESS_DB to 'copy_prebuilt_address_db' in the docker build process, it will
-# just be copied rather than rebuilt.
+# This Dockerfile contains a forking path that allows you to reuse a prebuilt
+# chain address DB rather than rebuild from scratch which can useful if you
+# find yourself needing to repeatedly rebuild the image.
 #
-# Possible values are 'freshly_built_address_db' and 'copy_prebuilt_address_db'
+# Once the DB has been built if you copy it out of the container by running
+# scripts/chain_addresses/copy_chain_addresses_db_out_of_container.sh
+# Next time you build the image set REBUILD_CHAIN_ADDRESS_DB=copy_prebuilt_address_db
+# in your .env file the DB will just be copied rather than rebuilt.
+
 ARG REBUILD_CHAIN_ADDRESS_DB=freshly_built_address_db
 ARG CHAIN_ADDRESS_DATA_DIR=/chain_address_data
 ARG SSH_KEY_DIR

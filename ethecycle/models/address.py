@@ -15,7 +15,7 @@ from ethecycle.util.logging import console, log, print_dim
 from ethecycle.util.string_helper import strip_and_set_empty_string_to_none
 from ethecycle.util.string_constants import *
 
-# TODO: this i a hack
+# TODO: this is a hack
 COLUMNS_TO_NOT_LOAD = ['chain_info', 'data_source']
 
 

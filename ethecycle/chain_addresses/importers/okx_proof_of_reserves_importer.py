@@ -18,8 +18,7 @@ def import_okx_addresses():
 
         for row in csv.DictReader(csvfile, delimiter=','):
             row[DATA_SOURCE] = OKX_DATA_SOURCE
-            print(row)
-            #del row['comment']
+            del row['comment']  # All have same comment 'From https://www.okx.com/proof-of-reserves/download'
             wallets.append(Wallet(**row))
 
-    #insert_addresses(wallets)
+    insert_addresses(wallets)

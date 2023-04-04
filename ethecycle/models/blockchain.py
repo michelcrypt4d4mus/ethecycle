@@ -43,6 +43,10 @@ def get_chain_info(blockchain: str) -> Type['ChainInfo']:
 
 def guess_chain_info_from_address(address: str) -> Optional[Type['ChainInfo']]:
     """Guess which chain the address is on from the address format. Not guaranteed accurate!"""
+    # Short circuit with Ethereum because it's such a common format.
+    if Ethereum.is_valid_address(address):
+        return Ethereum
+
     for chain_info in BLOCKCHAINS.values():
         if chain_info.is_valid_address(address):
             return chain_info

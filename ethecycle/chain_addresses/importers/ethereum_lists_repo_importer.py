@@ -19,6 +19,7 @@ TOKENS_REPO = GithubDataSource('ethereum-lists/tokens')
 CONTRACTS_REPO = GithubDataSource('ethereum-lists/contracts')
 CONTRACT_JSON_KEYS = set(['project', NAME, 'source', 'features'])
 
+# TODO: there's more chains in here
 # Keys are folder names, values are blockchain names.
 DIRS_TO_IMPORT = {
     'arb': ARBITRUM,
@@ -51,7 +52,7 @@ def _import_ethereum_lists_tokens_addresses() -> None:
                         token_info = json.load(json_file)
 
                     token = Token(
-                        blockchain=blockchain,
+                        blockchain=blockchain.replace(' ', '_'),
                         token_type=token_info.get('type'),  # Not always provided
                         address=token_info[ADDRESS],
                         symbol=token_info[SYMBOL],

@@ -21,7 +21,7 @@ CURL_OUTPUT_FILE = str(RAW_DATA_DIR.joinpath('cryptoscamdb.addresses.json.gz'))
 
 
 def import_cryptoscamdb_addresses():
-    """Import data from ethereum-lists tokens repo."""
+    """Import data from cryptoscamdb."""
     print_address_import(SOURCE_URL)
     wallets: List[Wallet] = []
 

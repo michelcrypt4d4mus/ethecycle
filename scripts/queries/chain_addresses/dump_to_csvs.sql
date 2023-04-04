@@ -9,4 +9,4 @@ SELECT * FROM wallets;
 SELECT * FROM tokens;
 
 .output data_sources.csv
-SELECT * FROM data_sources
+SELECT * FROM data_sources;

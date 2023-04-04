@@ -24,6 +24,7 @@ from .ftx_major_partners_importer import import_ftx_biggest_trading_partners
 from .google_sheets_importer import import_google_sheets
 from .hand_collated_address_importer import import_hand_collated_addresses
 from .hardcoded_addresses_importer import import_hardcoded_addresses
+from .m_ranger_data_importer import import_m_ranger_wallet_tags
 from .okx_proof_of_reserves_importer import import_okx_addresses
 from .my_ether_wallet_repo_importer import import_my_ether_wallet_addresses
 from .trustwallet_assets_importer import import_trust_wallet_repo
@@ -47,6 +48,7 @@ def rebuild_chain_addresses_db():
     import_etherscrape_chain_addresses()
     import_ftx_biggest_trading_partners()
     import_google_sheets()
+    import_m_ranger_wallet_tags()
     import_my_ether_wallet_addresses()
     import_okx_addresses()
     import_trust_wallet_repo()

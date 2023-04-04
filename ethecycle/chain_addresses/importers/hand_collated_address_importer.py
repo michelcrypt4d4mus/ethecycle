@@ -17,7 +17,6 @@ def import_hand_collated_addresses():
 
         for row in csv.DictReader(csvfile, delimiter=','):
             row[DATA_SOURCE] = HAND_COLLATED_DATA_SOURCE
-            del row['comment']
             wallets.append(Wallet(**row))
 
     insert_addresses(wallets)

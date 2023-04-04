@@ -18,7 +18,8 @@ def import_okx_addresses():
 
         for row in csv.DictReader(csvfile, delimiter=','):
             row[DATA_SOURCE] = OKX_DATA_SOURCE
-            del row['comment']
+            print(row)
+            #del row['comment']
             wallets.append(Wallet(**row))
 
-    insert_addresses(wallets)
+    #insert_addresses(wallets)

@@ -30,6 +30,7 @@ class Address:
     organization: Optional[str] = None
     data_source: Optional[str] = None
     extracted_at: Optional[Union[datetime, str]] = None
+    comment: Optional[str] = None
 
     # TODO: why doesn't this work
     # https://stackoverflow.com/questions/67955425/how-to-add-the-class-instance-to-a-class-variable-in-dataclass-notation

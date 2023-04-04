@@ -11,6 +11,7 @@ from ethecycle.blockchains.avalanche import Avalanche_C_Chain
 from ethecycle.blockchains.binance_smart_chain import BinanceSmartChain
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.blockchains.fantom import Fantom
+from ethecycle.blockchains.optimism import Optimism
 from ethecycle.blockchains.polygon import Polygon
 from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.chain_addresses.config.etherscan import determine_category
@@ -30,6 +31,7 @@ SUBDIR_TO_BLOCKCHAIN_MAPPING = {
     'bscscan': BinanceSmartChain,
     'etherscan': Ethereum,
     'ftmscan': Fantom,
+    'optimism': Optimism,
     'polygonscan': Polygon,
 }
 
@@ -40,11 +42,11 @@ def import_etherscan_labels_repo():
 
     with SOURCE_REPO.local_repo_path() as repo_dir:
         data_dir = path.join(repo_dir, 'data')
+        wallets: List[Wallet] = []
 
         for subdir in subdirs_of_dir(data_dir):
             blockchain = SUBDIR_TO_BLOCKCHAIN_MAPPING[path.basename(subdir)]
             addresses_file = path.join(subdir, 'combined', 'combinedAllLabels.json')
-            wallets: List[Wallet] = []
             label_counts = defaultdict(lambda: 0)
             uncategorized_label_counts = defaultdict(lambda: 0)
             log.info(f"Processing {addresses_file}...")
@@ -81,4 +83,4 @@ def import_etherscan_labels_repo():
                 console.print(Panel('CATEGORIZED'))
                 pprint(sort_dict(label_counts))
 
-            insert_addresses(wallets)
+        insert_addresses(wallets)

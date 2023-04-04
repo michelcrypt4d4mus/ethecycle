@@ -7,3 +7,6 @@ SELECT * FROM wallets;
 
 .output tokens_table_dump.csv
 SELECT * FROM tokens;
+
+.output data_sources.csv
+SELECT * FROM data_sources

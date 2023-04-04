@@ -6,3 +6,7 @@ class BinanceSmartChain(ChainInfo):
     SHORT_NAME = 'bsc'
     NAME_REGEX = re.compile('\\s*binance\\s*smart\\s*chain$', re.IGNORECASE)
     ADDRESS_PREFIXES = ['bnb']
+
+    @classmethod
+    def chain_string(cls) -> str:
+        return 'bsc'

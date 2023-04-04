@@ -50,7 +50,7 @@ bc1qmxjefnuy06v345v6vhwpwt05dztztmx4g3y7wp,bitcoin,USA Federal Government,govern
 0xC87D701c45040EACB75a7A2893bAf277642Aa0db,ethereum,@DeFiSniper,individual,Twitter Bot
 0xfD35B0870B4125E1280eFdaB2d4ba44Fe9c378f4,ethereum,@algodtrading,individual,
 0x26C5A34Bc8398fbD395b518ffAb27724D7CC9617,ethereum,@algodtrading?,individual,wallet receiving FTX funds 3 days after bankruptcy
-0x26C5A34Bc8398fbD395b518ffAb27724D7CC9617,binance_smart_chain,@algodtrading?,individual,wallet receiving FTX funds 3 days after bankruptcy
+0x26C5A34Bc8398fbD395b518ffAb27724D7CC9617,bsc,@algodtrading?,individual,wallet receiving FTX funds 3 days after bankruptcy
 0x7abe0ce388281d2acf297cb089caef3819b13448,ethereum,FTX.US,cex,
 0x72A53cDBBcc1b9efa39c834A540550e23463AAcB,ethereum,crypto.com Cold Wallet 1,cex,
 0x7758e507850da48cd47df1fb5f875c23e3340c50,ethereum,crypto.com Cold Wallet 2,cex,
@@ -84,7 +84,7 @@ bc1q4c8n5t00jmj8temxdgcc3t32nkg2wjwz24lywv,bitcoin,crypto.com Cold Wallet 1,cex,
 12qA97T8hsDgvVoRCXGZifd9PCraqvd2DW,bitcoin,Voyager (rumored),cefi,
 0xfAc87e892800F73feA9bD4a81B4E0269f4363fE3,ethereum,Voyager Hot Wallet,cefi,
 0xad6eaa735d9df3d7696fd03984379dae02ed8862,ethereum,Cumberland,cex,
-bnb1xrfwzlu9c5208lhtn7ywt0mjrhjh4nt4fjyqxy,binance_smart_chain,Binance,cex,
+bnb1xrfwzlu9c5208lhtn7ywt0mjrhjh4nt4fjyqxy,bsc,Binance,cex,
 0xF9623Fe14733B3EF4F102626a219c9e89A5B5AaE,ethereum,binance,cex,Moved $1.7B to Binance US
 0x03aE1A796DFE0400439211133D065BDA774B9D3e,ethereum,okx?,cex,Moved $1.7B to OKX in 2022
 1ECUQLuioJbFZAQchcZq9pggd4EwcpuANe,bitcoin,Quadriga?,cex,https://twitter.com/zachxbt/status/1604953664719683585
@@ -182,7 +182,7 @@ TT1DyeqXaaJkt6UhVYFWUXBXknaXnBudTK,tron,Binance-Peg USDT,stablecoin,
 TMz2SWatiAtZVVcH2ebpsbVtYwUPT9EdjH,tron,Binance-Peg BUSD,stablecoin,
 0x22436fbACA74a8E038DA5d0f09DCBeDf88D5ebde,polygon,Biconomy,cex,
 0x366ba28Ec89113454EA6e82bB606426e8cA22780,polygon,Biconomy,cex,
-0xB67705398fEd380a1CE02e77095fed64f8aCe463,binance_smart_chain,Turkey Earthquake support (scam?),fund,https://www.reddit.com/r/Buttcoin/comments/10w6hm8/100_just_do_it/
+0xB67705398fEd380a1CE02e77095fed64f8aCe463,bsc,Turkey Earthquake support (scam?),fund,https://www.reddit.com/r/Buttcoin/comments/10w6hm8/100_just_do_it/
 0x68A99f89E475a078645f4BAC491360aFe255Dff1,ethereum,Gnosis Safe Covid Relief Scam?,fund,https://twitter.com/sandeepnailwal/status/1385968554508488709
 0xa6de23eda49612110b64bcee7599aa67e0c2a6c1,ethereum,Bitboy Crypto,individual,https://twitter.com/camcrews/status/1628894598587088899
 0x5fc5652c50938710136e9cfe099baacef0167b18,ethereum,Bitboy Crypto,individual,https://twitter.com/camcrews/status/1628894598587088899
@@ -192,3 +192,4 @@ bc1q4gwx0f6yqurq0gwj9ktwlevrp3eu8snn5kaaax,bitcoin,Celsius X Proof of Reserve,ce
 bc1qpgty4050xt4hdwhkhegsdjc0f6urddf7428kar,ethereum,FalconX wBTC Burn Wallet,cefi,https://twitter.com/Holmes_Crypto_/status/1630308383734611972
 19N9sDbJ7MDQcPFSjPNqjNDzyRNbNsQ6Zv,bitcoin,Celsius wBTC Destination,cefi,https://twitter.com/Holmes_Crypto_/status/1630308383734611972
 0x0e7770b63ca9782b9883455f45282ab2a40df347,ethereum,Tether major cash onramp? First TUSD?,stablecoin,https://medium.com/letknownews/why-tether-printed-500-million-usdt-f8f7ab3bfe11
+0x59d4087f3ff91da6a492b596cbde7140c34afb19,abitrum,Arbitrum Airdrop Exploiter,hackers,https://twitter.com/WuBlockchain/status/1638071662779445249

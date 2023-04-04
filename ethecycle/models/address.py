@@ -17,6 +17,7 @@ from ethecycle.util.string_constants import *
 
 # TODO: this is a hack
 COLUMNS_TO_NOT_LOAD = ['chain_info', 'data_source']
+MAX_LABEL_LENGTH = 250
 
 
 @dataclass(kw_only=True)
@@ -24,7 +25,7 @@ class Address:
     address: Optional[str] = None  # Some CMC data has no addresses...
     blockchain: Optional[str] = None
     chain_info: Optional[Type['ChainInfo']] = None
-    name: Optional[str] = None
+    name: Optional[str] = None  # TODO: rename 'label'
     category: Optional[str] = None
     organization: Optional[str] = None
     data_source: Optional[str] = None
@@ -40,6 +41,9 @@ class Address:
         self.blockchain = strip_and_set_empty_string_to_none(self.blockchain, to_lowercase=True)
         self.category = strip_and_set_empty_string_to_none(self.category, to_lowercase=True)
         self.name = strip_and_set_empty_string_to_none(self.name)
+
+        if self.name is not None:
+            self.name = self.name[0:MAX_LABEL_LENGTH]
 
         # Fill in either self.chain_info or self.blockchain
         if self.chain_info is not None and self.blockchain is None:

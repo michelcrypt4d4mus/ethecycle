@@ -38,7 +38,7 @@ class Address:
 
     def __post_init__(self):
         """Either blockchain arg or chain_info can be provided; the other will be filled in."""
-        self.address = strip_and_set_empty_string_to_none(self.address, to_lowercase=True)
+        self.address = strip_and_set_empty_string_to_none(self.address, to_lowercase=False)
         self.blockchain = strip_and_set_empty_string_to_none(self.blockchain, to_lowercase=True)
         self.category = strip_and_set_empty_string_to_none(self.category, to_lowercase=True)
         self.name = strip_and_set_empty_string_to_none(self.name)

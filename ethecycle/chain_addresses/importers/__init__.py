@@ -16,6 +16,7 @@ from ethecycle.config import Config
 
 from .coin_market_cap_repo_importer import import_coin_market_cap_repo_addresses
 from .cryptoscamdb_addresses_importer import import_cryptoscamdb_addresses
+from .defi_llama_importer import import_defi_llama_addresses
 from .ethereum_lists_repo_importer import import_ethereum_lists_addresses
 from .etherscan_labels_importer import import_etherscan_labels_repo
 from .etherscan_contract_crawler_importer import import_ethereum_contract_crawler_addresses
@@ -42,6 +43,7 @@ def rebuild_chain_addresses_db():
     import_hardcoded_addresses()
     import_coin_market_cap_repo_addresses()
     import_cryptoscamdb_addresses()
+    import_defi_llama_addresses()
     import_ethereum_contract_crawler_addresses()
     import_ethereum_lists_addresses()
     import_etherscan_labels_repo()

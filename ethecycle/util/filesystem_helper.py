@@ -57,6 +57,12 @@ def subdirs_of_dir(dir: Union[os.PathLike, str]) -> List[str]:
     return [file for file in _non_hidden_files_in_dir(dir) if path.isdir(file)]
 
 
+def load_file_contents(file_path: Union[Path, str]) -> str:
+    """Return contents of 'file_path' as string."""
+    with open(file_path, 'r') as file:
+        return file.read()
+
+
 def get_lines(file_path: str, comment_char: Optional[str] = '#') -> List[str]:
     """Get lines from text or gzip file optionally skipping lines starting with comment_char."""
     if file_path.endswith(GZIP_EXTENSION):

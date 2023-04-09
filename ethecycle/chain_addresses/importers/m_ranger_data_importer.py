@@ -17,6 +17,7 @@ from ethecycle.util.string_constants import ADDRESS, DATA_SOURCE
 M_RANGER_ADDRESSES_DIR = str(RAW_DATA_DIR.joinpath('m_ranger_wallet_addresses'))
 M_RANGER_DATA_SOURCE = 'M. Ranger'
 
+
 def import_m_ranger_wallet_tags():
     wallets: List[Wallet] = []
 
@@ -50,8 +51,5 @@ def import_m_ranger_wallet_tags():
 
                 log.debug(wallet)
                 wallets.append(wallet)
-                # row[DATA_SOURCE] = OKX_DATA_SOURCE
-                # del row['comment']
-                # wallets.append(Wallet(**row))
 
     insert_addresses(wallets)

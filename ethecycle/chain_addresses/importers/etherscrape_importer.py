@@ -34,7 +34,6 @@ def import_etherscrape_chain_addresses() -> None:
             if not Ethereum.is_valid_address(address):
                 raise ValueError(f"{address} is not a valid address! (line: {line}")
 
-            address = address.lower()
             name = titleize(line_label) if address != ETHERSCAN_DONATE_ADDRESS else ETHERSCAN_DONATE_LABEL
 
             if address in wallet_addresses:

@@ -61,7 +61,8 @@ def import_defi_llama_addresses():
                         blockchain=chain,
                         category='cex',
                         name=cex,
-                        data_source=DEFI_LLAMA_REPO.repo_url
+                        data_source=DEFI_LLAMA_REPO.repo_url,
+                        organization=cex
                     )
                     console.print(wallet)
                     wallets.append(wallet)
@@ -75,7 +76,8 @@ def import_defi_llama_addresses():
                     blockchain='bitcoin',
                     category='cex',
                     name='bitmex',
-                    data_source=DEFI_LLAMA_REPO.repo_url
+                    data_source=DEFI_LLAMA_REPO.repo_url,
+                    organization='bitmex'
                 )
 
         insert_addresses(wallets)

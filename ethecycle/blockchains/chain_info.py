@@ -37,7 +37,7 @@ class ChainInfo:
     @classmethod
     def is_valid_address(cls, address: str) -> bool:
         """True if address starts with a prefix in ADDRESS_PREFIXES (or if ADDRESS_PREFIXES is empty)."""
-        if isinstance(address, float) or len(address) <= cls.MINIMUM_ADDRESS_LENGTH:
+        if isinstance(address, float) or len(address) <= cls.MINIMUM_ADDRESS_LENGTH or ' ' in address:
             return False
 
         if len(cls.ADDRESS_PREFIXES) == 0:

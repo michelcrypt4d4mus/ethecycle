@@ -18,6 +18,7 @@ from ethecycle.util.string_constants import *
 # TODO: this is a hack
 COLUMNS_TO_NOT_LOAD = ['chain_info', 'data_source']
 MAX_LABEL_LENGTH = 250
+CASE_SENSITIVE_BLOCKCHAINS = ['bitcoin', 'solana']
 
 
 @dataclass(kw_only=True)
@@ -116,6 +117,9 @@ class Address:
     @classmethod
     def at_address(cls, blockchain: str, address: str) -> Optional['Address']:
         """Get named property if there's an object at the 'address'."""
+        if blockchain not in CASE_SENSITIVE_BLOCKCHAINS:
+            address = address.lower()
+
         return cls.chain_addresses()[blockchain.lower()].get(address.lower())
 
     @classmethod

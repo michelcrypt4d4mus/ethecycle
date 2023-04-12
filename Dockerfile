@@ -80,7 +80,9 @@ RUN poetry config virtualenvs.create false && \
 ARG ETHECYCLE_TMP_DIR_FOR_BUILDING_CHAIN_ADDRESS_DB=/ethecycle_build_address_db
 WORKDIR ${ETHECYCLE_TMP_DIR_FOR_BUILDING_CHAIN_ADDRESS_DB}
 COPY ./ ./
-RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
+# IS_DOCKER_IMAGE_BUILD causes the repos to be deleted once the data is extracted.
+#RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
+RUN ./import_chain_addresses.py ALL
 WORKDIR ${PYTHON_DIR}
 
 # Build various files for root (.bash_profile, .sqliterc, entrypoint.sh, etc) and remove unnecessaries

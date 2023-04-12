@@ -5,3 +5,4 @@ from ethecycle.util.logging import log
 class Bitcoin(ChainInfo):
     SHORT_NAME = 'btc'
     ADDRESS_PREFIXES = ['1', '3', 'bc1', 'lnbc']  # lnbc is lightning
+    MINIMUM_ADDRESS_LENGTH = 26

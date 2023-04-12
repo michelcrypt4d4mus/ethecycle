@@ -16,6 +16,7 @@ from ethecycle.blockchains.bitcoin_cash import BitcoinCash
 from ethecycle.blockchains.cardano import Cardano
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.blockchains.litecoin import Litecoin
+from ethecycle.blockchains.polygon import Polygon
 from ethecycle.blockchains.ripple import Ripple
 from ethecycle.blockchains.tron import Tron
 from ethecycle.util.dict_helper import get_dict_key_by_value

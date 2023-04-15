@@ -20,7 +20,7 @@ INDEX_CQL_FILE = SCRIPTS_DIR.joinpath('queries', 'cypher', 'indexes.cql')
 
 class Neo4j:
     def __init__(self):
-        self.driver = GraphDatabase.driver("neo4j://neo4j:7687", auth=neo4j_user_and_pass())
+        self.driver = GraphDatabase.driver("bolt://neo4j:7687", auth=neo4j_user_and_pass())
 
     def close(self):
         self.driver.close()

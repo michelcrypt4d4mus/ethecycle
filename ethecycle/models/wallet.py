@@ -79,7 +79,12 @@ class Wallet(Address):
         Assumes all txns are from same blockchain.
         """
         addresses = set([t.to_address for t in txns]).union(set([t.from_address for t in txns]))
-        addresses.remove('')
+
+        try:
+            addresses.remove('')
+        except KeyError:
+            pass
+
         addresses.add(MISSING_ADDRESS)
         TokenWallet = partial(cls, blockchain=txns[0].blockchain, extracted_at=txns[0].extracted_at)
         return [TokenWallet(address=a).load_name_and_category() for a in addresses]

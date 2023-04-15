@@ -1,4 +1,6 @@
 import csv
+import gzip
+import io
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
@@ -8,8 +10,10 @@ from rich.pretty import pprint
 from rich.text import Text
 
 from ethecycle.blockchains.chain_info import ChainInfo
+from ethecycle.config import Config
 from ethecycle.models.token import Token
 from ethecycle.util.string_constants import *
+from ethecycle.util.filesystem_helper import GZIP_EXTENSION
 
 # Expected column order for source CSVs.
 RAW_TXN_DATA_CSV_COLS = [
@@ -51,8 +55,8 @@ class Txn():
     to_address: str
     csv_value: str  # num_tokens
     transaction_hash: str
-    log_index: str
     block_number: int
+    log_index: str
     chain_info: Type
     extracted_at: Optional[Union[datetime, str]] = None
 
@@ -61,7 +65,11 @@ class Txn():
         self.blockchain = self.chain_info.chain_string()
         self.transaction_id = f"{self.transaction_hash}-{self.log_index}"
         self.symbol = Token.token_symbol(self.blockchain, self.token_address)
-        self.num_tokens = float(self.csv_value) / 10 ** Token.token_decimals(self.blockchain, self.token_address)
+        self.num_tokens = float(self.csv_value)
+
+        if not Config.skip_decimal_division:
+            self.num_tokens /= 10 ** Token.token_decimals(self.blockchain, self.token_address)
+
         self.num_tokens_str = "{:,.18f}".format(self.num_tokens)
         self.block_number = int(self.block_number)
         self.scanner_url = self.chain_info.scanner_url(self.transaction_hash)
@@ -88,14 +96,18 @@ class Txn():
             token: Optional['str']
         ) -> List['Txn']:
         """Load txions from a headerless CSV to list of Txn objects."""
-        with open(csv_path, newline='') as csvfile:
-            txns = [Txn(*(row + [chain_info])) for row in csv.reader(csvfile, delimiter=',')]
+        if csv_path.endswith(GZIP_EXTENSION):
+            with gzip.open(csv_path, 'rt') as zipfile:
+                txns = [Txn(*(row + [chain_info])) for row in csv.reader(zipfile, delimiter='|')]
+        else:
+            with open(csv_path, newline='') as csvfile:
+                txns = [Txn(*(row + [chain_info])) for row in csv.reader(csvfile, delimiter='|')]
 
         # Fill in extracted_at so all records in same job have same timestamp
         for txn in txns:
             txn.extracted_at = extracted_at
 
-        # Optionally filter for a singly token symbol
+        # Optionally filter for a single token symbol
         if token:
             token_address = Token.token_address(chain_info.chain_string(), token)
             txns = [txn for txn in txns if txn.token_address == token_address]

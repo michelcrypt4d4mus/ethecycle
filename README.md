@@ -65,6 +65,8 @@ Example output:
 
 ![](doc/loader_output.png)
 
+**IMPORTANT!** It usually takes a little while for Neo4j to finish processing the transactions you just loaded and make the database available for connections and queries!
+
 ### Running From Outside Of Docker Container
 Cannot guarantee these steps work but they probably will work.
 

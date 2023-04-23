@@ -20,6 +20,7 @@ from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.core import Core
 from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.blockchains.fantom import Fantom
 from ethecycle.blockchains.polygon import Polygon
 from ethecycle.blockchains.ronin import Ronin
 from ethecycle.chain_addresses.address_db import insert_addresses
@@ -209,9 +210,28 @@ class AirdropGoogleSheet:
     def __post_init__(self):
         self.worksheet_names = self.worksheet_names or ['Sheet1']
 
+        if not isinstance(self.worksheet_names, list):
+            raise ValueError(f"'{self.worksheet_names}' is not a list it's a {type(self.worksheet_names)}")
+
 
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
+    AirdropGoogleSheet(
+        airdrop_name='Equalizer Exchange DEX',
+        sheet_id='1KkY6sb7Bx7kUitiVw6E4bdCrzsqloTjUYlSJcSpbJMs',
+        worksheet_names=['List'],
+        address_column='0xcba1a275e2d858ecffaf7a87f606f74b719a8a93', # Hack bc there is no header
+        social_media_link='https://twitter.com/Equalizer0x/status/1597696867533398016',
+        chain_info=Fantom
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='League Of Empires - Super',
+        sheet_id='1gBS5GhYg_eC1G2I86_Eh4YbgDTKmvGzN4N9aL-WU7C4',
+        address_column='0xD37b6461e729fB88C960dc2bC37B9672fF5dD7d9', # Hack bc there is no header
+        worksheet_names=['Random 1000 member: 30 $LOE'],
+        social_media_link='https://twitter.com/LeagueofEmpires/status/1511900715635003393',
+        chain_info=Polygon
+    ),
     AirdropGoogleSheet(
         airdrop_name='PolkaBridge INO',
         sheet_id='1WkmOcm1Q7ebACeuNKsnEs6fLeQfyOmfid_oDonnIZt4',
@@ -369,6 +389,7 @@ AIRDROP_SHEETS = [
 # Possible others:
 #  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
 #  * published so not a sheet as is: '2PACX-1vS_UEpiHM5HW-_cc9UgMx1FaBqkVFOspoDxxXNm2sKPAWnb2jh0iy1WDuKaZARP_xGgozuXL9G2VP93'
+#  * Some Ripple tokens and addresses: https://docs.google.com/spreadsheets/d/1kIjUN-jJzDxciMedJZo2XPyL-VQ-Zs1zt0YCgy6Cmcc/edit#gid=0
 #  * PokeMine
     # Can't be loaded because double wide header column
     # AirdropGoogleSheet(
@@ -381,17 +402,17 @@ AIRDROP_SHEETS = [
     # ),
 
 def import_google_sheets() -> None:
-    for sheet_id, worksheets in ETHEREUM_SHEETS.items():
-        for worksheet_name in worksheets:
-            worksheet = GoogleWorksheet(sheet_id, worksheet_name, Ethereum)
-            insert_addresses(worksheet.extract_wallets())
-            console.line(2)
+    # for sheet_id, worksheets in ETHEREUM_SHEETS.items():
+    #     for worksheet_name in worksheets:
+    #         worksheet = GoogleWorksheet(sheet_id, worksheet_name, Ethereum)
+    #         insert_addresses(worksheet.extract_wallets())
+    #         console.line(2)
 
-    for sheet_id, worksheets in BITCOIN_SHEETS.items():
-        for worksheet_name in worksheets:
-            worksheet = GoogleWorksheet(sheet_id, worksheet_name, Bitcoin)
-            insert_addresses(worksheet.extract_wallets())
-            console.line(2)
+    # for sheet_id, worksheets in BITCOIN_SHEETS.items():
+    #     for worksheet_name in worksheets:
+    #         worksheet = GoogleWorksheet(sheet_id, worksheet_name, Bitcoin)
+    #         insert_addresses(worksheet.extract_wallets())
+    #         console.line(2)
 
     # This is the way sheets should be configured going forward
     for airdrop_sheet in AIRDROP_SHEETS:

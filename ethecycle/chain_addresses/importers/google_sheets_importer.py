@@ -14,8 +14,10 @@ from rich.pretty import pprint
 from typing import List, Optional, Type
 from urllib.parse import urlencode
 
+from ethecycle.blockchains.arbitrum import Arbitrum
 from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
+from ethecycle.blockchains.core import Core
 from ethecycle.blockchains.ethereum import Ethereum
 from ethecycle.blockchains.ronin import Ronin
 from ethecycle.chain_addresses.address_db import insert_addresses
@@ -164,6 +166,7 @@ BITCOIN_SHEETS = {
 }
 
 # Some sheets have no address column
+# TODO: reconfigure these as AirdropGoogleSheets
 DEFAULT_LABELS = {
     '1nFL75ojBWi0dNQjX6UcKh8WdvGXYmP23lHiSZdfv8f4': 'petscoin recipient',
     '1YJq5IAIrjavjNIMQLw7SeVx2_bydwdXELHLxnJhYfSk': 'crykart recipient',
@@ -206,6 +209,7 @@ AIRDROP_SHEETS = [
         airdrop_name='Oceans of Terra',
         sheet_id='127_TQJ3yL7dsvTVj92dcMENj1YGhG79XTA288W7R4c0',
         worksheet_names=['Sheet1'],
+        social_media_link='https://twitter.com/OceansOfTerra/status/1647071846892965893',
         chain_info=Ethereum
     ),
     AirdropGoogleSheet(
@@ -223,8 +227,32 @@ AIRDROP_SHEETS = [
         social_media_link='https://twitter.com/phi_xyz/status/1647882436481777664',
         chain_info=Ethereum
     ),
+    AirdropGoogleSheet(
+        airdrop_name='CoreDoge',
+        sheet_id='1B4T-OfP3NBOHaNnfK7WJJMFaoDXGCbBzRtm08vE1gR4',
+        worksheet_names=['Whitelist for Pre-Sale'],
+        social_media_link='https://twitter.com/CoreDoge_xyz/status/1648735050501062658',
+        chain_info=Core
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='MEEET-MAMA NFT',
+        sheet_id='1uwfwNDNMqeZ8n82JvtPvcvFb6x93ljlSyemk_kNG6N4',
+        worksheet_names=['Sheet1'],
+        social_media_link='https://twitter.com/MEEETOfficial/status/1645348134149664768',
+        chain_info=Arbitrum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='WOO Ventures',
+        sheet_id='14cbpXi6qNK3eLuzf5m889PJdIQS2l6QU2VbWybNrm-k',
+        worksheet_names=[f"{t} winners" for t in 'QRDO ERP LUNR STRP DERI CLH'.split(' ')],
+        social_media_link='https://twitter.com/_WOO_X/status/1629138526745796608',
+        chain_info=Ethereum
+    ),
 ]
 
+
+# Possible others:
+#  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
 
 def import_google_sheets() -> None:
     for sheet_id, worksheets in ETHEREUM_SHEETS.items():
@@ -358,7 +386,10 @@ class GoogleWorksheet:
 
         # 3rd pass to look for cols titled 'address'
         if len(wallet_cols) == 0:
-            wallet_cols = [c for c in self.column_names if ADDRESS in c.lower()]
+            wallet_cols = [
+                c for c in self.column_names
+                if ADDRESS in c.lower() and 'token' not in c.lower()
+            ]
 
         if len(wallet_cols) == 0:
             raise ValueError(f"No address columns found in {self.column_names}")

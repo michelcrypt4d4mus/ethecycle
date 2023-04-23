@@ -206,6 +206,7 @@ class AirdropGoogleSheet:
     address_column: Optional[str] = None
     category: str = 'airdrop'
     force_extract_labels: bool = False
+    is_airdrop: bool = True  # TODO: make this actually do something (not append "Airdrop" to label)
 
     def __post_init__(self):
         self.worksheet_names = self.worksheet_names or ['Sheet1']
@@ -217,6 +218,25 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='@gillesdc Magritte Checks',
+        sheet_id='1FKbl_3mlzEihBQltve3nJY9rMSpC-uVZdlKlFLOmokw',
+        worksheet_names=[
+            'Phase 1+2 - Allowlist Verification Of Man',
+            'Phase 1+2 - Allowlist Heymint',
+            'Phase 2 - Waitlist'
+        ],
+        social_media_link='https://twitter.com/gillesdc/status/1633870540409827329',
+        chain_info=Ethereum,
+        is_airdrop=False
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Lido LDO Token',
+        sheet_id='10gvpGZKhoIBmGqUOUJAhuqdeR0xhFmmqNpRUKLIRaxU',
+        worksheet_names=['FRAMEWORK'],
+        social_media_link='https://twitter.com/tumilett/status/1621533934197637127',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
         airdrop_name='PandAI DEX Competition',
         sheet_id='1Sdcp6jghR73KCbvdMKsZNi8DlKmUiQAbd0glJMjCk5E',
         worksheet_names=['Results'],
@@ -226,14 +246,12 @@ AIRDROP_SHEETS = [
     AirdropGoogleSheet(
         airdrop_name='Clover Finance CLV & Galxe',
         sheet_id='1-1ag1I6UhHqWBCS_qm5ucnt92MrUrL3dtueb1MEm8bk',
-        address_column='0xa64ce393071101130eaf4e714d974c2316753a75', # Hack bc there is no header
         social_media_link='https://twitter.com/clover_finance/status/1574402545912795137',
         chain_info=Ethereum
     ),
     AirdropGoogleSheet(
         airdrop_name='Clover Finance CLV & Galxe',
         sheet_id='1-GlKye58eofVAF5JI0vFM_o4jghNMq9qSkUN73Lt1oI',
-        address_column='0x76c9a2c1685718935e7e8e8fe130aae73a05099d', # Hack bc there is no header
         social_media_link='https://twitter.com/clover_finance/status/1574402545912795137',
         chain_info=Ethereum
     ),
@@ -567,6 +585,9 @@ class GoogleWorksheet:
                 c for c in self.column_names
                 if any(word in c.lower() for word in [ADDRESS, 'receiver', WALLET, 'your name']) and 'token' not in c.lower()
             ]
+
+        if len(wallet_cols) == 0 and len(self.column_names) == 1:
+            wallet_cols = self.column_names
 
         if len(wallet_cols) == 0:
             raise ValueError(f"No address columns found in {self.column_names}")

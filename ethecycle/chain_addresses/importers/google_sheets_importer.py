@@ -282,6 +282,20 @@ AIRDROP_SHEETS = [
         social_media_link='https://twitter.com/Meta_Galaxyy/status/1648688991171137536',
         chain_info=Ethereum
     ),
+    AirdropGoogleSheet(
+        airdrop_name='Punkzi',
+        sheet_id='1iVEzrjMxdasUiwJUuChSsspyz-8YR09U6sJiFihsM2E',
+        social_media_link='https://twitter.com/Punkzi_NFT/status/1623413002568364032',
+        worksheet_names=['Ark1'],
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='@ozark.eth MemesFTP',
+        sheet_id='1-QUJdfrsipsPU4xQ29MzWihIlNhUlHjcm6uPKYrZHf0',
+        social_media_link='https://twitter.com/OzarkNFT/status/1620522573569343489',
+        worksheet_names=['SINK', '3-14-23-Snapshot'],
+        chain_info=Ethereum
+    ),
 ]
 
 # Possible others:

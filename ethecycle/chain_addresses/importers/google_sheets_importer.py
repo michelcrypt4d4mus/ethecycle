@@ -218,12 +218,17 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='PhoenixDefi $PNIX',
+        sheet_id='1XbLd80BaH8svKeJlJWdJvfxpvN2epxhMnYNBl2LHUKU',
+        social_media_link='https://twitter.com/phoenixdefi/status/1377274242497196034',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
         airdrop_name='Isekai Battle Ticket',
         sheet_id='1WbBUGZqryUIzh_o8kW-GKk5CksAvYfGox_ZRexQJVY4',
         worksheet_names=['csv'],
         social_media_link='https://twitter.com/Isekai_Battle/status/1624010711210037248',
-        chain_info=Ethereum,
-        is_airdrop=False
+        chain_info=Ethereum
     ),
     AirdropGoogleSheet(
         airdrop_name='@gillesdc Magritte Checks',

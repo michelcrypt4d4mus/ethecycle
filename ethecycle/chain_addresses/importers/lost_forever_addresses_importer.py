@@ -58,6 +58,7 @@ def import_lost_forever_addresses():
 
                 if row['Type'].startswith('Parity'):
                     comment = 'Funds lost to Parity wallet disaster'
+                    category = WALLET
 
                     if row_comment == '':
                         name = row['Type'] + ' (lost forever)'

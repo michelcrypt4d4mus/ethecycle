@@ -1,5 +1,6 @@
 """
-Import data from ethereum-lists repo.
+Import data from DeFi Llama repo by doing a best-effort parse through various JSON and
+javascript files. TODO: we could always extract more by trying harder.
 """
 import json
 from glob import glob

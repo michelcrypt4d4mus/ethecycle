@@ -270,11 +270,23 @@ AIRDROP_SHEETS = [
         social_media_link='https://twitter.com/Buffer_Finance/status/1649117988623089680',
         chain_info=Ethereum
     ),
+    AirdropGoogleSheet(
+        airdrop_name='Yubiwa (OG) NFT',
+        sheet_id='1odK0HrNSvSFjojnQYPGBXdjWlaacBGf0FuIqdcPRsmc',
+        social_media_link='https://twitter.com/BishojoClub/status/1640619473161060353',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='DexMart Wallet x Meta Galaxy',
+        sheet_id='1ZcKf4GXMDaf7pT1I_BpQQMWKbArUCeoLP1jwlLj5wWM',
+        social_media_link='https://twitter.com/Meta_Galaxyy/status/1648688991171137536',
+        chain_info=Ethereum
+    ),
 ]
-
 
 # Possible others:
 #  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
+
 
 def import_google_sheets() -> None:
     for sheet_id, worksheets in ETHEREUM_SHEETS.items():

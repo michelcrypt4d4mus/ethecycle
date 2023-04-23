@@ -1,7 +1,10 @@
 """
 Read public sheets: https://medium.com/geekculture/2-easy-ways-to-read-google-sheets-data-using-python-9e7ef366c775#e4bb
+A copy of each sheet will be written to the repo so that we still have the data should
+the sheet disappear because the Google account was canceled or similar.
 """
 import re
+from dataclasses import dataclass, field
 from os import path
 
 import numpy as np
@@ -14,16 +17,18 @@ from urllib.parse import urlencode
 from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.blockchains.ronin import Ronin
 from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.config import Config
 from ethecycle.models.wallet import Wallet
 from ethecycle.util.filesystem_helper import RAW_DATA_DIR
 from ethecycle.util.logging import console, log, print_indented
 from ethecycle.util.number_helper import pct, pct_str
-from ethecycle.util.string_constants import (BITCOINTALK, FACEBOOK, HTTPS, INDIVIDUAL,
+from ethecycle.util.string_constants import (ADDRESS, BITCOINTALK, FACEBOOK, HTTPS, INDIVIDUAL,
      SOCIAL_MEDIA_ORGS, SOCIAL_MEDIA_URLS, social_media_url)
 from ethecycle.util.string_helper import has_as_substring
 
+# Keys are spreadsheet IDs, values are worksheet IDs in that spreadsheet
 ETHEREUM_SHEETS = {
     '1I30YwfcqO7r7hP63hKdJM1BaaqAWiFfz_biIk2fyouM': [
         'Form Responses 1'
@@ -182,6 +187,45 @@ SOCIAL_MEDIA_PCT_CUTOFF = 88.0
 MAX_MISMATCHES = 10
 
 
+# Theoretically this dataclass allows better configurability, use it going forward
+@dataclass
+class AirdropGoogleSheet:
+    airdrop_name: str
+    sheet_id: str
+    chain_info: Type[ChainInfo]
+    worksheet_names: List[str] = field(default_factory=list)
+    use_default_labels: bool = True  # Means the title will be used
+    column_letter: Optional[str] = None
+    social_media_link: Optional[str] = None
+    address_column: Optional[str] = None
+
+
+# This is the way sheets should be configured going forward
+AIRDROP_SHEETS = [
+    AirdropGoogleSheet(
+        airdrop_name='Oceans of Terra',
+        sheet_id='127_TQJ3yL7dsvTVj92dcMENj1YGhG79XTA288W7R4c0',
+        worksheet_names=['Sheet1'],
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Infinity Node',
+        sheet_id='1slo3BJuByq0IFOOrchj3Qb82e4ayySBLZvmaMfDKLC4',
+        worksheet_names=['Valid addresses'],
+        social_media_link='https://twitter.com/_InfinityNode/status/1649794391127769088',
+        chain_info=Ronin,
+        address_column='23/04/2022'
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='PoolPhiesta - Pfers Giveaway (Pooly)',
+        sheet_id='1L9vBE3GT8_CSa08rpYlyIxA-TBNq5V61nvukvqs_XFc',
+        worksheet_names=['Last 30 days'],
+        social_media_link='https://twitter.com/phi_xyz/status/1647882436481777664',
+        chain_info=Ethereum
+    ),
+]
+
+
 def import_google_sheets() -> None:
     for sheet_id, worksheets in ETHEREUM_SHEETS.items():
         for worksheet_name in worksheets:
@@ -195,12 +239,41 @@ def import_google_sheets() -> None:
             insert_addresses(worksheet.extract_wallets())
             console.line(2)
 
+    # This is the way sheets should be configured going forward
+    for airdrop_sheet in AIRDROP_SHEETS:
+        for worksheet_name in airdrop_sheet.worksheet_names:
+            worksheet = GoogleWorksheet(
+                sheet_id=airdrop_sheet.sheet_id,
+                worksheet_name=worksheet_name,
+                chain_info=airdrop_sheet.chain_info,
+                default_label_base=airdrop_sheet.airdrop_name + ' airdrop recipient',
+                address_column=airdrop_sheet.address_column
+            )
+
+            insert_addresses(worksheet.extract_wallets())
+            console.line(2)
+
 
 class GoogleWorksheet:
-    def __init__(self, sheet_id: str, worksheet_name: str, chain_info: Type[ChainInfo]) -> None:
+    def __init__(
+            self,
+            sheet_id: str,
+            worksheet_name: str,
+            chain_info: Type[ChainInfo],
+            default_label_base: Optional[str] = None,
+            address_column: Optional[str] = None
+        ) -> None:
+        """
+        If provided:
+          * 'default_label_base' is used as the wallet label / name
+          * 'address_column' specifies where to find addresses
+        """
         self.sheet_id = sheet_id
         self.worksheet_name = worksheet_name
-        self.chain_info = chain_info
+        self.chain_info = chain_info or Ethereum
+        self.default_label_base = default_label_base
+        self.address_column = address_column
+        self.mismatch_count = 0
         self._build_url()
         self.df = pd.read_csv(self.url)
         self.df = self.df[[c for c in self.df if not c.startswith("Unnamed")]]
@@ -210,7 +283,7 @@ class GoogleWorksheet:
         self._write_df_to_csv()
 
     def extract_wallets(self) -> List[Wallet]:
-        self.address_col_label = self._guess_address_column()
+        self.address_col_label = self.address_column or self._guess_address_column()
         print_indented(f"Wallet column: '{self.address_col_label}'")
 
         # Remove rows with null addresses
@@ -254,7 +327,7 @@ class GoogleWorksheet:
 
         wallet = Wallet(
             address=address,
-            chain_info=Ethereum,
+            chain_info=self.chain_info,
             category=INDIVIDUAL,
             data_source=self.url,
             name=name
@@ -283,10 +356,13 @@ class GoogleWorksheet:
         if len(wallet_cols) == 0:
             wallet_cols = [c for c in self.column_names if WALLET_ADDRESS_REGEX.search(c)]
 
+        # 3rd pass to look for cols titled 'address'
         if len(wallet_cols) == 0:
-            raise ValueError(f"No ethereum address columns found in {self.column_names}")
+            wallet_cols = [c for c in self.column_names if ADDRESS in c.lower()]
+
+        if len(wallet_cols) == 0:
+            raise ValueError(f"No address columns found in {self.column_names}")
         elif len(wallet_cols) == 1:
-            self.mismatch_count = 0
             return wallet_cols[0]
         elif len(wallet_cols) > 2:
             raise ValueError(f"{len(wallet_cols)} wallet columns found in {self.column_names}")
@@ -324,9 +400,12 @@ class GoogleWorksheet:
             raise ValueError(f"Too many mismatches ({self.mismatch_count} > {MAX_MISMATCHES})")
 
     def _guess_social_media_column(self) -> str:
-        """Guess which col has addresses (or place the configured DEFAULT_LABELS value in 'facebook' col)."""
-        if self.sheet_id in DEFAULT_LABELS:
-            label = DEFAULT_LABELS[self.sheet_id]
+        """
+        Guess which col has addresses (or place the configured DEFAULT_LABELS value in 'facebook' col).
+        Or check self.default_label_base in which case use labels based on that
+        """
+        if self.sheet_id in DEFAULT_LABELS or self.default_label_base is not None:
+            label = self.default_label_base or DEFAULT_LABELS[self.sheet_id]
             print_indented(f"Applying default label '{label}'...")
             self.df[FACEBOOK] = self.df.apply(lambda row: f"{label} {row.name}", axis=1)
             self.column_names = self.df.columns.values
@@ -413,3 +492,4 @@ class GoogleWorksheet:
         invalid_msg = ', '.join(invalid_row_msgs)
         valid_row_count = self.df_length - self.invalid_address_count - self.mismatch_count - self.null_address_count
         console.print(f"Total rows: {self.df_length}, valid rows: {valid_row_count} ({invalid_msg})")
+

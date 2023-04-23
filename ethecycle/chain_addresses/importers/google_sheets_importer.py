@@ -27,7 +27,7 @@ from ethecycle.util.filesystem_helper import RAW_DATA_DIR
 from ethecycle.util.logging import console, log, print_indented
 from ethecycle.util.number_helper import pct, pct_str
 from ethecycle.util.string_constants import (ADDRESS, BITCOINTALK, FACEBOOK, HTTPS, INDIVIDUAL,
-     SOCIAL_MEDIA_ORGS, SOCIAL_MEDIA_URLS, social_media_url)
+     SOCIAL_MEDIA_ORGS, SOCIAL_MEDIA_URLS, WALLET, social_media_url)
 from ethecycle.util.string_helper import has_as_substring
 
 # Keys are spreadsheet IDs, values are worksheet IDs in that spreadsheet
@@ -196,11 +196,14 @@ class AirdropGoogleSheet:
     airdrop_name: str
     sheet_id: str
     chain_info: Type[ChainInfo]
-    worksheet_names: List[str] = field(default_factory=list)
     use_default_labels: bool = True  # Means the title will be used
+    worksheet_names: Optional[List[str]] = None
     column_letter: Optional[str] = None
     social_media_link: Optional[str] = None
     address_column: Optional[str] = None
+
+    def __post_init__(self):
+        self.worksheet_names = self.worksheet_names or ['Sheet1']
 
 
 # This is the way sheets should be configured going forward
@@ -237,7 +240,6 @@ AIRDROP_SHEETS = [
     AirdropGoogleSheet(
         airdrop_name='MEEET-MAMA NFT',
         sheet_id='1uwfwNDNMqeZ8n82JvtPvcvFb6x93ljlSyemk_kNG6N4',
-        worksheet_names=['Sheet1'],
         social_media_link='https://twitter.com/MEEETOfficial/status/1645348134149664768',
         chain_info=Arbitrum
     ),
@@ -246,6 +248,26 @@ AIRDROP_SHEETS = [
         sheet_id='14cbpXi6qNK3eLuzf5m889PJdIQS2l6QU2VbWybNrm-k',
         worksheet_names=[f"{t} winners" for t in 'QRDO ERP LUNR STRP DERI CLH'.split(' ')],
         social_media_link='https://twitter.com/_WOO_X/status/1629138526745796608',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Smurfs Society',
+        sheet_id='1mknqz_Eyos3MfNoZzK-IFQ9b63DzhMGt_k4McdTvuBM',
+        social_media_link='https://twitter.com/phaverapp/status/1625365316904849409',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='0xdgb Here For The Memes NFT',
+        sheet_id='1Jyt6VGuO_fbJol2B2EhQX4UZ1Tdm-dPB9qTfU-SXylQ',
+        worksheet_names=['Edition Raffle - Feb 8th', '0xdgb CA'],
+        social_media_link='https://twitter.com/0xdgb/status/1632833434346217477',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Buffer Finance incident compensation',
+        sheet_id='1H9-2-QWhJKPzkKNqPHGCirI8gXjiEPm4OZ6HkdFxm-U',
+        worksheet_names=['USDC', 'ARB', 'Airdrop Master'],
+        social_media_link='https://twitter.com/Buffer_Finance/status/1649117988623089680',
         chain_info=Ethereum
     ),
 ]
@@ -388,7 +410,7 @@ class GoogleWorksheet:
         if len(wallet_cols) == 0:
             wallet_cols = [
                 c for c in self.column_names
-                if ADDRESS in c.lower() and 'token' not in c.lower()
+                if any(word in c.lower() for word in [ADDRESS, 'receiver', WALLET]) and 'token' not in c.lower()
             ]
 
         if len(wallet_cols) == 0:

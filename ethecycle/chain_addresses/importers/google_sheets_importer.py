@@ -15,6 +15,7 @@ from typing import List, Optional, Type
 from urllib.parse import urlencode
 
 from ethecycle.blockchains.arbitrum import Arbitrum
+from ethecycle.blockchains.binance_smart_chain import BinanceSmartChain
 from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.core import Core
@@ -201,6 +202,8 @@ class AirdropGoogleSheet:
     column_letter: Optional[str] = None
     social_media_link: Optional[str] = None
     address_column: Optional[str] = None
+    category: str = 'airdrop'
+    force_extract_labels: bool = False
 
     def __post_init__(self):
         self.worksheet_names = self.worksheet_names or ['Sheet1']
@@ -296,10 +299,73 @@ AIRDROP_SHEETS = [
         worksheet_names=['SINK', '3-14-23-Snapshot'],
         chain_info=Ethereum
     ),
+    AirdropGoogleSheet(
+        airdrop_name='(B)APETAVERSE TEE shirt',
+        sheet_id='1BGKng4fPnk79pLmwwZJbUVfKzPN7Qe6P',
+        social_media_link='https://twitter.com/bapetaverse/status/1518051405525037056',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Telegram Venue Winners - 100BNB',
+        sheet_id='1G1BO1TSzet-CZ-W4lrUDdxzf8b_vlnLH5QYhXBdO2-4',
+        social_media_link='https://twitter.com/Assure_pro/status/1514242008331665410',
+        chain_info=BinanceSmartChain
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='UBOXSEA X STONE AEON',
+        sheet_id='1Bo_xxklIlWE33QD9hkDM5zAzWDbr-Yn9E77weASsODE',
+        social_media_link='https://twitter.com/UBOXDAO/status/1516344457557204992',
+        worksheet_names=['Winner list'],
+        chain_info=Ethereum,
+        force_extract_labels=True
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='PlayerDAO Meta 4MW 4th Round',
+        sheet_id='1BLsLQRWRMD4cZqNsziBUWLC0vScZH3VUJXEFMEcT2Eg',
+        social_media_link='https://twitter.com/4metas/status/1516010240776581120',
+        chain_info=BinanceSmartChain
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Inu Base INUB',
+        sheet_id='1SsVdgERDFUWHoyjOw0WTw1uweWK5Bedzb8JAH7YZVc0',
+        social_media_link='https://twitter.com/InuBase/status/1517550013429166080',
+        chain_info=BinanceSmartChain
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='@xHashtagio x @CropBytes CBX Token',
+        sheet_id='1ceff5md1U-RrdeHP-jMW4wUe-twqxg7ELBpoiEnDow4',
+        social_media_link='https://twitter.com/InuBase/status/1517550013429166080',
+        chain_info=Ethereum
+    ),
+    # Can't be loaded because double wide header column
+    # AirdropGoogleSheet(
+    #     airdrop_name='PokeMine & Coinhub',
+    #     sheet_id='12QSLF_9TLCVug_35OYYYcMIoC6UpR8_aUYbxUug4U70',
+    #     worksheet_names=['PokeMine & Coinhub - List of Winners'],
+    #     address_column='Top 5 invitees ',
+    #     social_media_link='https://twitter.com/PokeMineGo/status/1515915853757583362',
+    #     chain_info=BinanceSmartChain,
+    # ),
+    AirdropGoogleSheet(
+        airdrop_name='Simeta 4th',
+        sheet_id='1rC89Axrhen3v_opVQth-75dYghlVo28dkQHOIeDyqUU',
+        social_media_link='https://twitter.com/simeta_io/status/1517388285458280448',
+        chain_info=BinanceSmartChain,
+        force_extract_labels=True
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Zonoswap x HyperPay',
+        sheet_id='1i3WKWTLK9Re-OSKtMV5fjfmos-svH9eC',
+        worksheet_names=['Worksheet'],
+        social_media_link='https://twitter.com/ZonoSwap/status/1516048628275900416',
+        chain_info=BinanceSmartChain,
+        force_extract_labels=True
+    ),
 ]
 
 # Possible others:
 #  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
+#  * published so not a sheet as is: '2PACX-1vS_UEpiHM5HW-_cc9UgMx1FaBqkVFOspoDxxXNm2sKPAWnb2jh0iy1WDuKaZARP_xGgozuXL9G2VP93'
 
 
 def import_google_sheets() -> None:
@@ -323,7 +389,9 @@ def import_google_sheets() -> None:
                 worksheet_name=worksheet_name,
                 chain_info=airdrop_sheet.chain_info,
                 default_label_base=airdrop_sheet.airdrop_name + ' airdrop recipient',
-                address_column=airdrop_sheet.address_column
+                address_column=airdrop_sheet.address_column,
+                category=airdrop_sheet.category,
+                force_extract_labels=airdrop_sheet.force_extract_labels
             )
 
             insert_addresses(worksheet.extract_wallets())
@@ -337,18 +405,23 @@ class GoogleWorksheet:
             worksheet_name: str,
             chain_info: Type[ChainInfo],
             default_label_base: Optional[str] = None,
-            address_column: Optional[str] = None
+            address_column: Optional[str] = None,
+            category: Optional[str] = None,
+            force_extract_labels: bool = False
         ) -> None:
         """
         If provided:
           * 'default_label_base' is used as the wallet label / name
           * 'address_column' specifies where to find addresses
+          * 'force_extract_labels' means look for social medai cols, don't just use 'default_label_base'
         """
         self.sheet_id = sheet_id
         self.worksheet_name = worksheet_name
         self.chain_info = chain_info or Ethereum
         self.default_label_base = default_label_base
         self.address_column = address_column
+        self.category = category
+        self.force_extract_labels = force_extract_labels
         self.mismatch_count = 0
         self._build_url()
         self.df = pd.read_csv(self.url)
@@ -436,7 +509,7 @@ class GoogleWorksheet:
         if len(wallet_cols) == 0:
             wallet_cols = [
                 c for c in self.column_names
-                if any(word in c.lower() for word in [ADDRESS, 'receiver', WALLET]) and 'token' not in c.lower()
+                if any(word in c.lower() for word in [ADDRESS, 'receiver', WALLET, 'your name']) and 'token' not in c.lower()
             ]
 
         if len(wallet_cols) == 0:
@@ -483,7 +556,7 @@ class GoogleWorksheet:
         Guess which col has addresses (or place the configured DEFAULT_LABELS value in 'facebook' col).
         Or check self.default_label_base in which case use labels based on that
         """
-        if self.sheet_id in DEFAULT_LABELS or self.default_label_base is not None:
+        if self.sheet_id in DEFAULT_LABELS or (self.default_label_base is not None and not self.force_extract_labels):
             label = self.default_label_base or DEFAULT_LABELS[self.sheet_id]
             print_indented(f"Applying default label '{label}'...")
             self.df[FACEBOOK] = self.df.apply(lambda row: f"{label} {row.name}", axis=1)
@@ -492,7 +565,8 @@ class GoogleWorksheet:
 
         social_media_cols = [
             c for c in self.column_names
-            if any(social_media_org in c.lower() for social_media_org in SOCIAL_MEDIA_ORGS)
+            if any(social_media_org in c.lower() for social_media_org in SOCIAL_MEDIA_ORGS) \
+                or c.lower() in ['name', 'your name']
         ]
 
         social_media_cols = sorted(
@@ -537,6 +611,9 @@ class GoogleWorksheet:
             log.info(f"Found email col: {col}")
             self.email_col = col
             return False
+        elif 'name' in col_lowercase:
+            # This allows any string
+            substring = ''
         else:
             return False
 

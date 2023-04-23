@@ -20,6 +20,7 @@ from ethecycle.blockchains.bitcoin import Bitcoin
 from ethecycle.blockchains.chain_info import ChainInfo
 from ethecycle.blockchains.core import Core
 from ethecycle.blockchains.ethereum import Ethereum
+from ethecycle.blockchains.polygon import Polygon
 from ethecycle.blockchains.ronin import Ronin
 from ethecycle.chain_addresses.address_db import insert_addresses
 from ethecycle.config import Config
@@ -212,9 +213,14 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='PolkaBridge INO',
+        sheet_id='1WkmOcm1Q7ebACeuNKsnEs6fLeQfyOmfid_oDonnIZt4',
+        social_media_link='https://twitter.com/realpolkabridge/status/1510624657593942020',
+        chain_info=Polygon
+    ),
+    AirdropGoogleSheet(
         airdrop_name='Oceans of Terra',
         sheet_id='127_TQJ3yL7dsvTVj92dcMENj1YGhG79XTA288W7R4c0',
-        worksheet_names=['Sheet1'],
         social_media_link='https://twitter.com/OceansOfTerra/status/1647071846892965893',
         chain_info=Ethereum
     ),
@@ -337,15 +343,6 @@ AIRDROP_SHEETS = [
         social_media_link='https://twitter.com/InuBase/status/1517550013429166080',
         chain_info=Ethereum
     ),
-    # Can't be loaded because double wide header column
-    # AirdropGoogleSheet(
-    #     airdrop_name='PokeMine & Coinhub',
-    #     sheet_id='12QSLF_9TLCVug_35OYYYcMIoC6UpR8_aUYbxUug4U70',
-    #     worksheet_names=['PokeMine & Coinhub - List of Winners'],
-    #     address_column='Top 5 invitees ',
-    #     social_media_link='https://twitter.com/PokeMineGo/status/1515915853757583362',
-    #     chain_info=BinanceSmartChain,
-    # ),
     AirdropGoogleSheet(
         airdrop_name='Simeta 4th',
         sheet_id='1rC89Axrhen3v_opVQth-75dYghlVo28dkQHOIeDyqUU',
@@ -361,12 +358,27 @@ AIRDROP_SHEETS = [
         chain_info=BinanceSmartChain,
         force_extract_labels=True
     ),
+    AirdropGoogleSheet(
+        airdrop_name='@Youcoin $UCON',
+        sheet_id='1X8932D6f9wbuQi5qEJT7QPVP6RCOH4DdOCiUQTUxuOQ',
+        social_media_link='https://twitter.com/YouCoinOnline/status/1516331019959365633',
+        chain_info=BinanceSmartChain
+    ),
 ]
 
 # Possible others:
 #  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
 #  * published so not a sheet as is: '2PACX-1vS_UEpiHM5HW-_cc9UgMx1FaBqkVFOspoDxxXNm2sKPAWnb2jh0iy1WDuKaZARP_xGgozuXL9G2VP93'
-
+#  * PokeMine
+    # Can't be loaded because double wide header column
+    # AirdropGoogleSheet(
+    #     airdrop_name='PokeMine & Coinhub',
+    #     sheet_id='12QSLF_9TLCVug_35OYYYcMIoC6UpR8_aUYbxUug4U70',
+    #     worksheet_names=['PokeMine & Coinhub - List of Winners'],
+    #     address_column='Top 5 invitees ',
+    #     social_media_link='https://twitter.com/PokeMineGo/status/1515915853757583362',
+    #     chain_info=BinanceSmartChain,
+    # ),
 
 def import_google_sheets() -> None:
     for sheet_id, worksheets in ETHEREUM_SHEETS.items():

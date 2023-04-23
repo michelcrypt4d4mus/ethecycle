@@ -218,6 +218,14 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='Voltura Labs Pty Ltd',
+        # originally here: https://docs.google.com/spreadsheets/d/1QYCK00_EksHDcOi_sq8WjItGQgrqPCjTKK0DUDm7GSw/edit#gid=1767816602
+        sheet_id='1iT4gYDzHnholep6JikE84u-rn2qHj0D3jbG6WQGrPis',
+        social_media_link='https://twitter.com/BAYC2745/status/1473405079839334400',
+        chain_info=Ethereum,
+        force_extract_labels=True
+    ),
+    AirdropGoogleSheet(
         airdrop_name='PhoenixDefi $PNIX',
         sheet_id='1XbLd80BaH8svKeJlJWdJvfxpvN2epxhMnYNBl2LHUKU',
         social_media_link='https://twitter.com/phoenixdefi/status/1377274242497196034',

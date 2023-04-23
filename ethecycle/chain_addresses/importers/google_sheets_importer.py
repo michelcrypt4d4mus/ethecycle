@@ -217,6 +217,27 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='PandAI DEX Competition',
+        sheet_id='1Sdcp6jghR73KCbvdMKsZNi8DlKmUiQAbd0glJMjCk5E',
+        worksheet_names=['Results'],
+        social_media_link='https://twitter.com/pandai_bsc/status/1636361641695793152',
+        chain_info=BinanceSmartChain
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Clover Finance CLV & Galxe',
+        sheet_id='1-1ag1I6UhHqWBCS_qm5ucnt92MrUrL3dtueb1MEm8bk',
+        address_column='0xa64ce393071101130eaf4e714d974c2316753a75', # Hack bc there is no header
+        social_media_link='https://twitter.com/clover_finance/status/1574402545912795137',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
+        airdrop_name='Clover Finance CLV & Galxe',
+        sheet_id='1-GlKye58eofVAF5JI0vFM_o4jghNMq9qSkUN73Lt1oI',
+        address_column='0x76c9a2c1685718935e7e8e8fe130aae73a05099d', # Hack bc there is no header
+        social_media_link='https://twitter.com/clover_finance/status/1574402545912795137',
+        chain_info=Ethereum
+    ),
+    AirdropGoogleSheet(
         airdrop_name='Equalizer Exchange DEX',
         sheet_id='1KkY6sb7Bx7kUitiVw6E4bdCrzsqloTjUYlSJcSpbJMs',
         worksheet_names=['List'],
@@ -390,6 +411,8 @@ AIRDROP_SHEETS = [
 #  * Meebits? https://docs.google.com/spreadsheets/d/1BNgfiIDql0SExFbthyvUhVc0MSj2IQqOzBeU6bN4MXM/edit#gid=0
 #  * published so not a sheet as is: '2PACX-1vS_UEpiHM5HW-_cc9UgMx1FaBqkVFOspoDxxXNm2sKPAWnb2jh0iy1WDuKaZARP_xGgozuXL9G2VP93'
 #  * Some Ripple tokens and addresses: https://docs.google.com/spreadsheets/d/1kIjUN-jJzDxciMedJZo2XPyL-VQ-Zs1zt0YCgy6Cmcc/edit#gid=0
+#  * Arbitrum: https://twitter.com/lucianlampdefi/status/1631702362351112194
+#  * Tezos: https://docs.google.com/spreadsheets/d/1Y7q8dWpIyWX6GnRNW2_nqr_vF7TBTplq/edit#gid=1892551471
 #  * PokeMine
     # Can't be loaded because double wide header column
     # AirdropGoogleSheet(
@@ -402,17 +425,17 @@ AIRDROP_SHEETS = [
     # ),
 
 def import_google_sheets() -> None:
-    # for sheet_id, worksheets in ETHEREUM_SHEETS.items():
-    #     for worksheet_name in worksheets:
-    #         worksheet = GoogleWorksheet(sheet_id, worksheet_name, Ethereum)
-    #         insert_addresses(worksheet.extract_wallets())
-    #         console.line(2)
+    for sheet_id, worksheets in ETHEREUM_SHEETS.items():
+        for worksheet_name in worksheets:
+            worksheet = GoogleWorksheet(sheet_id, worksheet_name, Ethereum)
+            insert_addresses(worksheet.extract_wallets())
+            console.line(2)
 
-    # for sheet_id, worksheets in BITCOIN_SHEETS.items():
-    #     for worksheet_name in worksheets:
-    #         worksheet = GoogleWorksheet(sheet_id, worksheet_name, Bitcoin)
-    #         insert_addresses(worksheet.extract_wallets())
-    #         console.line(2)
+    for sheet_id, worksheets in BITCOIN_SHEETS.items():
+        for worksheet_name in worksheets:
+            worksheet = GoogleWorksheet(sheet_id, worksheet_name, Bitcoin)
+            insert_addresses(worksheet.extract_wallets())
+            console.line(2)
 
     # This is the way sheets should be configured going forward
     for airdrop_sheet in AIRDROP_SHEETS:

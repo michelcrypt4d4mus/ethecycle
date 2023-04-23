@@ -218,6 +218,14 @@ class AirdropGoogleSheet:
 # This is the way sheets should be configured going forward
 AIRDROP_SHEETS = [
     AirdropGoogleSheet(
+        airdrop_name='Isekai Battle Ticket',
+        sheet_id='1WbBUGZqryUIzh_o8kW-GKk5CksAvYfGox_ZRexQJVY4',
+        worksheet_names=['csv'],
+        social_media_link='https://twitter.com/Isekai_Battle/status/1624010711210037248',
+        chain_info=Ethereum,
+        is_airdrop=False
+    ),
+    AirdropGoogleSheet(
         airdrop_name='@gillesdc Magritte Checks',
         sheet_id='1FKbl_3mlzEihBQltve3nJY9rMSpC-uVZdlKlFLOmokw',
         worksheet_names=[

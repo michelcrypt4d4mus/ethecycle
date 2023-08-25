@@ -83,6 +83,20 @@ COPY ./ ./
 # IS_DOCKER_IMAGE_BUILD causes the repos to be deleted once the data is extracted.
 #RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
 RUN ./import_chain_addresses.py ALL
+RUN ./import_chain_addresses.py defi_llama_addresses
+RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
+RUN ./import_chain_addresses.py ethereum_lists_addresses
+RUN ./import_chain_addresses.py etherscan_labels_repo
+RUN ./import_chain_addresses.py etherscrape_chain_addresses
+RUN ./import_chain_addresses.py ftx_biggest_trading_partners
+RUN ./import_chain_addresses.py google_sheets
+RUN ./import_chain_addresses.py lost_forever_addresses
+RUN ./import_chain_addresses.py m_ranger_wallet_tags
+RUN ./import_chain_addresses.py my_ether_wallet_addresses
+RUN ./import_chain_addresses.py okx_addresses
+RUN ./import_chain_addresses.py trust_wallet_repo
+RUN ./import_chain_addresses.py wallets_from_dune
+RUN ./import_chain_addresses.py w_mcdonald_etherscan_addresses
 WORKDIR ${PYTHON_DIR}
 
 # Build various files for root (.bash_profile, .sqliterc, entrypoint.sh, etc) and remove unnecessaries

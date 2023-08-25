@@ -123,3 +123,89 @@ LABEL_E = 'labelE'
 LABEL_V = 'labelV'
 
 
+ALUSD  = 'ALUSD'
+AMPL   = 'AMPL'
+BEAN   = 'BEAN'
+BUSD   = 'BUSD'
+crvUSD = 'crvUSD'
+DAI    = 'DAI'
+DUSD   = 'DUSD'
+ESD    = 'ESD'
+EURST  = 'EURST'
+eUSD   = 'eUSD'
+FDUSD  = 'FDUSD'
+FEI    = 'FEI'
+FPI    = 'FPI'
+FRAX   = 'FRAX'
+GUSD   = 'GUSD'
+HUSD   = 'HUSD'
+LUSD   = 'LUSD'
+PYUSD  = 'PYUSD'
+R      = 'R'
+sUSD   = 'sUSD'
+stUSDT = 'stUSDT'
+TUSD   = 'TUSD'
+USDC   = 'USDC'
+USDD   = 'USDD'
+USDJ   = 'USDJ'
+USDK   = 'USDK'
+USDN   = 'USDN'
+USDP   = 'USDP'
+USDQ   = 'USDQ'
+USDS   = 'USDS'
+USDT   = 'USDT'
+
+
+# Non-dollar stablecoins
+agEUR = 'agEUR'   # Angle Protocol Euro
+EUROC = 'EUROC'   # Circle Euro
+EURe  = 'EURe'    # Monerium Euro
+EURS  = 'EURS'
+EURT  = 'EURT'    # Tether Euro
+MXNT  = 'MXNT'    # Tether Mexican Peso
+QC    = 'QC'
+TAUD  = 'TAUD'    # TrueUSD AUD
+TCAD  = 'TCAD'    # TrueUSD CAD
+TCNH  = 'TCNH'    # TrueUSD CNH
+TGBP  = 'TGBP'    # TrueUSD GBP
+THKD  = 'THKD'    # TrueUSD HKD
+XCHF  = 'XCHF'
+
+
+# Gold stablecoins
+DGLD  = 'DGLD'
+DGX   = 'DGX'     # Digix Gold
+PAXG  = 'PAXG'    # Paxos Gold
+XAUT  = 'XAUT'    # Tether gold
+
+
+### Other tokens that are not stablecoins
+CAKE = 'CAKE'
+CEL  = 'CEL'
+LEO  = 'LEO'
+
+
+# Wrapped tokens
+cWBTC = 'cWBTC'
+WBNB  = 'WBNB'
+WBTC  = 'WBTC'
+WETH  = 'WETH'
+vBTC  = 'vBTC'
+vBETH = 'vBETH'
+vETH  = 'vETH'
+
+
+# Staked tokens
+aETH     = 'aETH'     # Aave ETH
+ankrETH  = 'ankrETH'  # Ankr
+BETH     = 'BETH'     # Binance Beacon ETH
+cbETH    = 'cbETH'    # Coinbase
+cETH     = 'cETH'     # Compound
+frxETH   = 'frxETH'   # Frax ETH
+LsETH    = 'LsETH'    # Liquid
+rETH     = 'rETH'     # Rocket Pool
+sfrxETH  = 'sfrxETH'  # FRAX
+stETH    = 'stETH'    # LIDO
+STETH    = 'STETH'    # Stakehound
+wBETH    = 'wBETH'    # Wrapped Binance Beacon ETH
+wstETH   = 'wstETH'   # Wrapped staked eth (LIDO?)

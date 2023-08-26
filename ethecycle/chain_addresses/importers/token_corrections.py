@@ -5,12 +5,14 @@ from ethecycle.blockchains.binance_smart_chain import BinanceSmartChain
 from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_db_connection
 
 HECO = 'heco'
+TABLES = ['wallets', 'tokens']
 
-
-      WHEN blockchain = 'avalanche' THEN 'avax'
-      WHEN blockchain = 'avalanche contract chain' THEN 'avax-c'
-      WHEN blockchain = 'bitcoin_cash' THEN 'bch'
-      ELSE blockchain END AS blockchain,
+CHAIN_FIXES = {
+    'avalanche': 'avax',
+    'avalanche contract chain': 'avax-c',
+    'bitcoin_cash': 'bch',
+    'bnb_beacon': 'bnb',
+}
 
 TOKEN_RENAMES = [
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0x14016e85a25aeb13065688cafb43044c2ef86784'), 'BinancePeg-TUSD'],
@@ -40,8 +42,12 @@ DECIMAL_CORRECTIONS = [
 ]
 
 
-def fix_tokens():
+def import_token_corrections():
     conn = get_db_connection()
+
+    def run_sql(sql):
+        print(sql)
+        conn.execute(sql)
 
     for token_rename in TOKEN_RENAMES:
         print(f"Setting {token_rename[0]} to {token_rename[1]}")
@@ -52,16 +58,33 @@ def fix_tokens():
             AND address = '{token_rename[0].address}'
         """
 
-        conn.execute(sql)
+        run_sql(sql)
 
     for decimal_correction in DECIMAL_CORRECTIONS:
         print(f"Setting {decimal_correction[0]} to {decimal_correction[1]}")
 
         sql = f"""
-            UPDATE tokens SET decimals = '{decimal_correction[1]}'
+            UPDATE tokens SET decimals = {decimal_correction[1]}
             WHERE blockchain = '{decimal_correction[0].blockchain}'
             AND address = '{decimal_correction[0].address}'
         """
 
-        conn.execute(sql)
+        run_sql(sql)
 
+    for t in TABLES:
+        for old_chain, new_chain in CHAIN_FIXES.items():
+            sql = f"""
+                UPDATE {t}
+                SET blockchain = '{new_chain}'
+                WHERE blockchain = '{old_chain}'
+            """
+
+            run_sql(sql)
+
+        sql = f"""
+            UPDATE {t}
+            SET blockchain = 'bnb'
+            WHERE blockchain = 'bsc' AND LENGTH(address) <= 20 OR address LIKE 'bnb%'
+        """
+
+        run_sql(sql)

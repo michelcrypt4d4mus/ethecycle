@@ -133,7 +133,8 @@ RUN echo '.mode table\n.header on' > ${HOME}/.sqliterc && \
 
 # Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
 COPY ${SSH_KEY_DIR}/id_ed25519 ${SSH_KEY_DIR}/id_ed25519.pub ${SSH_DIR}/
-
+RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
+RUN ./import_chain_addresses.py token_corrections
 # Entrypoints
 ENTRYPOINT ["/python/entrypoint.sh"]
 CMD ["/bin/bash", "-l"]

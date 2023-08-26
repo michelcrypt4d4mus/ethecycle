@@ -1,1 +1,1 @@
-sqlite3 "$PWD/scripts/docker/container_files/chain_addresses_sqlite.db" < scripts/queries/chain_addresses/dump_to_csvs.sql
+sqlite3 "$CHAIN_ADDRESS_DATA_DIR/chain_addresses_sqlite.db" < scripts/queries/chain_addresses/dump_to_csvs.sql

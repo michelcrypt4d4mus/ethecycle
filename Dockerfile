@@ -58,7 +58,7 @@ RUN git clone https://github.com/eepdev/vaults.git && \
     # find etherscan-contract-crawler/ -name '*.sol' -delete && \
     # find etherscan-contract-crawler/ -name 'naive_checksum.txt' -delete
 COPY ./etherscan-contract-crawler.gz .
-RUN gunzip etherscan-contract-crawler.gz
+RUN tar xzvf etherscan-contract-crawler.gz
 
 # RUN git clone https://github.com/Inka-Finance/assets.git && \
 #     rm -fr assets/.git && find assets/ -name '*.png' -delete

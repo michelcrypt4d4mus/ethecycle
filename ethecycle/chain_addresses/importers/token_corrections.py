@@ -18,7 +18,7 @@ TOKEN_RENAMES = [
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0x14016e85a25aeb13065688cafb43044c2ef86784'), 'BinancePeg-TUSD'],
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82'), CAKE],
     [Address(blockchain=HECO, address='0x0298c2b32eae4da002a15f36fdf7615bea3da047'), 'HecoPeg-HUSD'],
-    [Address(blockchain=HECO, address='0xae78736cd615f374d3085123a210448e74fc6393'), rETH],
+    [Address(blockchain=ETHEREUM, address='0xae78736cd615f374d3085123a210448e74fc6393'), rETH],
     [Address(blockchain=ETHEREUM, address='0xccf4429db6322d5c611ee964527d42e5d685dd6a'), cWBTC],
     [Address(blockchain=ETHEREUM, address='0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'), agEUR],
     [Address(blockchain=ETHEREUM, address='0xE95A203B1a91a908F9B9CE46459d101078c2c3cb'), ankrETH],
@@ -55,7 +55,7 @@ def import_token_corrections():
         sql = f"""
             UPDATE tokens SET name = '{token_rename[1]}'
             WHERE blockchain = '{token_rename[0].blockchain}'
-            AND address = '{token_rename[0].address}'
+            AND LOWER(address) = LOWER('{token_rename[0].address}')
         """
 
         run_sql(sql)
@@ -66,11 +66,12 @@ def import_token_corrections():
         sql = f"""
             UPDATE tokens SET decimals = {decimal_correction[1]}
             WHERE blockchain = '{decimal_correction[0].blockchain}'
-            AND address = '{decimal_correction[0].address}'
+            AND LOWER(address)  = LOWER('{decimal_correction[0].address}')
         """
 
         run_sql(sql)
 
+    # Fix chains and Aave org
     for t in TABLES:
         for old_chain, new_chain in CHAIN_FIXES.items():
             sql = f"""
@@ -78,13 +79,22 @@ def import_token_corrections():
                 SET blockchain = '{new_chain}'
                 WHERE blockchain = '{old_chain}'
             """
-
             run_sql(sql)
 
+        # BNB chain
         sql = f"""
             UPDATE {t}
             SET blockchain = 'bnb'
             WHERE blockchain = 'bsc' AND LENGTH(address) <= 20 OR address LIKE 'bnb%'
         """
+        run_sql(sql)
 
+        # Aave
+        sql=f"""
+          UPDATE tokens
+             SET organization = 'aave'
+           WHERE name LIKE 'Aave%'
+             AND symbol NOT LIKE 'AAVE'
+             AND symbol <> 'Aave Token'
+        """
         run_sql(sql)

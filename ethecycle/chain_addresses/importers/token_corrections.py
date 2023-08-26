@@ -41,6 +41,9 @@ DECIMAL_CORRECTIONS = [
     [Address(blockchain=TRON, address='TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'), 6],
 ]
 
+BURN_ADDRESSES = {chain: '0x0000000000000000000000000000000000000000' for chain in ['ethereum', 'bsc', 'heco']}
+BURN_ADDRESSES['tron'] = 'T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb'
+
 
 def import_token_corrections():
     conn = get_db_connection()
@@ -96,5 +99,14 @@ def import_token_corrections():
            WHERE name LIKE 'Aave%'
              AND symbol NOT LIKE 'AAVE'
              AND symbol <> 'Aave Token'
+        """
+        run_sql(sql)
+
+    for blockchain, burn_address in BURN_ADDRESSES.items():
+        sql=f"""
+          UPDATE wallets
+             SET name = 'NULL'
+           WHERE blockchain = '{blockchain}'
+             AND address = '{burn_address}'
         """
         run_sql(sql)

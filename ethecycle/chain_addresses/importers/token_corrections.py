@@ -7,6 +7,11 @@ from ethecycle.chain_addresses.address_db import drop_and_recreate_tables, get_d
 HECO = 'heco'
 
 
+      WHEN blockchain = 'avalanche' THEN 'avax'
+      WHEN blockchain = 'avalanche contract chain' THEN 'avax-c'
+      WHEN blockchain = 'bitcoin_cash' THEN 'bch'
+      ELSE blockchain END AS blockchain,
+
 TOKEN_RENAMES = [
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0x14016e85a25aeb13065688cafb43044c2ef86784'), 'BinancePeg-TUSD'],
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82'), CAKE],
@@ -59,3 +64,4 @@ def fix_tokens():
         """
 
         conn.execute(sql)
+

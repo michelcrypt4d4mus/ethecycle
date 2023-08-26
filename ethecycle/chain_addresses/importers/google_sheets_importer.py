@@ -125,7 +125,7 @@ ETHEREUM_SHEETS = {
         'Telegram Groups',
         'Signature',
     ],
-    # This one has 282K rows!
+    # This one has 282K rows!  t.me/ethbirdsOfficial
     '1SamWX8hjMLuMx7B03S4QTR6V_dCCkcXN5PBJJdLKjnw': [
         'Form Responses 1',
     ],
@@ -519,7 +519,14 @@ class GoogleWorksheet:
         self.force_extract_labels = force_extract_labels
         self.mismatch_count = 0
         self._build_url()
-        self.df = pd.read_csv(self.url)
+        try:
+            self.df = pd.read_csv(self.url)
+        except Exception as e:
+            if not self._already_cached():
+                raise e
+
+            print(f"Failed to read '{self.url}', falling back to cached csv '{self._cached_path()}'...")
+            self.df = pd.read_csv(self._cached_path())
         self.df = self.df[[c for c in self.df if not c.startswith("Unnamed")]]
         self.df_length = len(self.df)
         self.column_names = list(self.df.columns.values)
@@ -726,15 +733,20 @@ class GoogleWorksheet:
             print_indented(f"IGNORING {msg}", style='color(155) dim', indent_level=2)
             return False
 
-    def _write_df_to_csv(self) -> None:
-        file_basename = f"{self.sheet_id}___{self.worksheet_name}.csv.gz".replace('/', '_slash_')
-        file_path = path.join(GZIPPED_CSV_DIR, file_basename)
-        print_indented(f"Writing sheet to CSV: '{file_path}'", style='dim')
+    def _already_cached(self) -> bool:
+        return path.isfile(self._cached_path())
 
-        if False and path.isfile(file_path):
-            console.print(f"File already exists: '{file_path}', skipping...")
+    def _cached_path(self) -> str:
+        file_basename = f"{self.sheet_id}___{self.worksheet_name}.csv.gz".replace('/', '_slash_')
+        return path.join(GZIPPED_CSV_DIR, file_basename)
+
+    def _write_df_to_csv(self) -> None:
+        print_indented(f"Writing sheet to CSV: '{self._cached_path()}'", style='dim')
+
+        if False and self._already_cached():
+            console.print(f"File already exists: '{self._cached_path()}', skipping...")
         else:
-            self.df.to_csv(file_path, index=False, compression=GZIP_COMPRESSION_ARGS)
+            self.df.to_csv(self._cached_path(), index=False, compression=GZIP_COMPRESSION_ARGS)
 
     def _print_extraction_stats(self) -> None:
         invalid_row_msgs = [

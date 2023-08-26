@@ -16,7 +16,7 @@ REPO_FULL_PATH="$CHAIN_ADDRESS_DATA_DIR/$REPO_DIR"
 if [[ ! -d "$REPO_FULL_PATH" ]]; then
     echo "$REPO_URL is not checked out; cloning..." >&2
     pushd "$CHAIN_ADDRESS_DATA_DIR" >> /dev/null
-    git clone $REPO_URL $REPO_FULL_PATH >&2
+    git clone --depth 1 $REPO_URL $REPO_FULL_PATH >&2
     popd >> /dev/null
 else
     echo "$REPO_URL is already checked out." >&2

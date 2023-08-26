@@ -45,19 +45,32 @@ WORKDIR ${CHAIN_ADDRESS_DATA_DIR}
 
 RUN git clone https://github.com/eepdev/vaults.git && \
     git clone https://github.com/rchen8/hop-airdrop.git && \
-    git clone https://github.com/Mmoouu/test-iotxview/ && \
     git clone https://github.com/hylsceptic/ethereum_parser.git && \
     git clone https://github.com/yaocg/uniswap-arbitrage.git && \
     git clone https://github.com/m-root/arb-trading.git && \
-    git clone https://github.com/Inka-Finance/assets.git && \
     git clone https://github.com/aurafinance/aura-token-allocation.git && \
     git clone https://github.com/kovart/forta-agents.git && \
-    git clone https://github.com/graphsense/graphsense-tagpacks.git && \
-    git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git && \
-    # Remove some unnecessary cruft from image
-    rm -fr test-iotxview/.git && find test-iotxview/ -name '*.png' -delete && \
-    rm -fr assets/.git && find assets/ -name '*.png' -delete && \
-    rm -fr TronStreaming/.git
+    git clone https://github.com/graphsense/graphsense-tagpacks.git
+
+# This repository is huge. We assume it's checked out locally in this dir.
+# Also worth deleting all the .sol files with `find etherscan-contract-crawler/ -name '*.sol' -delete`
+# RUN git clone https://github.com/cl2089/etherscan-contract-crawler.git && \
+    # find etherscan-contract-crawler/ -name '*.sol' -delete && \
+    # find etherscan-contract-crawler/ -name 'naive_checksum.txt' -delete
+COPY ./etherscan-contract-crawler.gz .
+RUN gunzip etherscan-contract-crawler.gz
+
+# RUN git clone https://github.com/Inka-Finance/assets.git && \
+#     rm -fr assets/.git && find assets/ -name '*.png' -delete
+
+# RUN git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git && \
+#     rm -fr TronStreaming/.git
+
+
+# # Remove some unnecessary cruft from image after checkouts w/last 3 lines
+# RUN git clone https://github.com/Mmoouu/test-iotxview/ && \
+#     rm -fr test-iotxview/.git && \
+#     find test-iotxview/ -name '*.png' -delete
 
 # Python env vars
 ARG PYTHON_DIR=/python
@@ -84,14 +97,19 @@ COPY ./ ./
 #RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
 RUN ./import_chain_addresses.py ALL
 RUN ./import_chain_addresses.py defi_llama_addresses
-RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
+# RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
 RUN ./import_chain_addresses.py ethereum_lists_addresses
 RUN ./import_chain_addresses.py etherscan_labels_repo
 RUN ./import_chain_addresses.py etherscrape_chain_addresses
 RUN ./import_chain_addresses.py ftx_biggest_trading_partners
+
+
+COPY ./LICENSE ./ethecycle/LICENSE_BOOKMARK_ONLY
 RUN ./import_chain_addresses.py google_sheets
 RUN ./import_chain_addresses.py lost_forever_addresses
 RUN ./import_chain_addresses.py m_ranger_wallet_tags
+# Got up to here...
+
 RUN ./import_chain_addresses.py my_ether_wallet_addresses
 RUN ./import_chain_addresses.py okx_addresses
 RUN ./import_chain_addresses.py trust_wallet_repo

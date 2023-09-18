@@ -34,11 +34,11 @@ TOKEN_RENAMES = [
     [Address(blockchain=POLYGON, address='0xe0b52e49357fd4daf2c15e02058dce6bc0057db4'), agEUR],
 ]
 
-
 DECIMAL_CORRECTIONS = [
     [Address(blockchain=BinanceSmartChain.SHORT_NAME, address='0xa5ac8f8e90762380cce6c16aba17ed6d2cf75888'), 9],
     [Address(blockchain=HECO, address='0x0298c2b32eae4da002a15f36fdf7615bea3da047'), 8],
     [Address(blockchain=TRON, address='TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'), 6],
+    [Address(blockchain=ETHEREUM, address='0x87611ca3403a3878dfef0da2a786e209abfc1eff'), 8],
 ]
 
 BURN_ADDRESSES = {chain: '0x0000000000000000000000000000000000000000' for chain in ['ethereum', 'bsc', 'heco']}
@@ -56,9 +56,9 @@ def import_token_corrections():
         print(f"Setting {token_rename[0]} to {token_rename[1]}")
 
         sql = f"""
-            UPDATE tokens SET name = '{token_rename[1]}'
-            WHERE blockchain = '{token_rename[0].blockchain}'
-            AND LOWER(address) = LOWER('{token_rename[0].address}')
+            UPDATE tokens SET symbol = '{token_rename[1]}'
+             WHERE blockchain = '{token_rename[0].blockchain}'
+               AND address = LIKE '{token_rename[0].address}'
         """
 
         run_sql(sql)
@@ -68,8 +68,8 @@ def import_token_corrections():
 
         sql = f"""
             UPDATE tokens SET decimals = {decimal_correction[1]}
-            WHERE blockchain = '{decimal_correction[0].blockchain}'
-            AND LOWER(address)  = LOWER('{decimal_correction[0].address}')
+             WHERE blockchain = '{decimal_correction[0].blockchain}'
+               AND LOWER(address) = LOWER('{decimal_correction[0].address}')
         """
 
         run_sql(sql)

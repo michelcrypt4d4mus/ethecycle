@@ -42,35 +42,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Pull Adamant vaults and other chain address data that is not in the chain_address DB yet.
 WORKDIR ${CHAIN_ADDRESS_DATA_DIR}
-
-RUN git clone https://github.com/eepdev/vaults.git && \
-    git clone https://github.com/rchen8/hop-airdrop.git && \
-    git clone https://github.com/hylsceptic/ethereum_parser.git && \
-    git clone https://github.com/yaocg/uniswap-arbitrage.git && \
-    git clone https://github.com/m-root/arb-trading.git && \
-    git clone https://github.com/aurafinance/aura-token-allocation.git && \
-    git clone https://github.com/kovart/forta-agents.git && \
-    git clone https://github.com/graphsense/graphsense-tagpacks.git
-
+COPY ./etherscan-contract-crawler.gz .
 # This repository is huge. We assume it's checked out locally in this dir.
 # Also worth deleting all the .sol files with `find etherscan-contract-crawler/ -name '*.sol' -delete`
-# RUN git clone https://github.com/cl2089/etherscan-contract-crawler.git && \
-    # find etherscan-contract-crawler/ -name '*.sol' -delete && \
-    # find etherscan-contract-crawler/ -name 'naive_checksum.txt' -delete
-COPY ./etherscan-contract-crawler.gz .
-RUN tar xzvf etherscan-contract-crawler.gz
-
-# RUN git clone https://github.com/Inka-Finance/assets.git && \
-#     rm -fr assets/.git && find assets/ -name '*.png' -delete
-
-# RUN git clone https://github.com/oushu1zhangxiangxuan1/TronStreaming.git && \
-#     rm -fr TronStreaming/.git
-
-
-# # Remove some unnecessary cruft from image after checkouts w/last 3 lines
-# RUN git clone https://github.com/Mmoouu/test-iotxview/ && \
-#     rm -fr test-iotxview/.git && \
-#     find test-iotxview/ -name '*.png' -delete
+# RUN git clone --depth 1 https://github.com/cl2089/etherscan-contract-crawler.git && \
+#     find etherscan-contract-crawler/ -name '*.sol' -delete && \
+#     find etherscan-contract-crawler/ -name 'naive_checksum.txt' -delete
 
 # Python env vars
 ARG PYTHON_DIR=/python
@@ -93,28 +70,12 @@ RUN poetry config virtualenvs.create false && \
 ARG ETHECYCLE_TMP_DIR_FOR_BUILDING_CHAIN_ADDRESS_DB=/ethecycle_build_address_db
 WORKDIR ${ETHECYCLE_TMP_DIR_FOR_BUILDING_CHAIN_ADDRESS_DB}
 COPY ./ ./
+
 # IS_DOCKER_IMAGE_BUILD causes the repos to be deleted once the data is extracted.
-#RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
-RUN ./import_chain_addresses.py ALL
-RUN ./import_chain_addresses.py defi_llama_addresses
-# RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
-RUN ./import_chain_addresses.py ethereum_lists_addresses
-RUN ./import_chain_addresses.py etherscan_labels_repo
-RUN ./import_chain_addresses.py etherscrape_chain_addresses
-RUN ./import_chain_addresses.py ftx_biggest_trading_partners
-
-
+RUN IS_DOCKER_IMAGE_BUILD=True ./import_chain_addresses.py ALL
+# Got up to here... (dummy stask)
 COPY ./LICENSE ./ethecycle/LICENSE_BOOKMARK_ONLY
-RUN ./import_chain_addresses.py google_sheets
-RUN ./import_chain_addresses.py lost_forever_addresses
-RUN ./import_chain_addresses.py m_ranger_wallet_tags
-# Got up to here...
 
-RUN ./import_chain_addresses.py my_ether_wallet_addresses
-RUN ./import_chain_addresses.py okx_addresses
-RUN ./import_chain_addresses.py trust_wallet_repo
-RUN ./import_chain_addresses.py wallets_from_dune
-RUN ./import_chain_addresses.py w_mcdonald_etherscan_addresses
 WORKDIR ${PYTHON_DIR}
 
 # Build various files for root (.bash_profile, .sqliterc, entrypoint.sh, etc) and remove unnecessaries
@@ -133,8 +94,35 @@ RUN echo '.mode table\n.header on' > ${HOME}/.sqliterc && \
 
 # Setup ssh (you need to generate the ssh keys before running docker build; see README.md for details)
 COPY ${SSH_KEY_DIR}/id_ed25519 ${SSH_KEY_DIR}/id_ed25519.pub ${SSH_DIR}/
-RUN ./import_chain_addresses.py ethereum_contract_crawler_addresses
-RUN ./import_chain_addresses.py token_corrections
+
+WORKDIR ${CHAIN_ADDRESS_DATA_DIR}
+RUN tar xzvf etherscan-contract-crawler.gz
+WORKDIR /ethecycle
+# RUN ./import_chain_addresses.py etherscrape_chain_addresses
+#RUN ./import_chain_addresses.py token_corrections
+
+# We don't use these repos yet (but maybe we should)
+# RUN git clone --depth 1 https://github.com/eepdev/vaults.git && \
+#     git clone --depth 1 https://github.com/rchen8/hop-airdrop.git && \
+#     git clone --depth 1 https://github.com/hylsceptic/ethereum_parser.git && \
+#     git clone --depth 1 https://github.com/yaocg/uniswap-arbitrage.git && \
+#     git clone --depth 1 https://github.com/m-root/arb-trading.git && \
+#     git clone --depth 1 https://github.com/aurafinance/aura-token-allocation.git && \
+#     git clone --depth 1 https://github.com/kovart/forta-agents.git && \
+#     git clone --depth 1 https://github.com/graphsense/graphsense-tagpacks.git
+
+# RUN git clone --depth 1 https://github.com/Inka-Finance/assets.git && \
+#     rm -fr assets/.git && find assets/ -name '*.png' -delete
+
+# RUN git clone --depth 1 https://github.com/oushu1zhangxiangxuan1/TronStreaming.git && \
+#     rm -fr TronStreaming/.git
+
+# # Remove some unnecessary cruft from image after checkouts w/last 3 lines
+# RUN git clone --depth 1 https://github.com/Mmoouu/test-iotxview/ && \
+#     rm -fr test-iotxview/.git && \
+#     find test-iotxview/ -name '*.png' -delete
+
+
 # Entrypoints
 ENTRYPOINT ["/python/entrypoint.sh"]
 CMD ["/bin/bash", "-l"]
